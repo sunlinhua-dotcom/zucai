@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1115" />
+<title>进球彩 · 遗漏走势分析表（复刻原表）</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --cell:#1b1f29; --cell2:#20242f; --line:#2a3140; --line2:#222836;
+    --txt:#e9edf5; --dim:#9aa3b5; --faint:#6c7488;
+    --accent:#7c5cff; --out:#16a34a; --over:#e5484d; --warn:#e3b341;
+    --sat:env(safe-area-inset-top);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; background:var(--bg); color:var(--txt); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .num{font-variant-numeric:tabular-nums;}
+  header{position:sticky; top:0; z-index:30; padding:calc(var(--sat) + 12px) 14px 10px; background:rgba(15,17,21,.92); backdrop-filter:blur(14px); border-bottom:1px solid var(--line2);}
+  header h1{margin:0; font-size:17px; font-weight:800; letter-spacing:.2px;}
+  header .sub{font-size:11.5px; color:var(--faint); margin-top:2px;}
+  .bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:10px 14px; background:var(--panel); border-bottom:1px solid var(--line2); position:sticky; top:calc(var(--sat) + 56px); z-index:29;}
+  .fld{display:flex; align-items:center; gap:6px; background:var(--cell); border:1px solid var(--line); border-radius:9px; padding:7px 10px; font-size:13px; color:var(--dim);}
+  .fld input{background:transparent; border:none; outline:none; color:var(--txt); font-weight:700; font-size:14px;}
+  .fld input#tIssue{width:70px;} .fld input#tDig{width:120px; letter-spacing:2px; font-variant-numeric:tabular-nums;}
+  .btn{border:none; border-radius:9px; padding:8px 14px; font-size:13px; font-weight:800; background:var(--accent); color:#fff;}
+  .btn:active{transform:scale(.97);} .btn.ghost{background:var(--cell); color:var(--dim); border:1px solid var(--line);}
+  .tog{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap;}
+  .tog button{border:1px solid var(--line); background:var(--cell); color:var(--dim); border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700;}
+  .tog button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .stat{padding:8px 14px; font-size:12px; color:var(--faint); border-bottom:1px solid var(--line2); background:var(--bg);}
+  .stat b{color:var(--dim);}
+  .wrap{overflow:auto; -webkit-overflow-scrolling:touch; max-width:100%; height:calc(100dvh - 180px);}
+  table{border-collapse:separate; border-spacing:0; font-size:12px; white-space:nowrap;}
+  th,td{border-right:1px solid var(--line2); border-bottom:1px solid var(--line2); padding:5px 7px; text-align:center; font-variant-numeric:tabular-nums;}
+  thead th{position:sticky; top:0; z-index:12; background:var(--panel); color:var(--dim); font-weight:700; font-size:11px;}
+  thead tr.r2 th{top:25px; z-index:11;}
+  .col-iss{position:sticky; left:0; z-index:13; background:var(--panel); min-width:62px; text-align:left; padding-left:10px;}
+  tbody td.col-iss{z-index:9; background:var(--cell2); color:var(--dim); font-weight:700;}
+  .grp{border-left:2px solid var(--line);}
+  td.d{font-weight:800; color:var(--txt); background:var(--cell);}
+  td.d.big{color:#ffcf7a;}
+  td.sum{font-weight:800; color:var(--accent); background:var(--cell2);}
+  td.dup{color:var(--faint); background:var(--cell2);}
+  td.om{color:var(--dim);}
+  td.om.zero{color:#7ee2a8; font-weight:800; background:rgba(22,163,74,.16);}
+  td.om.max{color:#ff8a8d; font-weight:800; box-shadow:inset 0 0 0 1.5px var(--over);}
+  td.mx{color:#ffb4b6; font-weight:800; background:rgba(229,72,77,.12);}
+  td.bs{font-weight:800;} td.bs.b{color:#ff8a8d;} td.bs.s{color:#7aa7ff;}
+  td.oe{font-weight:800;} td.oe.o{color:#ffcf7a;} td.oe.e{color:#9aa3b5;}
+  tbody tr:nth-child(even) td{background-color:rgba(255,255,255,.012);}
+  tbody tr.latest td{background-color:rgba(124,92,255,.10);}
+  .legend{padding:8px 14px 18px; font-size:11px; color:var(--faint); line-height:1.7;}
+  .legend .k{display:inline-block; padding:1px 7px; border-radius:5px; margin:0 4px; font-weight:800;}
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#000d; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; font-weight:700; opacity:0; transition:opacity .2s; pointer-events:none; z-index:50;}
+  .toast.on{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <h1>进球彩 · 遗漏走势分析表</h1>
+  <div class="sub">复刻原 Excel「进球彩」表口径 · 4 场进球 8 位 (0/1/2/3+) · 录入开奖自动算和值 / 遗漏 / 最大遗漏 / 大小单双</div>
+</header>
+<div class="bar">
+  <div class="fld">期号 <input id="tIssue" inputmode="numeric" placeholder="如 26120"></div>
+  <div class="fld">开奖 <input id="tDig" inputmode="numeric" placeholder="8 位如 31133031"></div>
+  <button class="btn" id="tAdd">录入</button>
+  <button class="btn ghost" id="tUndo">撤销录入</button>
+  <div class="tog">
+    <button data-grp="om" class="on">遗漏矩阵</button>
+    <button data-grp="mx" class="on">最大遗漏</button>
+    <button data-grp="bs" class="on">大小</button>
+    <button data-grp="oe" class="on">单双</button>
+  </div>
+</div>
+<div class="stat" id="stat"></div>
+<div class="wrap"><table id="tbl"></table></div>
+<div class="legend" id="legend"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const ROWS=[["1156","13022032"],["1157","22013200"],["1158","00203211"],["1159","11102111"],["2001","33123311"],["2002","20101131"],["2003","13103033"],["2004","11312121"],["2005","10030220"],["2006","11230010"],["2007","13002211"],["2008","31233032"],["2009","13112201"],["2010","20232001"],["2011","30030232"],["2012","22112122"],["2013","10022311"],["2014","32112100"],["2015","01231212"],["2016","11021321"],["2017","11113021"],["2018","20211100"],["2019","00013001"],["2020","01123130"],["2021","02232100"],["2022","03101111"],["2023","11101213"],["2024","31013103"],["2025","32111110"],["2026","10200011"],["2027","00031210"],["2028","23311011"],["2029","01211101"],["2030","13012030"],["2031","31123112"],["2032","22203312"],["2033","01332210"],["2034","21211101"],["2035","03121311"],["2036","22301211"],["2037","11212001"],["2038","11010011"],["2039","32202001"],["2040","01320032"],["2041","31120010"],["2042","01322230"],["2043","32203001"],["2044","01101101"],["2045","33013033"],["2046","22120131"],["2047","31103110"],["2048","20320230"],["2049","32113011"],["2050","22200103"],["2051","11212103"],["2052","20213133"],["2053","11311130"],["2054","02211321"],["2055","31011003"],["2056","12220211"],["2057","02131322"],["2058","10132111"],["2059","00220032"],["2060","22011211"],["2061","22100032"],["2062","10021131"],["2063","12321131"],["2064","33031113"],["2065","22210121"],["2066","10310113"],["2067","10211311"],["2068","00001311"],["2069","11212111"],["2070","00211110"],["2071","21101033"],["2072","21211132"],["2073","31300130"],["2074","21030231"],["2075","21110101"],["2076","33231021"],["2077","12202020"],["2078","30320112"],["2079","11120113"],["2080","13101030"],["2081","01121112"],["2082","21201001"],["2083","12031020"],["2084","02332101"],["2085","01123020"],["2086","21121211"],["2087","30012220"],["2088","32121310"],["2121","00113332"],["2122","11010310"],["2123","20030003"],["2124","10202232"],["2125","00011031"],["2126","10100120"],["2127","31301131"],["2128","11120130"],["2129","33000303"],["2130","20211030"],["2131","10111030"],["2132","30312312"],["2133","30101121"],["2134","20203112"],["2135","10011012"],["2136","31112111"],["2137","23213302"],["2138","31120120"],["2139","31200012"],["2140","10322231"],["2141","02331002"],["2142","12112130"],["2143","01121330"],["2144","02320211"],["2145","12000031"],["2146","00123010"],["2147","10003220"],["2148","02131100"],["2149","01202120"],["2150","01023111"],["2151","33231020"],["2152","12020103"],["2153","10101202"],["2154","12002123"],["2155","02212310"],["2156","31213130"],["2157","11310031"],["2158","00221012"],["2159","30201102"],["2160","21220202"],["2161","22031331"],["2162","20301331"],["2163","02210123"],["3001","02113112"],["3002","00302203"],["3003","31010100"],["3004","10222110"],["3005","02222101"],["3006","21001111"],["3007","21311131"],["3008","21102030"],["3009","10100220"],["3010","11210100"],["3011","31031213"],["3012","00100331"],["3013","10212100"],["3014","10231030"],["3015","23022221"],["3016","00102010"],["3017","12111112"],["3018","02310101"],["3019","10011002"],["3020","10221123"],["3021","10023221"],["3022","11010102"],["3023","30201110"],["3024","02231011"],["3025","20033121"],["3026","11302321"],["3027","01001110"],["3028","20301003"],["3029","01122003"],["3030","30203110"],["3031","10300231"],["3032","30100001"],["3033","20312000"],["3034","20223110"],["3035","02212233"],["3036","31132201"],["3037","11030021"],["3038","00303010"],["3039","01020011"],["3040","12221021"],["3041","23331122"],["3042","31100121"],["3043","31123003"],["3044","11302020"],["3045","02013020"],["3046","31020103"],["3047","20033001"],["3048","02001211"],["3049","13102003"],["3050","23111200"],["3051","01211013"],["3052","13222020"],["3053","02302010"],["3054","10102211"],["3055","32101221"],["3056","23131231"],["3057","22021000"],["3058","11021133"],["3059","11211330"],["3060","33112100"],["3061","32210011"],["3062","03310110"],["3063","20101132"],["3064","31021231"],["3065","01132221"],["3066","11100202"],["3067","30210032"],["3068","10123133"],["3069","31102120"],["3070","30102131"],["3071","10313221"],["3072","10132110"],["3073","02103013"],["3074","11021110"],["3075","32221021"],["3076","22202120"],["3077","03032020"],["3078","10301100"],["3079","20122031"],["3080","11102231"],["3081","31103101"],["3082","11311231"],["3083","20211223"],["3084","11211321"],["3085","10321210"],["3086","21200102"],["3087","21112111"],["3088","23011120"],["3089","10132112"],["3090","10132222"],["3091","10032123"],["3092","00123011"],["3093","20301022"],["3094","01312003"],["3095","01212011"],["3096","21031020"],["3097","20201112"],["3098","31012122"],["3099","11031203"],["3100","10301100"],["3101","12030220"],["3102","12031001"],["3103","10022111"],["3104","21222111"],["3105","11120121"],["3106","21021230"],["3107","10003010"],["3108","00302000"],["3109","21111010"],["3110","21010012"],["3111","30001302"],["3112","02321110"],["3113","21110130"],["3114","11101232"],["3115","00311012"],["3116","03021211"],["3117","31013103"],["3118","22111200"],["3119","31132111"],["3120","21030110"],["3121","32101320"],["3122","30312000"],["3123","22232113"],["3124","30310133"],["3125","22132131"],["3126","12123312"],["3127","30211131"],["3128","12221231"],["3129","23313112"],["3130","30311213"],["3131","30201301"],["3132","01110112"],["3133","01302130"],["3134","22211123"],["3135","13133131"],["3136","00012121"],["3137","00313020"],["3138","31333012"],["3139","30031333"],["3140","00011110"],["3141","20013010"],["3142","00220131"],["3143","10100002"],["3144","13103110"],["3145","30310121"],["3146","12221020"],["3147","22001130"],["3148","21211300"],["3149","22103213"],["3150","22112010"],["3151","32230212"],["3152","13303121"],["3153","33213001"],["3154","01031101"],["3155","30002002"],["3156","22102130"],["3157","21221213"],["3158","21013210"],["3159","13011210"],["3160","30012213"],["3161","21313112"],["3162","12101001"],["3163","30233012"],["3164","30031022"],["3165","10103132"],["3166","10133021"],["3167","12102130"],["3168","23031201"],["3169","21011000"],["3170","20213030"],["3171","21302033"],["3172","02320110"],["3173","30221033"],["3174","31103221"],["3175","21001131"],["3176","12022111"],["3177","02102033"],["3178","03010022"],["3179","11013132"],["3180","11313203"],["3181","12033111"],["3182","13113221"],["3183","33323300"],["3184","30110132"],["3185","02011220"],["3186","21103320"],["3187","32331110"],["3188","10330010"],["3189","02211012"],["3190","31101000"],["3191","03103123"],["3192","12311011"],["3193","11200001"],["3194","23111220"],["3195","21231020"],["3196","02221110"],["3197","30221131"],["3198","20002002"],["3199","11110133"],["3200","12303210"],["3201","11000132"],["3202","11020122"],["3203","20111220"],["3204","13300232"],["3205","00111010"],["26090","30321202"],["26091","13333010"],["26092","10110210"],["26094","32213210"],["26095","00300102"],["26096","22010120"],["26097","11232312"],["26098","30021020"],["26099","01311102"],["26100","22131131"],["26101","10112123"],["26102","03131221"],["26103","10113112"],["26104","30331021"],["26105","12111210"],["26106","11202120"],["26107","10200002"],["26108","31222122"],["26109","11033032"],["26110","30223221"],["26111","31103120"],["26112","02110112"],["26113","22301211"],["26114","21002130"],["26115","20211131"],["26116","11110120"],["26117","31221031"],["26118","00111122"],["26119","31133031"]];
+const POS=['1主','1客','2主','2客','3主','3客','4主','4客'];
+const VL=['0','1','2','3+'];
+const $=s=>document.querySelector(s);
+let added=JSON.parse(localStorage.getItem('jqc-twin')||'[]');
+let show={om:true,mx:true,bs:true,oe:true};
+const gt=v=>v===3?'3+':String(v);
+
+function compute(){
+  const seq=ROWS.concat(added).map(([iss,d])=>({iss, dig:d.split('').map(x=>Math.min(+x,3))}));
+  const om=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]; // 当前遗漏(出=0,否则+1)
+  let prev=null;
+  seq.forEach(row=>{
+    const d=row.dig;
+    // 更新遗漏（出现清零，否则+1）
+    for(let p=0;p<8;p++) for(let v=0;v<4;v++) om[p][v]= d[p]===v?0:om[p][v]+1;
+    row.om = om.map(a=>a.slice());                 // 本期遗漏快照
+    row.mx = om.map(a=>Math.max(...a));            // 每位最大遗漏
+    row.sum= d.reduce((s,x)=>s+x,0);               // 和值（capped）
+    row.dup= prev? d.reduce((s,x,i)=>s+(x===prev[i]?1:0),0):0; // 重号(vs上期)
+    row.big= d.map(x=>x>=2?'大':'小');
+    row.odd= d.map(x=>x%2?'单':'双');
+    prev=d;
+  });
+  return seq;
+}
+
+function render(){
+  const seq=compute();
+  const N=seq.length;
+  // 表头（digit 列 rowspan=2，遗漏/最大遗漏/大小/单双 为分组列）
+  let h1='<tr><th class="col-iss" rowspan="2">期号</th>';
+  POS.forEach(p=>h1+=`<th class="grp" rowspan="2">${p}</th>`);
+  h1+='<th class="grp" rowspan="2">和</th><th rowspan="2">重</th>';
+  if(show.om) POS.forEach(p=>h1+=`<th class="grp" colspan="4">${p}</th>`);
+  if(show.mx) h1+=`<th class="grp" colspan="8">每位最大遗漏</th>`;
+  if(show.bs) h1+=`<th class="grp" colspan="8">大小</th>`;
+  if(show.oe) h1+=`<th class="grp" colspan="8">单双</th>`;
+  h1+='</tr><tr class="r2">';
+  if(show.om) POS.forEach(()=>VL.forEach(v=>h1+=`<th>${v}</th>`));
+  if(show.mx) POS.forEach(p=>h1+=`<th>${p}</th>`);
+  if(show.bs) POS.forEach(p=>h1+=`<th>${p}</th>`);
+  if(show.oe) POS.forEach(p=>h1+=`<th>${p}</th>`);
+  h1+='</tr>';
+  // 行（最新在上）
+  let body='';
+  for(let i=N-1;i>=0;i--){
+    const r=seq[i]; const latest=i===N-1?' latest':'';
+    let tr=`<tr class="${latest}"><td class="col-iss">${r.iss}</td>`;
+    r.dig.forEach((v,p)=>tr+=`<td class="d grp ${v>=2?'big':''}">${gt(v)}</td>`);
+    tr+=`<td class="sum grp">${r.sum}</td><td class="dup">${r.dup}</td>`;
+    if(show.om) for(let p=0;p<8;p++){ const mxp=r.mx[p]; for(let v=0;v<4;v++){ const o=r.om[p][v];
+      const cls=o===0?'zero':(o===mxp&&o>0?'max':''); const bg=o>0?`background:rgba(124,92,255,${Math.min(o/14,0.5).toFixed(2)})`:'';
+      tr+=`<td class="om ${cls} ${v===0?'grp':''}" style="${o>0&&cls!=='max'?bg:''}">${o}</td>`; } }
+    if(show.mx) r.mx.forEach((m,p)=>tr+=`<td class="mx ${p===0?'grp':''}">${m}</td>`);
+    if(show.bs) r.big.forEach((b,p)=>tr+=`<td class="bs ${b==='大'?'b':'s'} ${p===0?'grp':''}">${b}</td>`);
+    if(show.oe) r.odd.forEach((o,p)=>tr+=`<td class="oe ${o==='单'?'o':'e'} ${p===0?'grp':''}">${o}</td>`);
+    tr+='</tr>'; body+=tr;
+  }
+  $('#tbl').innerHTML='<thead>'+h1+'</thead><tbody>'+body+'</tbody>';
+  // 统计
+  const last=seq[N-1];
+  $('#stat').innerHTML=`共 <b>${N}</b> 期（原表 369 + 录入 ${added.length}）　最新 <b>${last.iss}</b> = ${last.dig.map(gt).join(' ')}　和 <b>${last.sum}</b>`;
+  $('#legend').innerHTML=`口径同原表：<span class="k" style="background:rgba(22,163,74,.16);color:#7ee2a8">绿=本期开出(遗漏0)</span><span class="k" style="box-shadow:inset 0 0 0 1.5px var(--over);color:#ff8a8d">红框=该位当前最大遗漏(最该出)</span>遗漏越深越久未出。和=8 位之和；重=与上期相同位数。`;
+}
+
+$('#tAdd').onclick=()=>{
+  const iss=$('#tIssue').value.trim(); let d=$('#tDig').value.replace(/[^0-3]/g,'');
+  if(!iss){ toast('请填期号'); return; }
+  if(d.length!==8){ toast('开奖需 8 位(0-3，3+记3)'); return; }
+  added.push([iss,d]); localStorage.setItem('jqc-twin',JSON.stringify(added));
+  $('#tIssue').value=''; $('#tDig').value=''; render(); toast('已录入 '+iss);
+  $('.wrap').scrollTop=0;
+};
+$('#tUndo').onclick=()=>{ if(!added.length){ toast('无录入可撤销'); return; } const x=added.pop(); localStorage.setItem('jqc-twin',JSON.stringify(added)); render(); toast('已撤销 '+x[0]); };
+document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{ const g=b.dataset.grp; show[g]=!show[g]; b.classList.toggle('on',show[g]); render(); });
+let tt; function toast(m){ const e=$('#toast'); e.textContent=m; e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),1500); }
+render();
+</script>
+</body>
+</html>
