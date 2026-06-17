@@ -20,7 +20,7 @@
 
 静态站点，构建输出目录 `public/`，无需构建命令。
 
-- 直传：`npx wrangler pages deploy public --branch=main --commit-dirty=true`
+- 一键：`./deploy.sh`（内部走 `wrangler pages deploy public`）
 - 或连接本仓库到 Cloudflare Pages（原生 Git 集成），推送 `main` 自动部署。
 
 源码：`index.html`（部署副本 `public/index.html`）。
