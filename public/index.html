@@ -352,6 +352,22 @@
   .fbar i{display:block; width:14px; border-radius:3px 3px 0 0; background:var(--line); min-height:2px;}
   .fcell.pick .fbar i{background:var(--accent);}
   .fp{font-size:11px; font-weight:700; color:var(--txt-dim);} .fo{font-size:10px; color:var(--txt-faint);}
+  /* 智能演算首页 */
+  .hero{background:linear-gradient(160deg,#6f4ae0,#5b3fc4); color:#fff; border-radius:18px; padding:18px 18px 16px; margin:4px 0 8px; box-shadow:0 10px 28px rgba(103,65,217,.3);}
+  .hero-tag{font-size:11.5px; font-weight:700; letter-spacing:.08em; color:#ffffffcc;}
+  .hero-tier{font-size:15px; font-weight:800; margin-top:8px;}
+  .hero-num{margin:1px 0 5px;} .hero-num .n{font-size:40px; font-weight:900; letter-spacing:-.02em;} .hero-num .u{font-size:15px; font-weight:700; color:#ffffffe0;}
+  .hero-kpis{display:flex; gap:16px; font-size:12.5px; color:#ffffffd6;} .hero-kpis b{color:#fff; font-weight:800;}
+  .hero-badge{display:inline-block; margin-top:12px; font-size:11px; font-weight:700; background:#ffffff26; border:1px solid #ffffff4d; padding:4px 11px; border-radius:999px;}
+  .hero .btn-primary{width:100%; margin-top:14px; background:#fff; color:#5b3fc4; box-shadow:0 4px 14px rgba(0,0,0,.16);}
+  .hero .btn-primary::before{display:none;}
+  .pipe{display:flex; align-items:stretch; gap:4px;}
+  .pstep{flex:1; background:var(--bg-card); border:1px solid var(--line-soft); border-radius:11px; padding:9px 3px; text-align:center; box-shadow:var(--shadow-sm);}
+  .pstep.hot{border-color:var(--accent); background:var(--accent-soft);}
+  .pstep .pn{font-size:13.5px; font-weight:800; color:var(--txt);} .pstep.hot .pn{color:var(--accent);}
+  .pstep .pl{font-size:10px; color:var(--txt-faint); margin-top:2px;}
+  .parrow{display:flex; align-items:center; color:var(--txt-faint); font-weight:800; font-size:14px;}
+  .cbs{gap:5px;} .pk.cb{font-family:ui-monospace,Menlo,monospace; letter-spacing:1.5px; background:var(--bg-inset); color:var(--txt-dim); font-weight:700;}
   /* 降低动效偏好 */
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important; animation:none !important;}
@@ -398,6 +414,7 @@ const ICONS = {
   orders: `<svg viewBox="0 0 24 24" ${SW}><rect data-fill x="4.5" y="3" width="15" height="18" rx="2.4"/><path d="M8.8 3v18"/><path d="M12 8h4M12 12h4M12 16h2.8"/></svg>`,
   scores: `<svg viewBox="0 0 24 24" ${SW}><rect data-fill x="3" y="4.5" width="18" height="15" rx="2.2"/><path d="M3 9.5h18M3 14.5h18M9 4.5v15M15 4.5v15"/></svg>`,
   check:  `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.6" data-fill/><path d="M8 12.4l2.6 2.6L16.2 9"/></svg>`,
+  spark:  `<svg viewBox="0 0 24 24" ${SW}><rect data-fill x="3.5" y="13" width="3.6" height="7" rx="1"/><rect x="10.2" y="9" width="3.6" height="11" rx="1"/><rect x="16.9" y="5" width="3.6" height="15" rx="1"/><path d="M5 9.5l3-3 2.5 2 4-4.5" stroke-width="1.6"/><path d="M14.2 3.6h2.4v2.4" stroke-width="1.6"/></svg>`,
   help:   `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="9"/><path d="M9.3 9.3a2.8 2.8 0 1 1 3.5 2.7c-.85.32-1.25.85-1.25 1.6v.5"/><circle cx="12" cy="16.8" r=".95" fill="currentColor" stroke="none"/></svg>`,
   calc:   `<svg viewBox="0 0 24 24" ${SW}><rect x="5" y="2.6" width="14" height="18.8" rx="2.4"/><rect x="7.6" y="5.2" width="8.8" height="3.4" rx="1"/><path d="M8.4 12.2h.01M12 12.2h.01M15.6 12.2h.01M8.4 15.2h.01M12 15.2h.01M15.6 15.2h.01M8.4 18.2h.01M12 18.2h.01"/></svg>`,
   trash:  `<svg viewBox="0 0 24 24" ${SW}><path d="M4 7h16M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7M6.5 7l.8 12.2A1.6 1.6 0 0 0 8.9 20.7h6.2a1.6 1.6 0 0 0 1.6-1.5L17.5 7"/></svg>`,
@@ -488,19 +505,19 @@ let toast_t; function toast(msg){ const el=$('#toast'); el.textContent=msg; el.c
 function setAccent(hex){ const r=document.documentElement.style; r.setProperty('--accent',hex); r.setProperty('--accent-soft',hex+'18'); r.setProperty('--accent-line',hex+'55'); }
 
 /* ---------- 路由 ---------- */
-let route='bet';
-let jqcView='pick'; // pick | calc
+let route='home';   // home(智能演算) | manual(手动选号) | slip | orders | scores | check
+let jqcView='pick'; // 手动页：pick | calc
 function go(r){ route=r; location.hash='#/'+r; render(); }
 window.addEventListener('hashchange',()=>{ const r=(location.hash||'').replace('#/',''); if(r&&r!==route){ route=r; render(); }});
 
 /* =========================================================== 渲染 =========================================================== */
 function render(){
-  const g=GAMES[S.lastGame];
-  setAccent(route==='bet'?g.accent:'#e8333a');
+  setAccent(route==='manual'?GAMES[S.lastGame].accent:'#6741d9');  // 演算核心用进球紫
   renderHeader(); renderSwitcher(); renderTabbar();
   const scr=$('#screen');
-  scr.className=(route==='bet'||route==='slip')?'':'nobar';
-  if(route==='bet') scr.innerHTML=viewBet(g);
+  scr.className=(route==='manual'||route==='slip')?'':'nobar';
+  if(route==='home') scr.innerHTML=viewHome();
+  else if(route==='manual') scr.innerHTML=viewBet(GAMES[S.lastGame]);
   else if(route==='slip') scr.innerHTML=viewSlip();
   else if(route==='orders') scr.innerHTML=viewOrders();
   else if(route==='scores') scr.innerHTML=viewScores();
@@ -509,29 +526,28 @@ function render(){
   $('#btnHelp').innerHTML=ICONS.help;
 }
 function renderHeader(){
-  const map={bet:['选号投注',GAMES[S.lastGame].full+' · 单注2元'],slip:['投注单','确认后生成预约'],orders:['购买记录','预约 → 出票 → 开奖'],scores:['比分表','比分 → 胜平负 速查'],check:['开奖核对','录入彩果自动核对']};
-  const [t,s]=map[route]||map.bet; $('#hdrTitle').innerHTML=`${t}<small>${s}</small>`;
+  const map={home:['智能演算','4场进球 · 缩水推荐引擎'],manual:['手动选号',GAMES[S.lastGame].full+' · 单注2元'],slip:['投注单','确认后生成预约'],orders:['购买记录','预约 → 出票 → 开奖'],scores:['比分表','比分 → 胜平负 速查'],check:['开奖核对','录入彩果自动核对']};
+  const [t,s]=map[route]||map.home; $('#hdrTitle').innerHTML=`${t}<small>${s}</small>`;
 }
 function renderSwitcher(){
   const el=$('#switcher');
-  if(route!=='bet'){ el.innerHTML=''; el.style.display='none'; return; }
+  if(route!=='manual'){ el.innerHTML=''; el.style.display='none'; return; }
   el.style.display=''; el.className='gameswitch';
   el.innerHTML=GAME_ORDER.map(k=>`<button class="gchip" data-game="${k}" aria-selected="${k===S.lastGame}">${GAMES[k].name}</button>`).join('');
 }
 function renderTabbar(){
-  const tabs=[['bet','bet','投注'],['slip','slip','投注单'],['orders','orders','记录'],['scores','scores','比分表'],['check','check','核对']];
+  const tabs=[['home','spark','演算'],['slip','slip','投注单'],['orders','orders','记录'],['scores','scores','比分表'],['check','check','核对']];
   $('#tabbar').innerHTML=tabs.map(([r,ic,t])=>{
     const badge=(r==='slip'&&S.slip.length)?`<span class="badge num">${S.slip.length}</span>`:'';
     return `<button class="tab ${route===r?'on':''}" data-route="${r}">${ICONS[ic]}<span>${t}</span>${badge}</button>`;
   }).join('');
 }
 
-/* ---------- 投注页 ---------- */
+/* ---------- 手动选号页（次要） ---------- */
 function viewBet(g){
   if(g.key==='jqc'){
-    const seg=`<div class="seg"><button class="${jqcView==='pick'?'on':''}" data-jqcview="pick">选号</button><button class="${jqcView==='calc'?'on':''}" data-jqcview="calc">计算器</button><button class="${jqcView==='rec'?'on':''}" data-jqcview="rec">智能推荐</button></div>`;
+    const seg=`<div class="seg"><button class="${jqcView==='pick'?'on':''}" data-jqcview="pick">选号</button><button class="${jqcView==='calc'?'on':''}" data-jqcview="calc">复式 / 容错计算器</button></div>`;
     if(jqcView==='calc') return seg+viewCalc();
-    if(jqcView==='rec') return seg+viewRec();
     return seg+betCards(g);
   }
   return betCards(g);
@@ -598,54 +614,68 @@ function viewCalc(){
   }
 }
 
-/* ---------- 智能推荐（缩水引擎） ---------- */
-function viewRec(){
+/* ---------- 智能演算（首页 · 核心） ---------- */
+function viewHome(){
   const R=recommend(); const gt=v=>v===3?'3+':String(v);
-  let posRows='';
-  for(let p=0;p<8;p++){
-    const f=R.freq[p], mx=Math.max(...f);
-    const cells=[0,1,2,3].map(v=>{
-      const sel=R.top2[p].includes(v), pct=Math.round(f[v]/R.N*100);
-      return `<div class="fcell ${sel?'pick':''}"><div class="fv">${gt(v)}</div><div class="fbar"><i style="height:${Math.max(4,Math.round(f[v]/mx*100))}%"></i></div><div class="fp num">${pct}%</div><div class="fo num">漏${R.om[p][v]}</div></div>`;
-    }).join('');
-    const m=Math.floor(p/2)+1, side=p%2===0?'主':'客';
-    posRows+=`<div class="posblk"><div class="posh">第${m}场 ${side}队　推荐 <b>${R.top2[p].map(gt).join(' / ')}</b></div><div class="frow">${cells}</div></div>`;
-  }
+  const d=S.drafts.jqc;
   const cov=k=>R.ranked.slice(0,k).reduce((a,x)=>a+x.p,0);
+  const tierMeta={1:'单式胆',16:'小复式',40:'中复式',80:'预算复式'};
+  const k=recTier, c=cov(k), dens=c/(k/65536);
+  const issueRow=`<div class="meta-row"><div class="field">期号 <input id="issueInput" inputmode="numeric" placeholder="如 3206" value="${esc(d.issue)}"></div><div class="field btn" id="goManual">${ICONS.calc}手动选号 / 更多玩法</div></div>`;
+  const hero=`<div class="hero">
+    <div class="hero-tag">本期智能推荐 · 缩水引擎</div>
+    <div class="hero-tier">${tierMeta[k]||'自定义'}</div>
+    <div class="hero-num"><span class="n num">${nf.format(k)}</span><span class="u"> 注 · ¥${nf.format(k*2)}</span></div>
+    <div class="hero-kpis"><span>命中效率 <b class="num">${dens.toFixed(1)}×</b></span><span>覆盖真实概率 <b class="num">${(c*100).toFixed(2)}%</b></span></div>
+    <div class="hero-badge">✓ 340 期回测验证 · 纯频率最优</div>
+    <button class="btn-primary" id="recAddSlip">加入投注单 →</button>
+  </div>`;
+  const pipe=`<div class="section-title">演算过程</div><div class="pipe">
+    <div class="pstep"><div class="pn num">${R.N}</div><div class="pl">期开奖</div></div><div class="parrow">›</div>
+    <div class="pstep"><div class="pn">8×4</div><div class="pl">每位频率</div></div><div class="parrow">›</div>
+    <div class="pstep"><div class="pn num">65,536</div><div class="pl">全注打分</div></div><div class="parrow">›</div>
+    <div class="pstep hot"><div class="pn num">${nf.format(k)}</div><div class="pl">取前 N</div></div></div>`;
   const tiers=[[1,'单式胆'],[16,'小复式'],[40,'中复式'],[80,'预算复式']];
-  const tierCards=tiers.map(([k,lab])=>{ const c=cov(k), dens=c/(k/65536);
-    return `<button class="tol ${recTier===k?'on':''}" data-rectier="${k}"><div class="t">${lab}</div><div class="v num">${nf.format(k)} 注 · ¥${nf.format(k*2)}</div><div class="s">覆盖≈${(c*100).toFixed(2)}% · 密度 ${dens.toFixed(1)}×</div></button>`; }).join('');
-  const k=recTier, c=cov(k);
-  const preview=R.ranked.slice(0,12).map(o=>`<span class="pk">${o.combo.map(gt).join(' ')}</span>`).join('');
+  const tierCards=tiers.map(([kk,lab])=>{ const dd=cov(kk)/(kk/65536);
+    return `<button class="tol ${recTier===kk?'on':''}" data-rectier="${kk}"><div class="t">${lab}</div><div class="v num">${nf.format(kk)} 注 · ¥${nf.format(kk*2)}</div><div class="s">命中效率 ${dd.toFixed(1)}×</div></button>`; }).join('');
+  let posRows='';
+  for(let p=0;p<8;p++){ const f=R.freq[p], mx=Math.max(...f);
+    const cells=[0,1,2,3].map(v=>{ const sel=R.top2[p].includes(v), pct=Math.round(f[v]/R.N*100);
+      return `<div class="fcell ${sel?'pick':''}"><div class="fv">${gt(v)}</div><div class="fbar"><i style="height:${Math.max(4,Math.round(f[v]/mx*100))}%"></i></div><div class="fp num">${pct}%</div></div>`; }).join('');
+    const m=Math.floor(p/2)+1, side=p%2===0?'主':'客';
+    posRows+=`<div class="posblk"><div class="posh">第${m}场 ${side}队　<b>${R.top2[p].map(gt).join(' / ')}</b></div><div class="frow">${cells}</div></div>`;
+  }
+  const combos=R.ranked.slice(0,k).map(o=>`<span class="pk cb">${o.combo.map(gt).join('')}</span>`).join('');
   const addTxt=esc((((S.jqcAdd||'').match(/.{8}/g))||[]).join('\n'));
-  return `
-    <div class="hint-line">引擎用 <b>${R.N}</b> 期历史，按<b>每位进球频率</b>对全部 65,536 注打分排序、取前 N。<b>经 340 期回测验证：纯频率命中效率最高</b>。下方百分比 = 出现频率（真信号）；"漏" = 遗漏期数（走势，回测证实对下一期<b>无预测增益</b>，仅供参考）。</div>
-    <div class="section-title">每位推荐号（高亮 = 频率前2）</div>
-    ${posRows}
-    <div class="calc-big"><div class="n num">${nf.format(k)}</div><div class="y num">注 · ¥${nf.format(k*2)}</div><div class="desc">这 ${nf.format(k)} 注覆盖真实概率约 <b>${(c*100).toFixed(2)}%</b>，是同样注数盲投的 <b>${(c/(k/65536)).toFixed(1)} 倍</b>。进球彩为奖池负期望，缩水只提高每元命中效率，不改变长期亏损。</div></div>
-    <div class="section-title">购买档位</div>
-    <div class="tol-chips">${tierCards}</div>
-    <div class="section-title">推荐号样例（频率最高前 12 注）</div>
-    <div class="chips" style="gap:6px">${preview}</div>
-    <button class="btn-ghost" id="recApply" style="width:100%;margin-top:14px">把每位推荐号（前2）填入选号 →</button>
-    <div class="section-title">补充最新开奖（可选）</div>
-    <div class="card"><textarea id="recAdd" rows="2" style="width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-size:16px;resize:none" placeholder="每行 8 位 0-3，如 11021320">${addTxt}</textarea>
-      <button class="mini go" id="recRefresh" style="margin-top:6px">用最新数据刷新推荐</button></div>
-    <div class="hint-line" style="margin-top:12px">⚠️ 经 340 期 walk-forward 回测：纯频率 top-N 命中率约盲投 3.7×（top-2000 刻度）；走势/遗漏、和值硬过滤经回测反而更差，已从打分移除。理性购彩。</div>`;
+  return issueRow+hero+pipe
+    +`<div class="section-title">预算档位（点击切换，上方实时更新）</div><div class="tol-chips">${tierCards}</div>`
+    +`<div class="section-title">每位进球频率（高亮 = 入选前2）</div>${posRows}`
+    +`<div class="section-title">本档推荐号 · 共 ${nf.format(k)} 注</div><div class="chips cbs">${combos}</div>`
+    +`<div class="section-title">补充最新开奖（让引擎用当期数据）</div><div class="card"><textarea id="recAdd" rows="2" style="width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-size:16px;resize:none" placeholder="每行 8 位 0-3，如 11021320">${addTxt}</textarea><button class="mini go" id="recRefresh" style="margin-top:6px">用最新数据刷新</button></div>`
+    +`<div class="hint-line" style="margin-top:12px">百分比 = 该位进球频率（真信号）。经 340 期 walk-forward 回测：纯频率 top-N 命中率约盲投 3.7×；遗漏/走势、和值硬过滤经回测反而更差，已移除。进球彩奖池负期望，理性购彩。</div>`;
+}
+function addRecToSlip(){
+  const R=recommend(), k=recTier;
+  const combos=R.ranked.slice(0,k).map(o=>o.combo.slice());
+  S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:'jqc', kind:'rec', issue:S.drafts.jqc.issue, combos, bets:k, mult:1, _open:false});
+  persist(); toast(`已加入投注单 · 智能推荐 ${nf.format(k)} 注`); go('slip');
 }
 
 /* ---------- 投注单 ---------- */
-function viewSlip(){ if(!S.slip.length) return emptyState('投注单是空的','去“投注”里选号，加入这里再统一预约。','去选号','bet'); return S.slip.map(slipItem).join(''); }
-function slipItem(it){ const g=GAMES[it.game];
+function viewSlip(){ if(!S.slip.length) return emptyState('投注单是空的','去“演算”看智能推荐，或手动选号，加入这里再统一预约。','去看推荐','home'); return S.slip.map(slipItem).join(''); }
+function slipItem(it){ const g=GAMES[it.game]; const isRec=it.kind==='rec';
   return `<div class="item ${it._open?'open':''}" data-li="${it.id}">
-      <div class="item-head" data-toggle="${it.id}"><span class="tag" style="background:${g.accent}1a;color:${g.accent}">${g.name}</span>
-        <div class="ti"><div class="nm">${g.full}</div><div class="meta">${it.issue?('第'+esc(it.issue)+'期 · '):''}${it.bets>1?'复式':'单式'}${it.mult>1?(' · ×'+it.mult+' 倍'):''}</div></div>
+      <div class="item-head" data-toggle="${it.id}"><span class="tag" style="background:${isRec?'#6741d9':g.accent}1a;color:${isRec?'#6741d9':g.accent}">${isRec?'智能推荐':g.name}</span>
+        <div class="ti"><div class="nm">${g.full}</div><div class="meta">${it.issue?('第'+esc(it.issue)+'期 · '):''}${isRec?'缩水推荐':(it.bets>1?'复式':'单式')}${it.mult>1?(' · ×'+it.mult+' 倍'):''}</div></div>
         <div class="amt"><div class="a num">¥${nf.format(it.bets*UNIT*it.mult)}</div><div class="b num">${nf.format(it.bets*it.mult)} 注</div></div></div>
       <div class="item-body">${legDetail(it)}</div>
       <div class="row-actions"><div class="stepper"><button data-mult="-" data-li="${it.id}">−</button><span class="num">×${it.mult}</span><button data-mult="+" data-li="${it.id}">+</button></div>
-        <button class="mini go" data-edit="${it.id}">编辑</button><button class="mini danger" data-del="${it.id}">删除</button></div></div>`;
+        ${isRec?'':`<button class="mini go" data-edit="${it.id}">编辑</button>`}<button class="mini danger" data-del="${it.id}">删除</button></div></div>`;
 }
-function legDetail(it){ const g=GAMES[it.game]; let html='';
+function legDetail(it){ const g=GAMES[it.game];
+  if(it.kind==='rec'){ const gt=v=>v===3?'3+':v;
+    return `<div style="padding:8px 0;line-height:2.1">${(it.combos||[]).map(c=>`<span class="pk cb">${c.map(gt).join('')}</span>`).join('')}</div>`; }
+  let html='';
   for(let i=1;i<=g.matches;i++){ if(g.key==='r9'&&!(it.selected||[]).includes(i)) continue; const m=(it.matches&&it.matches[i-1])||{};
     html+=`<div class="leg-line"><span class="lno">${i}</span><span class="lpk">${esc(teamLabel(m,i))}　${picksText(g,it.picks[i])}</span></div>`; }
   return html; }
@@ -677,8 +707,9 @@ function orderItem(o){
         <button class="mini" data-clone="${o.id}">复制为新投注</button><button class="mini danger" data-delord="${o.id}">删除</button></div></div>`;
 }
 function orderLeg(l,o){ const g=GAMES[l.game]; const r=o.result&&o.result.legs.find(x=>x.game===l.game&&x.issue===l.issue);
-  const tail=r?`　<span class="pk ${r.won?'d':'l'}">命中 ${r.hit}/${r.need}${r.won?' ✓中':''}</span>`:'';
-  return `<div class="leg-line"><span class="lno">${g.name}</span><span class="lpk">${l.issue?('第'+esc(l.issue)+'期 '):''}${nf.format(l.bets*l.mult)}注 ¥${nf.format(l.bets*UNIT*l.mult)}${tail}</span></div>`; }
+  const tail=r?`　<span class="pk ${r.won?'d':'l'}">${l.kind==='rec'?(r.won?'命中 ✓中':'未命中'):('命中 '+r.hit+'/'+r.need+(r.won?' ✓中':''))}</span>`:'';
+  const label=l.kind==='rec'?'智能推荐':g.name;
+  return `<div class="leg-line"><span class="lno">${label}</span><span class="lpk">${l.issue?('第'+esc(l.issue)+'期 '):''}${nf.format(l.bets*l.mult)}注 ¥${nf.format(l.bets*UNIT*l.mult)}${tail}</span></div>`; }
 
 /* ---------- 比分表 ---------- */
 const COMMON=['1-0','0-0','0-1','3-0','2-0','2-1','1-1','1-2','0-2','0-3','4-0','4-1','3-1','3-2','2-2','2-3','1-3','1-4','0-4','4-2','3-3','2-4','4-3','3-4'];
@@ -731,6 +762,11 @@ function resultRow(g,i,res){ const t=g.type; const cur=res?res.outcomes[i]:null;
 function evalOrderLeg(o,game,issue,res){
   const leg=o.legs.find(l=>l.game===game&&(!issue||l.issue===issue)); if(!leg) return null;
   const g=GAMES[game]; let hit=0, need;
+  if(leg.kind==='rec'){
+    const flat=[]; for(let i=1;i<=4;i++){ const r=res.outcomes[i]; if(!r||r.home===undefined||r.away===undefined) return {hit:0,need:1,won:false}; flat.push(Math.min(r.home,3),Math.min(r.away,3)); }
+    const won=(leg.combos||[]).some(c=>c.every((v,j)=>v===flat[j]));
+    return {hit:won?1:0, need:1, won};
+  }
   if(g.type==='wdl'){ const matches=game==='r9'?(leg.selected||[]):Array.from({length:14},(_,k)=>k+1); need=game==='r9'?9:14;
     matches.forEach(i=>{ const out=res.outcomes[i]; if(out!==undefined&&(leg.picks[i]||[]).includes(out)) hit++; }); return {hit,need,won:hit>=need}; }
   if(g.type==='halffull'){ need=6; for(let i=1;i<=6;i++){ const r=res.outcomes[i]||{}; const p=leg.picks[i]||{half:[],full:[]}; if(p.half.includes(r.half)&&p.full.includes(r.full)) hit++; } return {hit,need,won:hit>=need}; }
@@ -744,7 +780,7 @@ function emptyState(t,p,cta,r){ return `<div class="empty"><div class="em">${ICO
 let lastBet=0;
 function renderActionbar(){
   const ab=$('#actionbar');
-  if(route==='bet'&&!(S.lastGame==='jqc'&&jqcView!=='pick')){
+  if(route==='manual'&&!(S.lastGame==='jqc'&&jqcView!=='pick')){
     const g=GAMES[S.lastGame], d=S.drafts[g.key], r=calc(g.key,d.picks,d.selected);
     ab.className='actionbar'; ab.style.display='flex';
     if(r.valid){ ab.innerHTML=`<div class="ab-info"><div class="big"><span class="n num">${nf.format(r.bets)}</span>注 · <span class="num">¥${nf.format(r.bets*UNIT)}</span></div><div class="sub">单注2元 · ${r.bets>1?'复式':'单式'}</div></div><button class="btn-primary" id="addSlip">加入投注单</button>`; animateNum(); }
@@ -760,7 +796,7 @@ function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(
 
 /* =========================================================== 事件 =========================================================== */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
+  const t=e.target.closest('[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#recAddSlip,#goManual,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
   if(!t) return;
   if(t.dataset.route){ go(t.dataset.route); return; }
   if(t.dataset.game){ S.lastGame=t.dataset.game; persist(); render(); return; }
@@ -770,7 +806,9 @@ document.addEventListener('click',e=>{
   if(t.dataset.tol){ S.calc.tol=+t.dataset.tol; persist(); render(); return; }
   if(t.dataset.rectier){ recTier=+t.dataset.rectier; render(); return; }
   if(t.id==='recApply'){ recApply(); return; }
-  if(t.id==='recRefresh'){ const v=$('#recAdd'); if(v){ S.jqcAdd=(v.value||'').replace(/[^0-3]/g,''); persist(); } render(); toast('已用最新数据刷新推荐'); return; }
+  if(t.id==='recRefresh'){ const v=$('#recAdd'); if(v){ S.jqcAdd=(v.value||'').replace(/[^0-3]/g,''); persist(); } _recCache=null; render(); toast('已用最新数据刷新推荐'); return; }
+  if(t.id==='recAddSlip'){ addRecToSlip(); return; }
+  if(t.id==='goManual'){ S.lastGame='jqc'; jqcView='pick'; go('manual'); return; }
   if(t.dataset.pick){ togglePick(t.dataset.pick,+t.dataset.m,+t.dataset.v); return; }
   if(t.dataset.incl){ toggleInclude(+t.dataset.incl); return; }
   if(t.id==='addSlip'){ addToSlip(); return; }
@@ -796,7 +834,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{ const t=e.target;
   if(t.dataset&&t.dataset.team){ const d=S.drafts[S.lastGame], m=d.matches[+t.dataset.m-1]; if(m){ m[t.dataset.team]=t.value; persist(); } }
-  else if(t.id==='issueInput'){ S.drafts[S.lastGame].issue=t.value.trim(); persist(); }
+  else if(t.id==='issueInput'){ S.drafts[route==='home'?'jqc':S.lastGame].issue=t.value.trim(); persist(); }
   else if(t.id==='checkIssue'){ checkIssue=t.value.trim(); }
 });
 
@@ -824,7 +862,7 @@ function openReserveSheet(){ const bets=S.slip.reduce((s,i)=>s+i.bets*i.mult,0);
     <input class="txt" id="noteInput" placeholder="备注（可选，如：楼下彩站代购）">
     <button class="btn-primary" id="confirmReserve">确认预约 · ¥${nf.format(bets*UNIT)}</button>`; openSheet(); }
 function confirmReserve(){ const note=($('#noteInput')?$('#noteInput').value:'').trim();
-  const legs=S.slip.map(it=>({game:it.game,issue:it.issue,matches:it.matches,picks:it.picks,selected:it.selected,bets:it.bets,mult:it.mult}));
+  const legs=S.slip.map(it=>({game:it.game,kind:it.kind,combos:it.combos,issue:it.issue,matches:it.matches,picks:it.picks,selected:it.selected,bets:it.bets,mult:it.mult}));
   const totalBets=legs.reduce((s,l)=>s+l.bets*l.mult,0);
   S.orders.push({id:'ord'+nowId(), createdAt:Date.now(), status:'reserved', statusHistory:[{status:'reserved',at:Date.now()}], note, legs, totalBets, totalAmount:totalBets*UNIT, result:null, _open:false});
   S.slip=[]; persist(); closeSheet(); go('orders'); toast('已生成预约订单 ✓'); }
@@ -834,7 +872,10 @@ function advanceOrder(spec){ const [id,to]=spec.split('|'); const o=S.orders.fin
   else o.status=to;
   o.statusHistory.push({status:o.status,at:Date.now()}); persist(); render(); }
 function cloneOrder(id){ const o=S.orders.find(x=>x.id===id); if(!o) return;
-  o.legs.forEach(l=>S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:l.game, issue:l.issue, matches:JSON.parse(JSON.stringify(l.matches)), picks:JSON.parse(JSON.stringify(l.picks)), selected:l.selected?l.selected.slice():null, bets:l.bets, mult:l.mult, _open:false}));
+  o.legs.forEach(l=>{
+    if(l.kind==='rec'){ S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:'jqc', kind:'rec', issue:l.issue, combos:JSON.parse(JSON.stringify(l.combos||[])), bets:l.bets, mult:l.mult, _open:false}); }
+    else S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:l.game, issue:l.issue, matches:JSON.parse(JSON.stringify(l.matches)), picks:JSON.parse(JSON.stringify(l.picks)), selected:l.selected?l.selected.slice():null, bets:l.bets, mult:l.mult, _open:false});
+  });
   persist(); go('slip'); toast('已复制到投注单'); }
 
 /* ---------- 核对 ---------- */
@@ -865,7 +906,7 @@ function openSheet(){ $('#scrim').classList.add('on'); $('#sheet').classList.add
 function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
 
 /* ---------- 启动 ---------- */
-(function init(){ const r=(location.hash||'').replace('#/',''); if(['bet','slip','orders','scores','check'].includes(r)) route=r; render(); })();
+(function init(){ const r=(location.hash||'').replace('#/',''); if(['home','manual','slip','orders','scores','check'].includes(r)) route=r; render(); })();
 </script>
 </body>
 </html>
