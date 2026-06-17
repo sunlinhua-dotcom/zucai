@@ -383,6 +383,10 @@
   .fx-label{position:absolute; bottom:18%; left:0; right:0; text-align:center; color:#cfc6ff; font-size:13px; font-weight:600; letter-spacing:.04em; word-break:keep-all;}
   .fx-skip{position:absolute; bottom:calc(8% + var(--sab)); left:0; right:0; text-align:center; color:#ffffff66; font-size:12px;}
   @media (prefers-reduced-motion: reduce){ .fx-sweepg{animation:none;} }
+  .field select{background:transparent; border:none; color:var(--txt); font-weight:700; font-size:16px; outline:none; max-width:150px; -webkit-appearance:none; appearance:none; padding-right:2px;}
+  .live-dot{font-size:10px; font-weight:800; color:var(--ok); margin-left:6px; white-space:nowrap;} .live-dot.off{color:var(--txt-faint);} .live-dot.snap{color:var(--warn);}
+  .algo-link{display:block; width:100%; margin-top:8px; padding:9px; border:1px dashed var(--line); border-radius:10px; background:transparent; color:var(--accent); font-size:12.5px; font-weight:700;}
+  .algo-link:active{filter:brightness(.97); background:var(--accent-soft);}
   /* 降低动效偏好 */
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important; animation:none !important;}
@@ -479,15 +483,33 @@ const GOALS = [{v:0,t:'0'},{v:1,t:'1'},{v:2,t:'2'},{v:3,t:'3+'}];
 /* ---------- 进球彩历史开奖（340 期，期号 1156→3205，每期 8 位 0-3；源自原表 进球彩 sheet） ---------- */
 const JQC_HIST = "13022032220132000020321111102111441244112010113113103033113121211003022011230010130022113123303213112201202320013003023222112122100223113211210001231212110213211111302120211100000130010112313002232100031011111110121331013103321111101020001100031210233110110121110113012030311231122220331201332210212111010312131122301211112120011101001132202001013200323112001001322230322030010110110133013033221201313110311020320230321130112220010311212103202131331131113002211321310110031222021102131322101321110022003222011211221000321002113112321131330311132221012110310113102113110000131111212111002111102110103321211132313001302103023121110101332310211220202030320112111201131310103001121112212010011203102002332101011230202112121130012220321213100011333211010310200300031020223200011031101001203130113111120130330003032021103010111030303123123010112120203112100110123111211123213302311201203120001210322231023310021211213001121330023202111200003100123010100032200213110001202120010231113323102012020103101012021200212302212310312131301131003100221012302011022122020222031331203013310221012302113112003022033101010010222110022221012100111121311131211020301010022011210100310312130010033110212100102310302302222100102010121111120231010110011002102211231002322111010102302011100223101120033121113023210100111020301003011220033020311010300231301000012031200020223110022122333113220111030021003030100102001112221021233311223110012131123003113020200201302031020103200330010200121113102003231112000121101313222020023020101010221132101221231312312202100011021133112113303311210032210011033101102010113231021231011322211110020230210032101231333110212030102131103132211013211002103013110211103222102122202120030320201030110020122031111022313110310111311231202112231121132110321210212001022111211123011120101321121013222210032123001230112030102201312003012120112103102020201112310121221103120310301100120302201203100110022111212221111112012121021230100030100030200021111010210100123000130202321110211101301110123200311012030212113101310322111200311321112103011032101320303120002223211330310133221321311212331230211131122212312331311230311213302013010111011201302130222111231313313100012121003130203133301230031333000111102001301000220131101000021310311030310121122210202200113021211300221032132211201032230212133031213321300101031101300020022210213021221213210132101301121030012213213131121210100130233012300310221010313210133021121021302303120121011000202130302130203302320110302210333110322121001131120221110210203303010022110131321131320312033111131132213332330030110132020112202110442032331110103300100221101231101000031031231231101111200001231112202123102002221110302211312000200211110133123032101100013211020122201112201330023200111010";
 
+/* 实时数据快照（部署时由本机直连体彩 gameNo=94 抓取；CF 边缘跨境到 .cn 不稳，故内嵌兜底） */
+const JQC_SNAPSHOT={asOf:"2026-06-17",latest:"26119",results:[{"issue":"26119","d":"31133031"},{"issue":"26118","d":"00111122"},{"issue":"26117","d":"31221031"},{"issue":"26116","d":"11110120"},{"issue":"26115","d":"20211131"},{"issue":"26114","d":"21002130"},{"issue":"26113","d":"22301211"},{"issue":"26112","d":"02110112"},{"issue":"26111","d":"31103120"},{"issue":"26110","d":"30223221"},{"issue":"26109","d":"11033032"},{"issue":"26108","d":"31222122"},{"issue":"26107","d":"10200002"},{"issue":"26106","d":"11202120"},{"issue":"26105","d":"12111210"},{"issue":"26104","d":"30331021"},{"issue":"26103","d":"10113112"},{"issue":"26102","d":"03131221"},{"issue":"26101","d":"10112123"},{"issue":"26100","d":"22131131"},{"issue":"26099","d":"01311102"},{"issue":"26098","d":"30021020"},{"issue":"26097","d":"11232312"},{"issue":"26096","d":"22010120"},{"issue":"26095","d":"00300102"},{"issue":"26094","d":"32213210"},{"issue":"26092","d":"10110210"},{"issue":"26091","d":"13333010"},{"issue":"26090","d":"30321202"}]};
 let recTier = 16; // 智能推荐当前档位
 let fxAutoPlayed=false, fxTimer=null; // 演算过场
+let liveData=null; // 当前生效数据（snapshot 内置快照 / api 实时）
+function applyLive(data, source){
+  const res=(data.results||[]).map(r=> r.d!==undefined ? {issue:r.issue,d:r.d} : {issue:r.issue, d:(r.digits||[]).map(x=>Math.min(x,3)).join('')} ).filter(r=>r.d&&r.d.length===8);
+  liveData={asOf:data.asOf||'', latest:data.latest||(res[0]&&res[0].issue)||'', source, issues:res.map(r=>r.issue), results:res};
+  S.jqcLive=res.slice().reverse().map(r=>r.d).join('');
+  if(!S.drafts.jqc.issue) S.drafts.jqc.issue=nextIssue();
+  _recCache=null;
+}
+function nextIssue(){ const l=liveData&&liveData.latest||''; return /^\d+$/.test(l)?String(+l+1):l; }
+async function loadLive(){
+  try{
+    const r=await fetch('api/jqc',{cache:'no-store'}); if(!r.ok) return; const j=await r.json();
+    if(!j||!j.ok||!Array.isArray(j.results)||!j.results.length) return;
+    applyLive(j,'api'); persist(); if(route==='home') render();
+  }catch(e){}
+}
 
-function jqcDraws(){ const s=JQC_HIST+(S.jqcAdd||''); const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(ch=>Math.min(+ch,3))); return a; }
+function jqcDraws(){ const s=JQC_HIST+(S.jqcLive||'')+(S.jqcAdd||''); const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(ch=>Math.min(+ch,3))); return a; }
 /* 缩水推荐引擎（经 340 期 walk-forward 回测优化）：纯每位频率积，对全部 65,536 注排序取前 N。
    回测结论：走势/遗漏对独立开奖无预测增益（甚至有害）、和值/形态硬过滤会丢弃带外真号 → 均已从打分移除。 */
 let _recCache=null, _recKey='';
 function recommend(){
-  const key=(S.jqcAdd||'').length+':'+JQC_HIST.length;
+  const key=(S.jqcLive||'').length+':'+(S.jqcAdd||'').length+':'+JQC_HIST.length;
   if(_recCache && _recKey===key) return _recCache;
   const draws=jqcDraws(), N=draws.length;
   const freq=Array.from({length:8},()=>[0,0,0,0]);   // 频率计数（3 含 3+）
@@ -508,8 +530,8 @@ function recommend(){
 const KEY='zc:v2';
 function load(){ try{ const raw=localStorage.getItem(KEY); if(raw) return migrate(JSON.parse(raw)); }catch(e){ console.warn(e); } return fresh(); }
 function fresh(){ const drafts={}; GAME_ORDER.forEach(g=>drafts[g]=newDraft(g));
-  return {ver:2, lastGame:'zfc', drafts, slip:[], orders:[], results:{}, scoresPrefs:{jqcMode:false,maxGoals:5}, calc:{sub:'pick', cover:[1,1,1,1,1,1,1,1], tol:2}, jqcAdd:''}; }
-function migrate(s){ if(!s.scoresPrefs) s.scoresPrefs={jqcMode:false,maxGoals:5}; if(!s.calc) s.calc={sub:'pick',cover:[1,1,1,1,1,1,1,1],tol:2}; if(s.jqcAdd===undefined) s.jqcAdd=''; return s; }
+  return {ver:2, lastGame:'zfc', drafts, slip:[], orders:[], results:{}, scoresPrefs:{jqcMode:false,maxGoals:5}, calc:{sub:'pick', cover:[1,1,1,1,1,1,1,1], tol:2}, jqcAdd:'', jqcLive:''}; }
+function migrate(s){ if(!s.scoresPrefs) s.scoresPrefs={jqcMode:false,maxGoals:5}; if(!s.calc) s.calc={sub:'pick',cover:[1,1,1,1,1,1,1,1],tol:2}; if(s.jqcAdd===undefined) s.jqcAdd=''; if(s.jqcLive===undefined) s.jqcLive=''; return s; }
 function newDraft(g){ const n=GAMES[g].matches; const matches=Array.from({length:n},()=>({home:'',away:''})); const picks={};
   for(let i=1;i<=n;i++){ if(GAMES[g].type==='halffull') picks[i]={half:[],full:[]}; else if(GAMES[g].type==='goals') picks[i]={home:[],away:[]}; else picks[i]=[]; }
   const d={issue:'', matches, picks}; if(g==='r9') d.selected=[]; return d; }
@@ -681,6 +703,16 @@ function runAnalysis(cb){
   fxTimer=setTimeout(finish, DUR+150); fx._finish=finish;
 }
 
+function issueOptions(){
+  const cur=S.drafts.jqc.issue||(liveData?nextIssue():'');
+  const items=[];
+  if(liveData){ const nx=nextIssue(); if(nx) items.push([nx,nx+'　·　下一期']); (liveData.issues||[]).slice(0,16).forEach(i=>items.push([i,i+' 期 · 已开'])); }
+  if(cur && !items.some(([v])=>v===cur)) items.unshift([cur, cur+' 期']);
+  if(!items.length) items.push([cur||'', cur||'选择期号']);
+  return items.map(([v,l])=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(l)}</option>`).join('')
+    + `<option value="__custom">＋ 自定义期号…</option>`;
+}
+
 /* ---------- 智能演算（首页 · 核心） ---------- */
 function viewHome(){
   const R=recommend(); const gt=v=>v===3?'3+':String(v);
@@ -688,7 +720,9 @@ function viewHome(){
   const cov=k=>R.ranked.slice(0,k).reduce((a,x)=>a+x.p,0);
   const tierMeta={1:'单式胆',16:'小复式',40:'中复式',80:'预算复式'};
   const k=recTier, c=cov(k), dens=c/(k/65536);
-  const issueRow=`<div class="meta-row"><div class="field">期号 <input id="issueInput" inputmode="numeric" placeholder="如 3206" value="${esc(d.issue)}"></div><div class="field btn" id="goManual">${ICONS.calc}手动选号 / 更多玩法</div></div>`;
+  const src=liveData&&liveData.source;
+  const liveTag = src==='api'?`<span class="live-dot">● 实时</span>` : src==='snapshot'?`<span class="live-dot snap">◐ 快照 ${esc((liveData.asOf||'').slice(5))}</span>` : `<span class="live-dot off">○ 内置</span>`;
+  const issueRow=`<div class="meta-row"><div class="field" style="flex:1">期号 <select id="issueSel">${issueOptions()}</select>${liveTag}</div><div class="field btn" id="goManual">${ICONS.calc}手动 / 更多</div></div>`;
   const hero=`<div class="hero">
     <div class="hero-tag">本期智能推荐 · 缩水引擎</div>
     <div class="hero-tier">${tierMeta[k]||'自定义'}</div>
@@ -701,7 +735,7 @@ function viewHome(){
     <div class="pstep"><div class="pn num">${R.N}</div><div class="pl">期开奖</div></div><div class="parrow">›</div>
     <div class="pstep"><div class="pn">8×4</div><div class="pl">每位频率</div></div><div class="parrow">›</div>
     <div class="pstep"><div class="pn num">65,536</div><div class="pl">全注打分</div></div><div class="parrow">›</div>
-    <div class="pstep hot"><div class="pn num">${nf.format(k)}</div><div class="pl">取前 N</div></div></div>`;
+    <div class="pstep hot"><div class="pn num">${nf.format(k)}</div><div class="pl">取前 N</div></div></div><button class="algo-link" id="algoLink">ⓘ 这套演算怎么来的 · 算法说明</button>`;
   const tiers=[[1,'单式胆'],[16,'小复式'],[40,'中复式'],[80,'预算复式']];
   const tierCards=tiers.map(([kk,lab])=>{ const dd=cov(kk)/(kk/65536);
     return `<button class="tol ${recTier===kk?'on':''}" data-rectier="${kk}"><div class="t">${lab}</div><div class="v num">${nf.format(kk)} 注 · ¥${nf.format(kk*2)}</div><div class="s">命中效率 ${dd.toFixed(1)}×</div></button>`; }).join('');
@@ -864,7 +898,7 @@ function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(
 /* =========================================================== 事件 =========================================================== */
 document.addEventListener('click',e=>{
   if(e.target.closest('#fx')){ const fx=$('#fx'); if(fx&&fx._finish) fx._finish(); return; }
-  const t=e.target.closest('[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#recAddSlip,#goManual,#recReplay,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
+  const t=e.target.closest('#algoLink,[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#recAddSlip,#goManual,#recReplay,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
   if(!t) return;
   if(t.dataset.route){ go(t.dataset.route); return; }
   if(t.dataset.game){ S.lastGame=t.dataset.game; persist(); render(); return; }
@@ -878,6 +912,7 @@ document.addEventListener('click',e=>{
   if(t.id==='recAddSlip'){ addRecToSlip(); return; }
   if(t.id==='goManual'){ S.lastGame='jqc'; jqcView='pick'; go('manual'); return; }
   if(t.id==='recReplay'){ runAnalysis(()=>render()); return; }
+  if(t.id==='algoLink'){ openAlgoSheet(); return; }
   if(t.dataset.pick){ togglePick(t.dataset.pick,+t.dataset.m,+t.dataset.v); return; }
   if(t.dataset.incl){ toggleInclude(+t.dataset.incl); return; }
   if(t.id==='addSlip'){ addToSlip(); return; }
@@ -905,6 +940,9 @@ document.addEventListener('input',e=>{ const t=e.target;
   if(t.dataset&&t.dataset.team){ const d=S.drafts[S.lastGame], m=d.matches[+t.dataset.m-1]; if(m){ m[t.dataset.team]=t.value; persist(); } }
   else if(t.id==='issueInput'){ S.drafts[route==='home'?'jqc':S.lastGame].issue=t.value.trim(); persist(); }
   else if(t.id==='checkIssue'){ checkIssue=t.value.trim(); }
+});
+document.addEventListener('change',e=>{ const t=e.target;
+  if(t.id==='issueSel'){ let v=t.value; if(v==='__custom'){ v=(prompt('输入期号（如 26120）','')||'').trim(); if(!v){ render(); return; } } S.drafts.jqc.issue=v; persist(); render(); }
 });
 
 /* ---------- 选号逻辑 ---------- */
@@ -971,11 +1009,20 @@ function openHelpSheet(){ $('#sheet').innerHTML=`<div class="grip"></div><h3>玩
       <div class="kbd-row"><code>3 胜</code><code>1 平</code><code>0 负</code><code>30 胜或负</code><code>31 胜或平</code><code>10 平或负</code><code>310 全包</code></div>
       <p>方法含：上下盘、胜负盘、排除法、双排法、大L小S（大小球）、单O双P（单双），最后汇总为「买盘」。本程序保留选号与注数逻辑，分析判断仍由你决定。</p></div>
     <div class="help-block"><h4>预约购买流程</h4><p>选号 → 加入投注单 → 预约购买（生成订单）→ 标记已出票 → 录入彩果核对 → 已开奖。数据全部存在本机浏览器，离线可用。理性购彩。</p></div>`; openSheet(); }
+function openAlgoSheet(){ const R=recommend(); $('#sheet').innerHTML=`<div class="grip"></div><h3>这套演算怎么算的</h3><p class="sub">把 4 场进球的 65,536 种组合，缩到概率最高的前 N 注。</p>
+    <div class="help-block"><h4>四步演算</h4>
+      <p><b>① 读历史</b>　已内置 <b>${R.N}</b> 期开奖（可接入实时数据持续更新）。</p>
+      <p><b>② 统计每位频率</b>　8 个位置每位算 0/1/2/3+ 的出现频率——足球里进 <b>1</b> 最常见、<b>3+</b> 最少。</p>
+      <p><b>③ 全注打分</b>　给全部 <code>65,536</code> 注按"每位频率相乘"打分。</p>
+      <p><b>④ 取前 N</b>　按分数从高到低取前 N 注 = 推荐（N 由你选的预算档位决定）。</p></div>
+    <div class="help-block"><h4>为什么有效</h4><p>足球进球分布高度不均匀，按频率把注押在真正高概率区，<b>每元命中概率约是盲投的 4–6 倍</b>——这点经 <b>340 期 walk-forward 回测</b>验证过。</p></div>
+    <div class="help-block"><h4>为什么不用走势 / 遗漏 / 冷热</h4><p>每期是<b>不同的比赛、相互独立</b>，"某号该出了"是赌徒谬误。回测显示：把走势/遗漏或和值硬过滤加进打分，命中率<b>反而更差</b>，所以全部移除，只保留纯频率。</p></div>
+    <div class="help-block"><h4>红线（必须知道）</h4><p>进球彩是奖池抽水制（约抽 35–50%），<b>长期期望恒为负</b>。这套演算只提高"每元命中效率"，<b>改变不了长期亏损</b>。请设好预算，理性购彩。</p></div>`; openSheet(); }
 function openSheet(){ $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); }
 function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
 
 /* ---------- 启动 ---------- */
-(function init(){ const r=(location.hash||'').replace('#/',''); if(['home','manual','slip','orders','scores','check'].includes(r)) route=r; render(); })();
+(function init(){ applyLive(JQC_SNAPSHOT,'snapshot'); const r=(location.hash||'').replace('#/',''); if(['home','manual','slip','orders','scores','check'].includes(r)) route=r; render(); loadLive(); })();
 </script>
 
 <!-- 演算 3D 场景：穿梭光环 + 雷达扇扫 + 汇聚粒子涡流 + 脉冲核心（vanilla three，移植自 ken-le-me ScanTunnel） -->
