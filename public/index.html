@@ -270,17 +270,90 @@
   .toast{position:fixed; left:50%; bottom:calc(var(--tabh) + var(--barh) + var(--sab) + 14px); translate:-50% 0; background:#161a22; color:#fff; padding:12px 22px; border-radius:999px; font-size:14px; font-weight:700; z-index:80; opacity:0; pointer-events:none; transition:opacity .2s, translate .2s; box-shadow:var(--shadow-md); white-space:nowrap;}
   .toast.on{opacity:1;}
 
-  /* 双通道按压反馈 */
-  .chip:active, .gchip:active, .fchip:active, .mini:active, .btn-ghost:active, .icon-btn:active, .btn-primary:active, .cover button:active, .seg button:active{filter:brightness(.96);}
+  /* 双通道按压反馈：缩放 + 提亮 */
+  .chip:active, .gchip:active, .fchip:active, .mini:active, .btn-ghost:active, .icon-btn:active, .btn-primary:active, .cover button:active, .seg button:active{filter:brightness(.97);}
+
+  /* ===================== F5 视觉升级层（基于 SVGSKILLS/f5-svg，适配浅色移动工具） ===================== */
+  :root{
+    --line-hair:rgba(22,30,52,.06);
+    --brand:#e8333a; --brand-2:#ef6c00;
+    --grad-accent:linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 82%, #000) 100%);
+    --grad-accent-d:linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, #fff) 0%, color-mix(in srgb, var(--accent) 80%, #000) 100%);
+    --shadow-cta:0 6px 18px color-mix(in srgb, var(--accent) 26%, transparent), inset 0 1px 0 rgba(255,255,255,.35);
+    --glass-header:rgba(255,255,255,.82); --glass-bar:rgba(255,255,255,.9); --glass-tab:rgba(255,255,255,.94);
+    --r-sheet:22px; --r-pill:999px;
+    --ease-out:cubic-bezier(.22,1,.36,1); --ease-spring:cubic-bezier(.32,.72,0,1); --dur-ui:150ms;
+  }
+  /* 顶栏 + 品牌标 */
+  header.appbar{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 38%),var(--glass-header); border-bottom:1px solid var(--line-hair); box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 2px 10px rgba(22,30,52,.04);}
+  .brandmark{flex:0 0 auto; width:28px; height:28px; display:grid; place-items:center;}
+  .appbar .title{letter-spacing:-.01em;}
+  .appbar .title small{letter-spacing:0; font-weight:500;}
+  /* 玩法切换 */
+  .gchip{transition:transform var(--dur-ui) var(--ease-spring), box-shadow var(--dur-ui), background var(--dur-ui);}
+  .gchip[aria-selected="true"]{background:var(--grad-accent); color:#fff; border-color:transparent; box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 28%,transparent), inset 0 1px 0 rgba(255,255,255,.3); transform:translateY(-1px);}
+  /* 比赛卡片 */
+  .card{transition:box-shadow .12s, transform .12s, border-color .15s;}
+  .card:active{transform:translateY(1px); box-shadow:0 1px 2px rgba(22,30,52,.03);}
+  .card.lit:active{box-shadow:0 0 0 1.5px var(--accent-soft), 0 2px 6px rgba(22,30,52,.08);}
+  .mc-no.on{background:var(--grad-accent); color:#fff; box-shadow:0 1px 4px color-mix(in srgb,var(--accent) 30%,transparent);}
+  /* 选项 chip */
+  .chip{transition:transform .08s var(--ease-spring), box-shadow .08s var(--ease-spring), background .12s;}
+  .chip.on{background:var(--grad-accent); border-color:transparent; color:#fff; box-shadow:0 3px 10px rgba(22,30,52,.12), inset 0 1px 0 rgba(255,255,255,.18);}
+  .chip.w.on{background:linear-gradient(180deg,var(--win),color-mix(in srgb,var(--win) 82%,#000)); border-color:transparent;}
+  .chip.d.on{background:linear-gradient(180deg,var(--draw),color-mix(in srgb,var(--draw) 82%,#000)); border-color:transparent;}
+  .chip.l.on{background:linear-gradient(180deg,var(--loss),color-mix(in srgb,var(--loss) 82%,#000)); border-color:transparent;}
+  .chip.on:active{transform:scale(.92); box-shadow:0 1px 4px rgba(22,30,52,.1), inset 0 1px 0 rgba(255,255,255,.18);}
+  /* 操作栏 + CTA + 大数字 */
+  .actionbar{background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 42%),linear-gradient(var(--glass-bar),var(--glass-bar));}
+  .ab-info .big .n{letter-spacing:-.03em; background:var(--grad-accent); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .btn-primary{background:var(--grad-accent); box-shadow:var(--shadow-cta); position:relative; overflow:hidden;}
+  .btn-primary::before{content:""; position:absolute; inset:0 auto 0 -100%; width:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent); transition:left .45s var(--ease-out);}
+  .btn-primary:active{transform:scale(.97); box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 22%,transparent), inset 0 1px 0 rgba(255,255,255,.35);}
+  @media (hover:hover){ .btn-primary:hover::before{left:100%;} }
+  @media (hover:none){ .btn-primary:active::before{left:100%;} }
+  .btn-primary:disabled{background:var(--bg-inset); color:var(--txt-faint); box-shadow:none;}
+  .btn-primary:disabled::before{display:none;}
+  /* 底部 Tab */
+  .tab svg{transition:transform var(--dur-ui) var(--ease-spring);}
+  .tab.on svg{transform:translateY(-1px);}
+  .tab.on::after{content:""; position:absolute; top:2px; left:50%; margin-left:-2.5px; width:5px; height:5px; border-radius:50%; background:var(--accent);}
+  .tab.on svg [data-fill]{fill:color-mix(in srgb,var(--accent) 14%,transparent); stroke:var(--accent);}
+  /* 投注单 / 订单项 */
+  .item{transition:box-shadow .12s, transform .12s;}
+  .item:active{transform:translateY(1px);}
+  .tag{border-radius:var(--r-pill); padding:4px 11px;}
+  .item-head .amt .a{background:var(--grad-accent-d); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .stepper button:active{background:var(--accent-soft);}
+  /* 比分矩阵 */
+  .cell{transition:transform .08s var(--ease-spring), box-shadow .1s; box-shadow:inset 0 1px 0 rgba(255,255,255,.5);}
+  .cell:active{transform:scale(.93);}
+  .cell.sel{outline:2.5px solid var(--accent); outline-offset:1px; box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 30%,transparent);}
+  /* 计算器 + 弹层合计 */
+  .calc-big .n{letter-spacing:-.02em; background:var(--grad-accent); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .cover button{transition:transform .08s var(--ease-spring), background .12s;}
+  .cover button.on{background:var(--grad-accent); border-color:transparent; color:#fff; box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 22%,transparent);}
+  .tol{transition:border-color var(--dur-ui), box-shadow var(--dur-ui);}
+  .tol.on{box-shadow:0 0 0 1.5px var(--accent-soft), var(--shadow-sm);}
+  .sum-row.big .v{background:var(--grad-accent); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  /* 底部弹层 */
+  .sheet{border-radius:var(--r-sheet) var(--r-sheet) 0 0; border-top:1px solid var(--line-hair); transition:transform .32s var(--ease-out);}
+  /* 空态 */
+  .empty .em{position:relative;}
+  .empty .em::after{content:""; position:absolute; inset:-14px; border-radius:50%; background:radial-gradient(circle,var(--accent-soft),transparent 70%); z-index:-1;}
+  /* 降低动效偏好 */
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important; animation:none !important;}
-    .chip:active, .gchip:active, .fchip:active, .mini:active, .btn-primary:active{transform:none !important; filter:brightness(.92) !important;}
+    .btn-primary::before{display:none;}
+    .chip:active,.gchip:active,.fchip:active,.mini:active,.btn-primary:active,.card:active,.item:active,.cell:active,.cover button:active{transform:none !important; filter:brightness(.94) !important;}
+    .gchip[aria-selected="true"]{transform:none !important;}
   }
 </style>
 </head>
 <body>
 <div id="app">
   <header class="appbar">
+    <span class="brandmark"><svg viewBox="0 0 28 28" width="26" height="26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="lmG" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e5343b"/><stop offset="1" stop-color="#ef6c00"/></linearGradient></defs><rect x="3.25" y="2.25" width="21.5" height="23.5" rx="4.25" fill="#fff" stroke="url(#lmG)" stroke-width="1.6"/><path d="M3.25 15.4h21.5" stroke="url(#lmG)" stroke-width="1.4" stroke-dasharray="2 1.7" opacity=".55"/><circle cx="9.6" cy="8.4" r="1.25" fill="url(#lmG)"/><circle cx="18.4" cy="8.4" r="1.25" fill="url(#lmG)"/><circle cx="9.6" cy="12.1" r="1.25" fill="url(#lmG)"/><circle cx="18.4" cy="12.1" r="1.25" fill="url(#lmG)"/><circle cx="14" cy="21.4" r="2.4" fill="url(#lmG)"/></svg></span>
     <div class="title" id="hdrTitle">选号投注<small id="hdrSub">14场胜负彩 · 单注2元</small></div>
     <button class="icon-btn" id="btnHelp" aria-label="玩法说明"></button>
   </header>
@@ -309,11 +382,11 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ---------- SVG 图标 ---------- */
 const SW='stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"';
 const ICONS = {
-  bet:    `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.3"/><path d="M12 1.6v2.8M12 19.6v2.8M1.6 12h2.8M19.6 12h2.8"/></svg>`,
-  slip:   `<svg viewBox="0 0 24 24" ${SW}><path d="M6 2.6h12v18.8l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6z"/><path d="M9 7.6h6M9 11h6M9 14.4h4"/></svg>`,
-  orders: `<svg viewBox="0 0 24 24" ${SW}><rect x="4.5" y="3" width="15" height="18" rx="2.4"/><path d="M8.8 3v18"/><path d="M12 8h4M12 12h4M12 16h2.8"/></svg>`,
-  scores: `<svg viewBox="0 0 24 24" ${SW}><rect x="3" y="4.5" width="18" height="15" rx="2.2"/><path d="M3 9.5h18M3 14.5h18M9 4.5v15M15 4.5v15"/></svg>`,
-  check:  `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.6"/><path d="M8 12.4l2.6 2.6L16.2 9"/></svg>`,
+  bet:    `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.2" data-fill/><circle cx="12" cy="12" r="3.3"/><path d="M12 1.6v2.8M12 19.6v2.8M1.6 12h2.8M19.6 12h2.8"/></svg>`,
+  slip:   `<svg viewBox="0 0 24 24" ${SW}><path data-fill d="M6 2.6h12v18.8l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6z"/><path d="M9 7.6h6M9 11h6M9 14.4h4"/></svg>`,
+  orders: `<svg viewBox="0 0 24 24" ${SW}><rect data-fill x="4.5" y="3" width="15" height="18" rx="2.4"/><path d="M8.8 3v18"/><path d="M12 8h4M12 12h4M12 16h2.8"/></svg>`,
+  scores: `<svg viewBox="0 0 24 24" ${SW}><rect data-fill x="3" y="4.5" width="18" height="15" rx="2.2"/><path d="M3 9.5h18M3 14.5h18M9 4.5v15M15 4.5v15"/></svg>`,
+  check:  `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.6" data-fill/><path d="M8 12.4l2.6 2.6L16.2 9"/></svg>`,
   help:   `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="9"/><path d="M9.3 9.3a2.8 2.8 0 1 1 3.5 2.7c-.85.32-1.25.85-1.25 1.6v.5"/><circle cx="12" cy="16.8" r=".95" fill="currentColor" stroke="none"/></svg>`,
   calc:   `<svg viewBox="0 0 24 24" ${SW}><rect x="5" y="2.6" width="14" height="18.8" rx="2.4"/><rect x="7.6" y="5.2" width="8.8" height="3.4" rx="1"/><path d="M8.4 12.2h.01M12 12.2h.01M15.6 12.2h.01M8.4 15.2h.01M12 15.2h.01M15.6 15.2h.01M8.4 18.2h.01M12 18.2h.01"/></svg>`,
   trash:  `<svg viewBox="0 0 24 24" ${SW}><path d="M4 7h16M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7M6.5 7l.8 12.2A1.6 1.6 0 0 0 8.9 20.7h6.2a1.6 1.6 0 0 0 1.6-1.5L17.5 7"/></svg>`,
@@ -608,7 +681,7 @@ function renderActionbar(){
 }
 function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(!el) return;
   const target=parseInt(el.textContent.replace(/[^\d]/g,''))||0, from=lastBet; lastBet=target; if(from===target) return;
-  const start=performance.now(),dur=220; (function step(t){ const k=Math.min(1,(t-start)/dur); el.textContent=nf.format(Math.round(from+(target-from)*(1-Math.pow(1-k,3)))); if(k<1) requestAnimationFrame(step); })(performance.now()); }
+  const start=performance.now(),dur=240; (function step(t){ const k=Math.min(1,(t-start)/dur); el.textContent=nf.format(Math.round(from+(target-from)*(1-Math.pow(1-k,3)))); if(k<1) requestAnimationFrame(step); })(performance.now()); }
 
 /* =========================================================== 事件 =========================================================== */
 document.addEventListener('click',e=>{
