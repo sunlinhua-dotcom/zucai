@@ -1,0 +1,9 @@
+.DS_Store
+.claude/
+node_modules/
+
+# 原始分析表含个人投注数据，不进公开仓库
+*.xlsx
+
+.wrangler/
+public/.assetsignore

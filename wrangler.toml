@@ -1,0 +1,7 @@
+# Cloudflare Pages 配置（账号：sunlinhua@gmail.com）
+# 重新部署：先把最新 index.html 同步到 public/，再运行 ——
+#   cp index.html public/index.html && npx wrangler pages deploy public --branch=main --commit-dirty=true
+# 生产网址：https://zucai.pages.dev
+name = "zucai"
+pages_build_output_dir = "public"
+compatibility_date = "2024-09-23"

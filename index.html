@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#eef1f6" />
+<title>足彩预约购买 · 选号投注</title>
+<style>
+  :root{
+    /* 浅色主题 */
+    --bg:#eef1f6; --bg-elev:#ffffff; --bg-card:#ffffff; --bg-card-2:#f4f6fa; --bg-inset:#f0f3f8;
+    --line:#dde2ea; --line-soft:#e9edf3;
+    --txt:#161a22; --txt-dim:#4c5564; --txt-faint:#6e7686;
+    --brand:#e8333a;
+    --accent:#e8333a; --accent-soft:#e8333a18; --accent-line:#e8333a55;
+    /* 胜平负配色（浅底高对比） */
+    --win:#e5343b;  --win-bg:#fff0f1;  --win-line:#f5c4c6;
+    --draw:#c97a06; --draw-bg:#fff6e6; --draw-line:#f1d9a8;
+    --loss:#1971c2; --loss-bg:#ebf3ff; --loss-line:#c2dbf7;
+    --ok:#0a8a52;   --ok-bg:#e6f6ee;
+    --warn:#b25e00; --warn-bg:#fff2dd;
+    --blue:#1860c4; --blue-bg:#e7f0ff;
+    --gold:#946a00; --gold-bg:#fff2c9;
+    --shadow-sm:0 1px 2px rgba(22,30,52,.05), 0 1px 3px rgba(22,30,52,.06);
+    --shadow-md:0 4px 14px rgba(22,30,52,.10);
+    --shadow-bar:0 -2px 16px rgba(22,30,52,.07);
+    --r:15px; --r-sm:11px;
+    --tabh:60px; --barh:66px;
+    --sat:env(safe-area-inset-top); --sab:env(safe-area-inset-bottom);
+    --sal:env(safe-area-inset-left); --sar:env(safe-area-inset-right);
+    font-size:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; overflow-x:hidden; background:var(--bg); color:var(--txt);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.5; min-height:100dvh; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4,p,.kh{word-break:keep-all; text-wrap:balance;}
+  .num{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  button{font-family:inherit; cursor:pointer; color:inherit;}
+  input{font-family:inherit; font-size:16px;}
+  svg{display:block;}
+
+  /* ---------- 框架 ---------- */
+  #app{padding-top:var(--sat); min-height:100dvh;}
+  header.appbar{
+    position:sticky; top:0; z-index:40;
+    padding:calc(var(--sat) + 11px) max(14px,var(--sal)) 11px max(14px,var(--sar));
+    margin-top:calc(-1 * var(--sat));
+    background:rgba(255,255,255,.82); backdrop-filter:saturate(180%) blur(18px); -webkit-backdrop-filter:saturate(180%) blur(18px);
+    border-bottom:1px solid var(--line-soft); display:flex; align-items:center; gap:10px;
+  }
+  .appbar .title{font-size:19px; font-weight:800; letter-spacing:.2px; flex:1; min-width:0;}
+  .appbar .title small{display:block; font-weight:500; font-size:11.5px; color:var(--txt-faint); margin-top:1px;}
+  .icon-btn{
+    width:44px; height:44px; flex:0 0 auto; border:1px solid var(--line); background:var(--bg-card);
+    border-radius:50%; display:grid; place-items:center; color:var(--txt-dim); box-shadow:var(--shadow-sm);
+  }
+  .icon-btn svg{width:21px; height:21px;}
+  .icon-btn:active{transform:scale(.94);}
+
+  /* 玩法切换 */
+  .gameswitch{
+    position:sticky; top:calc(var(--sat) + 64px); z-index:30;
+    display:flex; gap:9px; overflow-x:auto; padding:11px max(14px,var(--sal));
+    background:var(--bg); border-bottom:1px solid var(--line-soft);
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .gameswitch::-webkit-scrollbar{display:none;}
+  .gchip{
+    flex:0 0 auto; padding:9px 16px; border-radius:999px; border:1.5px solid var(--line);
+    background:var(--bg-card); color:var(--txt-dim); font-size:14px; font-weight:700; white-space:nowrap;
+    min-height:44px; display:inline-flex; align-items:center; box-shadow:var(--shadow-sm);
+  }
+  .gchip[aria-selected="true"]{background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:var(--shadow-md);}
+  .gchip:active{transform:scale(.96);}
+
+  main{
+    padding:14px max(14px,var(--sal)) calc(var(--tabh) + var(--barh) + var(--sab) + 18px) max(14px,var(--sar));
+    max-width:560px; margin:0 auto;
+  }
+  main.nobar{padding-bottom:calc(var(--tabh) + var(--sab) + 18px);}
+
+  /* 段控 */
+  .seg{display:flex; background:var(--bg-inset); border:1px solid var(--line); border-radius:12px; padding:4px; gap:4px; margin-bottom:14px;}
+  .seg button{flex:1; border:none; background:none; padding:9px 8px; border-radius:9px; font-size:13.5px; font-weight:700; color:var(--txt-dim); min-height:40px;}
+  .seg button.on{background:var(--bg-card); color:var(--accent); box-shadow:var(--shadow-sm);}
+
+  .meta-row{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
+  .field{display:flex; align-items:center; gap:7px; background:var(--bg-card); border:1px solid var(--line); border-radius:var(--r-sm); padding:9px 13px; font-size:13px; color:var(--txt-dim); min-height:44px; box-shadow:var(--shadow-sm);}
+  .field input{background:transparent; border:none; color:var(--txt); width:84px; padding:0; outline:none; font-weight:700;}
+  .field.btn{cursor:pointer; gap:6px;} .field.btn svg{width:16px;height:16px;}
+  .hint-line{font-size:12.5px; color:var(--txt-faint); margin:2px 2px 12px; line-height:1.6;}
+  .hint-line b{color:var(--txt-dim); font-weight:700;}
+
+  .card{background:var(--bg-card); border:1px solid var(--line-soft); border-radius:var(--r); padding:13px 14px; margin-bottom:11px; box-shadow:var(--shadow-sm);}
+  .card.lit{border-color:var(--accent-line); box-shadow:0 0 0 1.5px var(--accent-soft), var(--shadow-sm);}
+  .mc-head{display:flex; align-items:center; gap:9px; margin-bottom:10px;}
+  .mc-no{flex:0 0 auto; width:27px; height:27px; border-radius:8px; background:var(--bg-inset); color:var(--txt-dim); display:grid; place-items:center; font-size:13px; font-weight:800;}
+  .mc-no.on{background:var(--accent); color:#fff;}
+  .vs{display:flex; align-items:center; gap:7px; flex:1; min-width:0;}
+  .vs input{flex:1; min-width:0; background:var(--bg-inset); border:1.5px solid transparent; border-radius:9px; padding:8px; color:var(--txt); font-size:14px; font-weight:700; outline:none; text-align:center;}
+  .vs input::placeholder{color:var(--txt-faint); font-weight:500;}
+  .vs input:focus{border-color:var(--accent); background:var(--bg-card); box-shadow:0 0 0 3px var(--accent-soft);}
+  .vs .x{flex:0 0 auto; color:var(--txt-faint); font-size:12px; font-weight:700;}
+  .mc-cnt{flex:0 0 auto; font-size:11px; color:var(--txt-faint); white-space:nowrap;}
+  .mc-cnt b{color:var(--accent); font-weight:800;}
+  .toggle{flex:0 0 auto; width:48px; height:28px; border-radius:999px; background:#d7dce4; border:none; position:relative; transition:background .15s;}
+  .toggle::after{content:""; position:absolute; top:2px; left:2px; width:24px; height:24px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2); transition:.15s;}
+  .toggle.on{background:var(--accent);} .toggle.on::after{transform:translateX(20px);}
+
+  .sub-label{font-size:11px; color:var(--txt-faint); margin:9px 0 6px; font-weight:700; letter-spacing:.4px;}
+  .chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .chips.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  .chip{
+    flex:1 1 auto; min-width:56px; min-height:48px; border-radius:var(--r-sm);
+    border:1.5px solid var(--line); background:var(--bg-card); color:var(--txt-dim);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+    font-size:15px; font-weight:800; line-height:1.1; transition:transform .08s;
+  }
+  .chip small{font-size:10px; font-weight:600; color:var(--txt-faint);}
+  .chip.on{background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:var(--shadow-sm);}
+  .chip.on small{color:#ffffffcc;}
+  .chip:active{transform:scale(.95);}
+  .chip:disabled{opacity:.4;}
+  .chip.w.on{background:var(--win); border-color:var(--win);}
+  .chip.d.on{background:var(--draw); border-color:var(--draw);}
+  .chip.l.on{background:var(--loss); border-color:var(--loss);}
+
+  /* 操作栏 */
+  .actionbar{
+    position:fixed; left:0; right:0; bottom:calc(var(--tabh) + var(--sab)); z-index:35;
+    padding:11px max(14px,var(--sal)) 11px max(14px,var(--sar));
+    background:rgba(255,255,255,.9); backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-top:1px solid var(--line); box-shadow:var(--shadow-bar); display:flex; align-items:center; gap:12px;
+    max-width:560px; margin:0 auto;
+  }
+  .ab-info{flex:1; min-width:0;}
+  .ab-info .big{font-size:15px; font-weight:700; color:var(--txt);}
+  .ab-info .big .n{font-size:24px; font-weight:900; color:var(--accent); margin:0 2px;}
+  .ab-info .sub{font-size:12px; color:var(--txt-faint);}
+  .ab-info.invalid .big{color:var(--warn); font-size:14px; font-weight:700;}
+  .btn-primary{
+    flex:0 0 auto; border:none; background:var(--accent); color:#fff; font-weight:800; font-size:15px;
+    padding:13px 22px; border-radius:13px; min-height:50px; box-shadow:var(--shadow-md);
+  }
+  .btn-primary:active{transform:scale(.97);}
+  .btn-primary:disabled{background:var(--bg-inset); color:var(--txt-faint); box-shadow:none;}
+
+  /* 底部 Tab */
+  nav.tabbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:50; height:calc(var(--tabh) + var(--sab));
+    padding-bottom:var(--sab); display:flex;
+    background:rgba(255,255,255,.94); backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-top:1px solid var(--line); box-shadow:var(--shadow-bar);
+  }
+  .tab{flex:1; border:none; background:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--txt-faint); font-size:10.5px; font-weight:700; position:relative; padding-top:7px;}
+  .tab svg{width:24px; height:24px; stroke-width:1.9;}
+  .tab.on{color:var(--accent);}
+  .tab .badge{position:absolute; top:4px; left:calc(50% + 7px); background:var(--brand); color:#fff; font-size:9px; font-weight:800; min-width:16px; height:16px; padding:0 4px; border-radius:8px; display:grid; place-items:center; line-height:1;}
+
+  /* 通用 */
+  .section-title{font-size:13px; font-weight:800; color:var(--txt-dim); margin:18px 4px 9px; letter-spacing:.3px;}
+  .empty{text-align:center; padding:64px 24px; color:var(--txt-faint);}
+  .empty .em{width:72px; height:72px; margin:0 auto 16px; color:var(--line); }
+  .empty .em svg{width:72px; height:72px; stroke-width:1.4;}
+  .empty h3{font-size:16px; color:var(--txt-dim); margin:0 0 6px;}
+  .empty p{font-size:14px; margin:0 0 20px;}
+  .btn-ghost{background:var(--bg-card); border:1px solid var(--line); color:var(--txt); padding:12px 24px; border-radius:12px; font-weight:700; font-size:14px; box-shadow:var(--shadow-sm); min-height:46px;}
+  .btn-ghost:active{transform:scale(.97);}
+
+  .item{background:var(--bg-card); border:1px solid var(--line-soft); border-radius:var(--r); margin-bottom:11px; overflow:hidden; box-shadow:var(--shadow-sm);}
+  .item-head{display:flex; align-items:center; gap:10px; padding:13px 14px;}
+  .tag{flex:0 0 auto; font-size:11px; font-weight:800; padding:4px 10px; border-radius:8px; background:var(--accent-soft); color:var(--accent);}
+  .item-head .ti{flex:1; min-width:0;}
+  .item-head .ti .nm{font-size:14.5px; font-weight:800;}
+  .item-head .ti .meta{font-size:11.5px; color:var(--txt-faint);}
+  .item-head .amt{text-align:right; flex:0 0 auto;}
+  .item-head .amt .a{font-size:16px; font-weight:900; color:var(--txt);}
+  .item-head .amt .b{font-size:11px; color:var(--txt-faint);}
+  .item-body{padding:0 14px 12px; border-top:1px solid var(--line-soft); display:none;}
+  .item.open .item-body{display:block;}
+  .leg-line{font-size:12.5px; color:var(--txt-dim); padding:8px 0; border-bottom:1px dashed var(--line); display:flex; gap:8px; align-items:baseline;}
+  .leg-line:last-child{border-bottom:none;}
+  .leg-line .lno{color:var(--txt-faint); flex:0 0 auto; font-weight:700;}
+  .leg-line .lpk{flex:1;}
+  .pk{display:inline-block; padding:2px 8px; border-radius:7px; background:var(--bg-inset); margin:2px 3px 0 0; font-size:12px; font-weight:800;}
+  .pk.w{color:var(--win); background:var(--win-bg);} .pk.d{color:var(--draw); background:var(--draw-bg);} .pk.l{color:var(--loss); background:var(--loss-bg);}
+  .row-actions{display:flex; gap:8px; padding:11px 14px; border-top:1px solid var(--line-soft); flex-wrap:wrap;}
+  .mini{font-size:12.5px; padding:9px 14px; border-radius:10px; background:var(--bg-card-2); border:1px solid var(--line); color:var(--txt-dim); font-weight:700; min-height:42px;}
+  .mini:active{transform:scale(.96);} .mini.danger{color:var(--win); border-color:var(--win-line); background:var(--win-bg);} .mini.go{color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft);}
+  .stepper{display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--bg-card-2);}
+  .stepper button{width:44px; height:44px; border:none; background:none; font-size:20px; color:var(--txt-dim);}
+  .stepper button:active{background:var(--line);}
+  .stepper span{min-width:44px; text-align:center; font-size:13px; font-weight:800;}
+
+  .pill{font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; white-space:nowrap;}
+  .pill.reserved{background:var(--warn-bg); color:var(--warn);}
+  .pill.issued{background:var(--blue-bg); color:var(--blue);}
+  .pill.drawn{background:var(--ok-bg); color:var(--ok);}
+  .pill.won{background:var(--gold-bg); color:var(--gold);}
+  .pill.lost{background:var(--bg-inset); color:var(--txt-faint);}
+
+  .filterbar{display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; scrollbar-width:none;}
+  .filterbar::-webkit-scrollbar{display:none;}
+  .fchip{flex:0 0 auto; padding:9px 16px; border-radius:999px; border:1.5px solid var(--line); background:var(--bg-card); color:var(--txt-dim); font-size:13px; font-weight:700; min-height:44px; display:inline-flex; align-items:center; box-shadow:var(--shadow-sm);}
+  .fchip.on{background:var(--txt); color:#fff; border-color:var(--txt);}
+
+  /* 比分矩阵 */
+  .matrix-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line-soft); border-radius:var(--r); padding:12px; background:var(--bg-card); margin-bottom:14px; box-shadow:var(--shadow-sm);}
+  table.matrix{border-collapse:separate; border-spacing:5px; margin:0 auto;}
+  table.matrix th{font-size:11px; color:var(--txt-faint); font-weight:800; padding:2px; min-width:42px;}
+  table.matrix td{padding:0;}
+  .cell{width:46px; height:46px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg-card-2); color:var(--txt-dim); font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+  .cell.w{background:var(--win-bg); color:var(--win); border-color:var(--win-line);}
+  .cell.d{background:var(--draw-bg); color:var(--draw); border-color:var(--draw-line);}
+  .cell.l{background:var(--loss-bg); color:var(--loss); border-color:var(--loss-line);}
+  .cell.sel{outline:3px solid var(--txt); outline-offset:1px;}
+  .axis{font-size:11px; color:var(--txt-faint); text-align:center; margin-bottom:8px;}
+
+  .resultcard{background:var(--bg-card); border:1px solid var(--line-soft); border-radius:var(--r); padding:18px; text-align:center; margin-bottom:14px; box-shadow:var(--shadow-sm);}
+  .resultcard .score{font-size:36px; font-weight:900; letter-spacing:1px;}
+  .resultcard .verdict{display:inline-block; margin-top:8px; font-size:16px; font-weight:800; padding:6px 18px; border-radius:999px;}
+  .resultcard .tot{margin-top:9px; font-size:13px; color:var(--txt-dim);}
+
+  .scorelist .band{margin-bottom:14px;}
+  .scorelist .band h4{font-size:12.5px; color:var(--txt-dim); margin:0 0 8px; font-weight:800;}
+  .scorelist .sgrp{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:7px;}
+  .sc{padding:6px 11px; border-radius:9px; font-size:13px; font-weight:800; border:1.5px solid var(--line);}
+  .sc.w{background:var(--win-bg); color:var(--win); border-color:var(--win-line);} .sc.d{background:var(--draw-bg); color:var(--draw); border-color:var(--draw-line);} .sc.l{background:var(--loss-bg); color:var(--loss); border-color:var(--loss-line);}
+
+  /* 计算器 */
+  .calc-big{background:var(--bg-card); border:1px solid var(--line-soft); border-radius:var(--r); padding:18px; text-align:center; margin:6px 0 14px; box-shadow:var(--shadow-sm);}
+  .calc-big .n{font-size:40px; font-weight:900; color:var(--accent); line-height:1.1;}
+  .calc-big .y{font-size:18px; font-weight:800; color:var(--txt); margin-top:2px;}
+  .calc-big .desc{font-size:13px; color:var(--txt-dim); margin-top:10px; line-height:1.6; max-width:42ch; margin-left:auto; margin-right:auto;}
+  .pos-row{display:flex; align-items:center; gap:8px; margin-bottom:9px;}
+  .pos-row .pl{flex:0 0 auto; width:64px; font-size:13px; font-weight:700; color:var(--txt-dim);}
+  .cover{display:flex; gap:6px; flex:1;}
+  .cover button{flex:1; min-height:44px; border-radius:9px; border:1.5px solid var(--line); background:var(--bg-card); color:var(--txt-dim); font-size:14px; font-weight:800;}
+  .cover button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .cover button:active{transform:scale(.95);}
+  .tol-chips{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px;}
+  .tol{padding:14px; border-radius:13px; border:1.5px solid var(--line); background:var(--bg-card); text-align:left; box-shadow:var(--shadow-sm);}
+  .tol.on{border-color:var(--accent); background:var(--accent-soft); box-shadow:0 0 0 1.5px var(--accent-soft);}
+  .tol .t{font-size:14px; font-weight:800; color:var(--txt);}
+  .tol .v{font-size:13px; color:var(--accent); font-weight:800; margin-top:4px;}
+  .tol .s{font-size:11px; color:var(--txt-faint); margin-top:2px;}
+
+  /* 底部弹层 */
+  .scrim{position:fixed; inset:0; background:rgba(20,26,40,.42); z-index:60; opacity:0; pointer-events:none; transition:opacity .2s;}
+  .scrim.on{opacity:1; pointer-events:auto;}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:61; background:var(--bg-elev); border-radius:22px 22px 0 0; box-shadow:0 -8px 40px rgba(22,30,52,.18);
+    padding:8px max(18px,var(--sal)) calc(22px + var(--sab)) max(18px,var(--sar)); transform:translateY(100%); transition:transform .26s cubic-bezier(.2,.8,.2,1); max-width:560px; margin:0 auto; max-height:88dvh; overflow-y:auto;}
+  .sheet.on{transform:translateY(0);}
+  .grip{width:40px; height:4px; border-radius:2px; background:var(--line); margin:7px auto 16px;}
+  .sheet h3{margin:0 0 4px; font-size:19px;}
+  .sheet .sub{color:var(--txt-dim); font-size:13px; margin:0 0 16px;}
+  .sum-row{display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line-soft); font-size:14px;}
+  .sum-row .v{font-weight:800;} .sum-row.big .v{font-size:22px; color:var(--accent);}
+  .sheet textarea, .sheet input.txt{width:100%; background:var(--bg-card-2); border:1px solid var(--line); border-radius:12px; padding:13px; color:var(--txt); font-size:16px; margin-top:14px; resize:none;}
+  .sheet .btn-primary{width:100%; margin-top:16px;}
+  .help-block{margin-bottom:18px;}
+  .help-block h4{font-size:14px; margin:0 0 6px; color:var(--accent);}
+  .help-block p{font-size:13px; color:var(--txt-dim); margin:0 0 6px; max-width:44ch;}
+  .help-block code{background:var(--bg-inset); padding:2px 7px; border-radius:6px; font-size:12px; color:var(--draw); font-weight:700;}
+  .kbd-row{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0;}
+
+  .toast{position:fixed; left:50%; bottom:calc(var(--tabh) + var(--barh) + var(--sab) + 14px); translate:-50% 0; background:#161a22; color:#fff; padding:12px 22px; border-radius:999px; font-size:14px; font-weight:700; z-index:80; opacity:0; pointer-events:none; transition:opacity .2s, translate .2s; box-shadow:var(--shadow-md); white-space:nowrap;}
+  .toast.on{opacity:1;}
+
+  /* 双通道按压反馈 */
+  .chip:active, .gchip:active, .fchip:active, .mini:active, .btn-ghost:active, .icon-btn:active, .btn-primary:active, .cover button:active, .seg button:active{filter:brightness(.96);}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+    .chip:active, .gchip:active, .fchip:active, .mini:active, .btn-primary:active{transform:none !important; filter:brightness(.92) !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="appbar">
+    <div class="title" id="hdrTitle">选号投注<small id="hdrSub">14场胜负彩 · 单注2元</small></div>
+    <button class="icon-btn" id="btnHelp" aria-label="玩法说明"></button>
+  </header>
+  <div id="switcher"></div>
+  <main id="screen"></main>
+  <div id="actionbar"></div>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   足彩预约购买 · 移动端选号投注程序（浅色版 + 容错计算器）
+   纯前端单文件 · localStorage · 离线可用
+   注数公式经核验：任选九 = 9 次基本对称式 e9（非简单连乘）
+   ========================================================================= */
+const $ = (s,r=document)=>r.querySelector(s);
+const nf = new Intl.NumberFormat('zh-CN');
+const UNIT = 2;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- SVG 图标 ---------- */
+const SW='stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"';
+const ICONS = {
+  bet:    `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.3"/><path d="M12 1.6v2.8M12 19.6v2.8M1.6 12h2.8M19.6 12h2.8"/></svg>`,
+  slip:   `<svg viewBox="0 0 24 24" ${SW}><path d="M6 2.6h12v18.8l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6z"/><path d="M9 7.6h6M9 11h6M9 14.4h4"/></svg>`,
+  orders: `<svg viewBox="0 0 24 24" ${SW}><rect x="4.5" y="3" width="15" height="18" rx="2.4"/><path d="M8.8 3v18"/><path d="M12 8h4M12 12h4M12 16h2.8"/></svg>`,
+  scores: `<svg viewBox="0 0 24 24" ${SW}><rect x="3" y="4.5" width="18" height="15" rx="2.2"/><path d="M3 9.5h18M3 14.5h18M9 4.5v15M15 4.5v15"/></svg>`,
+  check:  `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="8.6"/><path d="M8 12.4l2.6 2.6L16.2 9"/></svg>`,
+  help:   `<svg viewBox="0 0 24 24" ${SW}><circle cx="12" cy="12" r="9"/><path d="M9.3 9.3a2.8 2.8 0 1 1 3.5 2.7c-.85.32-1.25.85-1.25 1.6v.5"/><circle cx="12" cy="16.8" r=".95" fill="currentColor" stroke="none"/></svg>`,
+  calc:   `<svg viewBox="0 0 24 24" ${SW}><rect x="5" y="2.6" width="14" height="18.8" rx="2.4"/><rect x="7.6" y="5.2" width="8.8" height="3.4" rx="1"/><path d="M8.4 12.2h.01M12 12.2h.01M15.6 12.2h.01M8.4 15.2h.01M12 15.2h.01M15.6 15.2h.01M8.4 18.2h.01M12 18.2h.01"/></svg>`,
+  trash:  `<svg viewBox="0 0 24 24" ${SW}><path d="M4 7h16M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7M6.5 7l.8 12.2A1.6 1.6 0 0 0 8.9 20.7h6.2a1.6 1.6 0 0 0 1.6-1.5L17.5 7"/></svg>`,
+  empty:  `<svg viewBox="0 0 24 24" ${SW}><path d="M3.5 8.5 12 4l8.5 4.5v7L12 20l-8.5-4.5z"/><path d="M3.5 8.5 12 13l8.5-4.5M12 13v7"/></svg>`,
+};
+
+/* ---------- 游戏定义 ---------- */
+const GAMES = {
+  zfc:{key:'zfc', name:'胜负彩', full:'14场胜负彩', sub:'每场选 胜/平/负', matches:14, type:'wdl', accent:'#e5343b'},
+  r9 :{key:'r9',  name:'任选九', full:'任选九场',   sub:'14场中至少选9场', matches:14, type:'wdl', accent:'#ef6c00', minSel:9},
+  hf6:{key:'hf6', name:'6场半全场', full:'6场半全场胜负', sub:'每场选 半场×全场', matches:6, type:'halffull', accent:'#0d9488'},
+  jqc:{key:'jqc', name:'4场进球', full:'4场进球彩',  sub:'每场选 主队/客队 进球数', matches:4, type:'goals', accent:'#6741d9'},
+};
+const GAME_ORDER = ['zfc','r9','hf6','jqc'];
+const WDL = [{v:3,t:'胜',s:'主胜',c:'w'},{v:1,t:'平',s:'平局',c:'d'},{v:0,t:'负',s:'客胜',c:'l'}];
+const GOALS = [{v:0,t:'0'},{v:1,t:'1'},{v:2,t:'2'},{v:3,t:'3+'}];
+
+/* ---------- 存储 ---------- */
+const KEY='zc:v2';
+function load(){ try{ const raw=localStorage.getItem(KEY); if(raw) return migrate(JSON.parse(raw)); }catch(e){ console.warn(e); } return fresh(); }
+function fresh(){ const drafts={}; GAME_ORDER.forEach(g=>drafts[g]=newDraft(g));
+  return {ver:2, lastGame:'zfc', drafts, slip:[], orders:[], results:{}, scoresPrefs:{jqcMode:false,maxGoals:5}, calc:{sub:'pick', cover:[1,1,1,1,1,1,1,1], tol:2}}; }
+function migrate(s){ if(!s.scoresPrefs) s.scoresPrefs={jqcMode:false,maxGoals:5}; if(!s.calc) s.calc={sub:'pick',cover:[1,1,1,1,1,1,1,1],tol:2}; return s; }
+function newDraft(g){ const n=GAMES[g].matches; const matches=Array.from({length:n},()=>({home:'',away:''})); const picks={};
+  for(let i=1;i<=n;i++){ if(GAMES[g].type==='halffull') picks[i]={half:[],full:[]}; else if(GAMES[g].type==='goals') picks[i]={home:[],away:[]}; else picks[i]=[]; }
+  const d={issue:'', matches, picks}; if(g==='r9') d.selected=[]; return d; }
+let S=load();
+let save_t; function persist(){ clearTimeout(save_t); save_t=setTimeout(()=>{ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} },120); }
+
+/* ---------- 组合数学（核验通过） ---------- */
+function comboProduct(counts){ return counts.reduce((p,c)=>p*(c||0),1); }
+function e_k(counts,K){ const e=new Array(K+1).fill(0); e[0]=1; for(const c of counts){ if(!c) continue; for(let j=K;j>=1;j--) e[j]+=c*e[j-1]; } return e[K]; }
+function comb(n,k){ if(k<0||k>n) return 0; k=Math.min(k,n-k); let r=1; for(let i=0;i<k;i++) r=r*(n-i)/(i+1); return Math.round(r); }
+function hammingBall(n,alpha,t){ let s=0; for(let k=0;k<=t;k++) s+=comb(n,k)*Math.pow(alpha-1,k); return s; }
+function calc(game,picks,selected){
+  const t=GAMES[game].type;
+  if(t==='wdl'){
+    if(game==='r9'){
+      const sel=(selected||[]); if(sel.length<9) return {valid:false,bets:0,msg:`任选九还需选 ${9-sel.length} 场`};
+      const noPick=sel.filter(no=>(picks[no]||[]).length===0); if(noPick.length) return {valid:false,bets:0,msg:`已选场次有 ${noPick.length} 场未选结果`};
+      return {valid:true, bets:e_k(sel.map(no=>picks[no].length),9)};
+    }
+    const counts=[]; let miss=0; for(let i=1;i<=14;i++){ const c=(picks[i]||[]).length; counts.push(c); if(!c) miss++; }
+    if(miss) return {valid:false,bets:0,msg:`还需为 ${miss} 场选择结果`};
+    return {valid:true, bets:comboProduct(counts)};
+  }
+  if(t==='halffull'){ const counts=[]; let miss=0; for(let i=1;i<=6;i++){ const p=picks[i]||{half:[],full:[]}; const c=p.half.length*p.full.length; counts.push(c); if(!c) miss++; }
+    if(miss) return {valid:false,bets:0,msg:`还需为 ${miss} 场完成 半场×全场 选择`}; return {valid:true, bets:comboProduct(counts)}; }
+  if(t==='goals'){ const counts=[]; let miss=0; for(let i=1;i<=4;i++){ const p=picks[i]||{home:[],away:[]}; const c=p.home.length*p.away.length; counts.push(c); if(!c) miss++; }
+    if(miss) return {valid:false,bets:0,msg:`还需为 ${miss} 场完成 主队/客队 进球选择`}; return {valid:true, bets:comboProduct(counts)}; }
+}
+
+/* ---------- 工具 ---------- */
+function teamLabel(m,idx){ const h=(m&&m.home||'').trim(),a=(m&&m.away||'').trim(); if(!h&&!a) return `第 ${idx} 场`; return `${h||'主队'} vs ${a||'客队'}`; }
+function scoreClass(h,a){ return h>a?'w':h===a?'d':'l'; }
+function scoreCN(h,a){ return h>a?'胜':h===a?'平':'负'; }
+function nowId(){ const d=new Date(),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`; }
+function fmtTime(ts){ const d=new Date(ts),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+let toast_t; function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toast_t); toast_t=setTimeout(()=>el.classList.remove('on'),1600); }
+function setAccent(hex){ const r=document.documentElement.style; r.setProperty('--accent',hex); r.setProperty('--accent-soft',hex+'18'); r.setProperty('--accent-line',hex+'55'); }
+
+/* ---------- 路由 ---------- */
+let route='bet';
+let jqcView='pick'; // pick | calc
+function go(r){ route=r; location.hash='#/'+r; render(); }
+window.addEventListener('hashchange',()=>{ const r=(location.hash||'').replace('#/',''); if(r&&r!==route){ route=r; render(); }});
+
+/* =========================================================== 渲染 =========================================================== */
+function render(){
+  const g=GAMES[S.lastGame];
+  setAccent(route==='bet'?g.accent:'#e8333a');
+  renderHeader(); renderSwitcher(); renderTabbar();
+  const scr=$('#screen');
+  scr.className=(route==='bet'||route==='slip')?'':'nobar';
+  if(route==='bet') scr.innerHTML=viewBet(g);
+  else if(route==='slip') scr.innerHTML=viewSlip();
+  else if(route==='orders') scr.innerHTML=viewOrders();
+  else if(route==='scores') scr.innerHTML=viewScores();
+  else if(route==='check') scr.innerHTML=viewCheck();
+  renderActionbar();
+  $('#btnHelp').innerHTML=ICONS.help;
+}
+function renderHeader(){
+  const map={bet:['选号投注',GAMES[S.lastGame].full+' · 单注2元'],slip:['投注单','确认后生成预约'],orders:['购买记录','预约 → 出票 → 开奖'],scores:['比分表','比分 → 胜平负 速查'],check:['开奖核对','录入彩果自动核对']};
+  const [t,s]=map[route]||map.bet; $('#hdrTitle').innerHTML=`${t}<small>${s}</small>`;
+}
+function renderSwitcher(){
+  const el=$('#switcher');
+  if(route!=='bet'){ el.innerHTML=''; el.style.display='none'; return; }
+  el.style.display=''; el.className='gameswitch';
+  el.innerHTML=GAME_ORDER.map(k=>`<button class="gchip" data-game="${k}" aria-selected="${k===S.lastGame}">${GAMES[k].name}</button>`).join('');
+}
+function renderTabbar(){
+  const tabs=[['bet','bet','投注'],['slip','slip','投注单'],['orders','orders','记录'],['scores','scores','比分表'],['check','check','核对']];
+  $('#tabbar').innerHTML=tabs.map(([r,ic,t])=>{
+    const badge=(r==='slip'&&S.slip.length)?`<span class="badge num">${S.slip.length}</span>`:'';
+    return `<button class="tab ${route===r?'on':''}" data-route="${r}">${ICONS[ic]}<span>${t}</span>${badge}</button>`;
+  }).join('');
+}
+
+/* ---------- 投注页 ---------- */
+function viewBet(g){
+  if(g.key==='jqc'){
+    const seg=`<div class="seg"><button class="${jqcView==='pick'?'on':''}" data-jqcview="pick">选号投注</button><button class="${jqcView==='calc'?'on':''}" data-jqcview="calc">复式 / 容错计算器</button></div>`;
+    if(jqcView==='calc') return seg+viewCalc();
+    return seg+betCards(g);
+  }
+  return betCards(g);
+}
+function betCards(g){
+  const d=S.drafts[g.key]; let cards=''; for(let i=1;i<=g.matches;i++) cards+=matchCard(g,d,i);
+  let hint='';
+  if(g.key==='r9') hint=`已选用 <b>${(d.selected||[]).length}</b> / 14 场（至少 9 场）。点右侧开关把场次纳入任九，再选结果。`;
+  else if(g.key==='zfc') hint=`14 场全部必选；每场可多选（复式），注数 = 各场选项数连乘。`;
+  else if(g.key==='hf6') hint=`每场需各选 半场、全场 至少一个；注数 = 各场（半场数 × 全场数）连乘。`;
+  else if(g.key==='jqc') hint=`每场需各选 主队、客队 进球至少一个（3+ 含 3 球以上）；注数连乘。`;
+  return `<div class="meta-row">
+      <div class="field">期号 <input id="issueInput" inputmode="numeric" placeholder="如 23001" value="${esc(d.issue)}"></div>
+      <div class="field btn" id="clearBtn">${ICONS.trash}清空</div>
+    </div><div class="hint-line">${hint}</div>${cards}`;
+}
+function matchCard(g,d,i){
+  const t=g.type, m=d.matches[i-1]||{home:'',away:''};
+  const included=g.key==='r9'?(d.selected||[]).includes(i):true;
+  let factor=0, ctrl='';
+  if(t==='wdl'){ const picks=d.picks[i]||[]; factor=picks.length;
+    ctrl=`<div class="chips">${WDL.map(o=>`<button class="chip ${o.c} ${picks.includes(o.v)?'on':''}" data-pick="wdl" data-m="${i}" data-v="${o.v}" ${g.key==='r9'&&!included?'disabled':''}>${o.t}<small>${o.v}</small></button>`).join('')}</div>`;
+  } else if(t==='halffull'){ const p=d.picks[i]||{half:[],full:[]}; factor=p.half.length*p.full.length;
+    ctrl=`<div class="sub-label">半场</div><div class="chips">${WDL.map(o=>`<button class="chip ${o.c} ${p.half.includes(o.v)?'on':''}" data-pick="half" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div>
+      <div class="sub-label">全场</div><div class="chips">${WDL.map(o=>`<button class="chip ${o.c} ${p.full.includes(o.v)?'on':''}" data-pick="full" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div>`;
+  } else if(t==='goals'){ const p=d.picks[i]||{home:[],away:[]}; factor=p.home.length*p.away.length;
+    ctrl=`<div class="sub-label">主队进球</div><div class="chips grid4">${GOALS.map(o=>`<button class="chip ${p.home.includes(o.v)?'on':''}" data-pick="home" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div>
+      <div class="sub-label">客队进球</div><div class="chips grid4">${GOALS.map(o=>`<button class="chip ${p.away.includes(o.v)?'on':''}" data-pick="away" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div>`;
+  }
+  const lit=factor>0&&included;
+  return `<div class="card ${lit?'lit':''}"><div class="mc-head"><div class="mc-no ${lit?'on':''}">${i}</div>
+      <div class="vs"><input data-team="home" data-m="${i}" placeholder="主队" value="${esc(m.home)}"><span class="x">vs</span><input data-team="away" data-m="${i}" placeholder="客队" value="${esc(m.away)}"></div>
+      ${g.key==='r9'?`<button class="toggle ${included?'on':''}" data-incl="${i}" aria-label="选用本场"></button>`:`<span class="mc-cnt">${factor>1?`<b>${factor}</b> 注`:''}</span>`}
+    </div>${(g.key==='r9'&&!included)?'':ctrl}${(t!=='wdl'&&factor>1)?`<div class="mc-cnt" style="text-align:right;margin-top:8px"><b>${factor}</b> 注</div>`:''}</div>`;
+}
+
+/* ---------- 复式 / 容错计算器（4场进球：8位 × 0/1/2/3） ---------- */
+function viewCalc(){
+  const c=S.calc;
+  const sub=`<div class="seg"><button class="${c.sub==='pick'?'on':''}" data-csub="pick">按位置（稳 / 抓瞎）</button><button class="${c.sub==='tol'?'on':''}" data-csub="tol">按容错档位</button></div>`;
+  if(c.sub==='pick'){
+    const bets=comboProduct(c.cover); const fixed=c.cover.filter(x=>x===1).length; const open=8-fixed;
+    let rows='';
+    for(let mi=0;mi<4;mi++){
+      ['主队','客队'].forEach((side,si)=>{
+        const idx=mi*2+si; const v=c.cover[idx];
+        rows+=`<div class="pos-row"><div class="pl">第${mi+1}场 ${side}</div><div class="cover">${[1,2,3,4].map(n=>`<button class="${v===n?'on':''}" data-cover="${idx}" data-n="${n}">${n}</button>`).join('')}</div></div>`;
+      });
+    }
+    return sub+`
+      <div class="calc-big"><div class="n num">${nf.format(bets)}</div><div class="y num">注 · ¥${nf.format(bets*UNIT)}</div>
+        <div class="desc">钉死 <b>${fixed}</b> 位、覆盖 <b>${open}</b> 位 → <b>${nf.format(bets)}</b> 注 ¥${nf.format(bets*UNIT)}。只要钉死的 ${fixed} 位没押错，就保证 8 位全中。</div></div>
+      <div class="hint-line">每一位要覆盖几个号：<b>1 = 钉死</b>（很有把握）· <b>4 = 全包</b>（完全抓瞎）。注数 = 8 位覆盖数连乘。先把能定的钉死，只对真没把握的几位多选。</div>
+      ${rows}`;
+  } else {
+    const opts=[[0,'只打 1 注',''],[1,'允许错 ≤ 1 位','25 注'],[2,'允许错 ≤ 2 位','277 注'],[3,'允许错 ≤ 3 位','1,789 注'],[8,'全包（错几个都中）','65,536 注']];
+    const bets=hammingBall(8,4,c.tol);
+    const cards=opts.map(([t,lab,sc])=>`<button class="tol ${c.tol===t?'on':''}" data-tol="${t}"><div class="t">${lab}</div><div class="v num">${nf.format(hammingBall(8,4,t))} 注 · ¥${nf.format(hammingBall(8,4,t)*UNIT)}</div><div class="s">${sc}</div></button>`).join('');
+    return sub+`
+      <div class="calc-big"><div class="n num">${nf.format(bets)}</div><div class="y num">注 · ¥${nf.format(bets*UNIT)}</div>
+        <div class="desc">若错的位置<b>飘忽不定</b>，要保证"任意错 ≤ ${c.tol} 位也能全中"，需覆盖到底串汉明距离 ≤ ${c.tol} 的全部组合：<br>注数 = Σ C(8,k)·3<sup>k</sup>（k=0…${c.tol}）。</div></div>
+      <div class="tol-chips">${cards}</div>
+      <div class="hint-line">⚠️ 这是"球形覆盖"，错的位置不固定，<b>不能用一张复式打成</b>，要拆成上千张单注；现实里通常打不了。真正省钱的做法是把"飘忽的错"收敛成"已知没把握的几位"，回到上一个标签用「按位置」复式只兜那几位。</div>`;
+  }
+}
+
+/* ---------- 投注单 ---------- */
+function viewSlip(){ if(!S.slip.length) return emptyState('投注单是空的','去“投注”里选号，加入这里再统一预约。','去选号','bet'); return S.slip.map(slipItem).join(''); }
+function slipItem(it){ const g=GAMES[it.game];
+  return `<div class="item ${it._open?'open':''}" data-li="${it.id}">
+      <div class="item-head" data-toggle="${it.id}"><span class="tag" style="background:${g.accent}1a;color:${g.accent}">${g.name}</span>
+        <div class="ti"><div class="nm">${g.full}</div><div class="meta">${it.issue?('第'+esc(it.issue)+'期 · '):''}${it.bets>1?'复式':'单式'}${it.mult>1?(' · ×'+it.mult+' 倍'):''}</div></div>
+        <div class="amt"><div class="a num">¥${nf.format(it.bets*UNIT*it.mult)}</div><div class="b num">${nf.format(it.bets*it.mult)} 注</div></div></div>
+      <div class="item-body">${legDetail(it)}</div>
+      <div class="row-actions"><div class="stepper"><button data-mult="-" data-li="${it.id}">−</button><span class="num">×${it.mult}</span><button data-mult="+" data-li="${it.id}">+</button></div>
+        <button class="mini go" data-edit="${it.id}">编辑</button><button class="mini danger" data-del="${it.id}">删除</button></div></div>`;
+}
+function legDetail(it){ const g=GAMES[it.game]; let html='';
+  for(let i=1;i<=g.matches;i++){ if(g.key==='r9'&&!(it.selected||[]).includes(i)) continue; const m=(it.matches&&it.matches[i-1])||{};
+    html+=`<div class="leg-line"><span class="lno">${i}</span><span class="lpk">${esc(teamLabel(m,i))}　${picksText(g,it.picks[i])}</span></div>`; }
+  return html; }
+function picksText(g,p){ if(!p) return '';
+  if(g.type==='wdl') return (p||[]).slice().sort((a,b)=>b-a).map(v=>{const o=WDL.find(x=>x.v===v);return `<span class="pk ${o.c}">${o.t}</span>`;}).join('');
+  if(g.type==='halffull'){ const h=(p.half||[]).map(v=>WDL.find(x=>x.v===v).t).join('/'); const f=(p.full||[]).map(v=>WDL.find(x=>x.v===v).t).join('/'); return `<span class="pk d">半 ${h||'—'}</span><span class="pk w">全 ${f||'—'}</span>`; }
+  if(g.type==='goals'){ const h=(p.home||[]).map(v=>v===3?'3+':v).join('/'); const a=(p.away||[]).map(v=>v===3?'3+':v).join('/'); return `<span class="pk w">主 ${h||'—'}</span><span class="pk l">客 ${a||'—'}</span>`; }
+}
+
+/* ---------- 购买记录 ---------- */
+let orderFilter='all';
+function viewOrders(){ if(!S.orders.length) return emptyState('还没有购买记录','在投注单点“预约购买”，订单会出现在这里。','去投注单','slip');
+  const filters=[['all','全部'],['reserved','已预约'],['issued','已出票'],['drawn','已开奖']];
+  const bar=`<div class="filterbar">${filters.map(([k,t])=>`<button class="fchip ${orderFilter===k?'on':''}" data-ofilter="${k}">${t}</button>`).join('')}</div>`;
+  const list=S.orders.filter(o=>orderFilter==='all'||o.status===orderFilter).slice().reverse().map(orderItem).join('')||`<div class="hint-line" style="text-align:center;padding:30px">该状态下暂无订单</div>`;
+  return bar+list; }
+const STATUS={reserved:['已预约','reserved'],issued:['已出票','issued'],drawn:['已开奖','drawn']};
+function orderItem(o){
+  const games=[...new Set(o.legs.map(l=>l.game))].map(k=>`<span class="tag" style="background:${GAMES[k].accent}1a;color:${GAMES[k].accent}">${GAMES[k].name}</span>`).join(' ');
+  const [stxt,scls]=STATUS[o.status]; let win=''; if(o.status==='drawn'&&o.result) win=o.result.anyWon?`<span class="pill won">中奖</span>`:`<span class="pill lost">未中</span>`;
+  return `<div class="item ${o._open?'open':''}" data-ord="${o.id}">
+      <div class="item-head" data-otoggle="${o.id}"><div class="ti"><div class="nm">单号 ${o.id.slice(-6)} ${win}</div><div class="meta">${fmtTime(o.createdAt)}</div><div style="margin-top:6px">${games}</div></div>
+        <div class="amt"><span class="pill ${scls}">${stxt}</span><div class="a num" style="margin-top:6px">¥${nf.format(o.totalAmount)}</div><div class="b num">${nf.format(o.totalBets)} 注</div></div></div>
+      <div class="item-body">${o.note?`<div class="leg-line"><span class="lpk">备注：${esc(o.note)}</span></div>`:''}${o.legs.map(l=>orderLeg(l,o)).join('')}</div>
+      <div class="row-actions">
+        ${o.status==='reserved'?`<button class="mini go" data-adv="${o.id}|issued">标记已出票</button>`:''}
+        ${o.status==='issued'?`<button class="mini go" data-adv="${o.id}|drawn">去核对开奖</button>`:''}
+        ${o.status!=='reserved'?`<button class="mini" data-adv="${o.id}|back">回退状态</button>`:''}
+        <button class="mini" data-clone="${o.id}">复制为新投注</button><button class="mini danger" data-delord="${o.id}">删除</button></div></div>`;
+}
+function orderLeg(l,o){ const g=GAMES[l.game]; const r=o.result&&o.result.legs.find(x=>x.game===l.game&&x.issue===l.issue);
+  const tail=r?`　<span class="pk ${r.won?'d':'l'}">命中 ${r.hit}/${r.need}${r.won?' ✓中':''}</span>`:'';
+  return `<div class="leg-line"><span class="lno">${g.name}</span><span class="lpk">${l.issue?('第'+esc(l.issue)+'期 '):''}${nf.format(l.bets*l.mult)}注 ¥${nf.format(l.bets*UNIT*l.mult)}${tail}</span></div>`; }
+
+/* ---------- 比分表 ---------- */
+const COMMON=['1-0','0-0','0-1','3-0','2-0','2-1','1-1','1-2','0-2','0-3','4-0','4-1','3-1','3-2','2-2','2-3','1-3','1-4','0-4','4-2','3-3','2-4','4-3','3-4'];
+let selScore=null;
+function viewScores(){
+  const pref=S.scoresPrefs; const max=pref.jqcMode?3:pref.maxGoals;
+  let rows='<tr><th></th>'; for(let a=0;a<=max;a++) rows+=`<th>${a}${pref.jqcMode&&a===3?'+':''}</th>`; rows+='</tr>';
+  for(let h=0;h<=max;h++){ rows+=`<tr><th>${h}${pref.jqcMode&&h===3?'+':''}</th>`;
+    for(let a=0;a<=max;a++){ const cls=scoreClass(h,a); const sel=(selScore&&selScore[0]===h&&selScore[1]===a)?'sel':'';
+      rows+=`<td><button class="cell ${cls} ${sel}" data-cell="${h}-${a}">${h}:${a}</button></td>`; } rows+='</tr>'; }
+  let resCard='';
+  if(selScore){ const [h,a]=selScore; const cls=scoreClass(h,a); const cn=scoreCN(h,a);
+    const tot=(pref.jqcMode&&(h>=3||a>=3))?`${h}${h>=3?'+':''} + ${a}${a>=3?'+':''}`:(h+a);
+    const pc=cls==='w'?'won':cls==='d'?'drawn':'issued';
+    resCard=`<div class="resultcard"><div class="score">${h}${pref.jqcMode&&h===3?'+':''} : ${a}${pref.jqcMode&&a===3?'+':''}</div>
+      <div class="verdict pill ${pc}" style="font-size:16px">${cn}（${cls==='w'?'主胜':cls==='d'?'平局':'客胜'}）</div><div class="tot">总进球 ${tot} 球</div></div>`; }
+  const bands={}; COMMON.forEach(s=>{ const [h,a]=s.split('-').map(Number); (bands[h+a]=bands[h+a]||[]).push([h,a]); });
+  let list=''; Object.keys(bands).map(Number).sort((x,y)=>x-y).forEach(tot=>{ const grp={w:[],d:[],l:[]}; bands[tot].forEach(([h,a])=>grp[scoreClass(h,a)].push(`${h}:${a}`));
+    const seg=[['w','胜'],['d','平'],['l','负']].filter(([k])=>grp[k].length).map(([k])=>`<div class="sgrp">${grp[k].map(s=>`<span class="sc ${k}">${s}</span>`).join('')}</div>`).join('');
+    list+=`<div class="band"><h4>总进球 ${tot} 球</h4>${seg}</div>`; });
+  return `<div class="filterbar"><button class="fchip ${!pref.jqcMode?'on':''}" data-smode="full">胜负彩模式</button><button class="fchip ${pref.jqcMode?'on':''}" data-smode="jqc">进球彩模式 (0/1/2/3+)</button></div>
+    <div class="axis">点击单元格查看胜平负 · 行 = 主队进球，列 = 客队进球</div>
+    <div class="matrix-wrap"><table class="matrix">${rows}</table></div>${resCard}
+    <div class="section-title">常见比分速查（按总进球）</div><div class="scorelist">${list}</div>
+    <div class="hint-line" style="margin-top:14px">数据源自原表「胜负彩比分表」：左 = 主胜、中 = 平、右 = 客胜，按比分总进球自动归档。</div>`;
+}
+
+/* ---------- 开奖核对 ---------- */
+let checkGame='zfc', checkIssue='';
+function viewCheck(){
+  const g=GAMES[checkGame]; const res=S.results[`${checkGame}:${checkIssue}`];
+  const sw=GAME_ORDER.map(k=>`<button class="gchip" data-cgame="${k}" aria-selected="${k===checkGame}">${GAMES[k].name}</button>`).join('');
+  let entry=''; for(let i=1;i<=g.matches;i++) entry+=resultRow(g,i,res);
+  let checkList='';
+  if(res){ const related=S.orders.filter(o=>o.legs.some(l=>l.game===checkGame&&(!checkIssue||l.issue===checkIssue)));
+    checkList=related.map(o=>{ const r=evalOrderLeg(o,checkGame,checkIssue,res); if(!r) return '';
+      return `<div class="item"><div class="item-head"><div class="ti"><div class="nm">单号 ${o.id.slice(-6)}</div><div class="meta">${g.full} 第${esc(checkIssue||'')}期</div></div><div class="amt"><span class="pill ${r.won?'won':'lost'}">${r.won?'中奖':'未中'}</span><div class="b num" style="margin-top:6px">命中 ${r.hit}/${r.need}</div></div></div></div>`; }).join('')||`<div class="hint-line">没有匹配该期号的订单。</div>`; }
+  return `<div class="gameswitch" style="position:static;padding-left:0;padding-right:0;border:none;margin-bottom:8px">${sw}</div>
+    <div class="meta-row"><div class="field">期号 <input id="checkIssue" inputmode="numeric" placeholder="期号" value="${esc(checkIssue)}"></div></div>
+    <div class="hint-line">录入该期 ${g.full} 的开奖结果（彩果），保存后自动核对相关订单。结果为手动录入。</div>${entry}
+    <button class="btn-ghost" id="saveResult" style="width:100%;margin:6px 0 18px">保存彩果并核对</button>
+    ${res?`<div class="section-title">核对结果</div>${checkList}`:''}`;
+}
+function resultRow(g,i,res){ const t=g.type; const cur=res?res.outcomes[i]:null;
+  const head=`<div class="mc-head"><div class="mc-no">${i}</div><div class="vs" style="justify-content:flex-start;color:var(--txt-dim);font-size:13px;padding-left:4px;font-weight:700">第 ${i} 场</div></div>`;
+  if(t==='wdl') return `<div class="card">${head}<div class="chips">${WDL.map(o=>`<button class="chip ${o.c} ${cur===o.v?'on':''}" data-res="wdl" data-m="${i}" data-v="${o.v}">${o.t}<small>${o.v}</small></button>`).join('')}</div></div>`;
+  if(t==='halffull'){ const c=cur||{}; return `<div class="card">${head}<div class="sub-label">半场</div><div class="chips">${WDL.map(o=>`<button class="chip ${o.c} ${c.half===o.v?'on':''}" data-res="half" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div><div class="sub-label">全场</div><div class="chips">${WDL.map(o=>`<button class="chip ${o.c} ${c.full===o.v?'on':''}" data-res="full" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div></div>`; }
+  if(t==='goals'){ const c=cur||{}; return `<div class="card">${head}<div class="sub-label">主队进球</div><div class="chips grid4">${GOALS.map(o=>`<button class="chip ${c.home===o.v?'on':''}" data-res="home" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div><div class="sub-label">客队进球</div><div class="chips grid4">${GOALS.map(o=>`<button class="chip ${c.away===o.v?'on':''}" data-res="away" data-m="${i}" data-v="${o.v}">${o.t}</button>`).join('')}</div></div>`; }
+}
+function evalOrderLeg(o,game,issue,res){
+  const leg=o.legs.find(l=>l.game===game&&(!issue||l.issue===issue)); if(!leg) return null;
+  const g=GAMES[game]; let hit=0, need;
+  if(g.type==='wdl'){ const matches=game==='r9'?(leg.selected||[]):Array.from({length:14},(_,k)=>k+1); need=game==='r9'?9:14;
+    matches.forEach(i=>{ const out=res.outcomes[i]; if(out!==undefined&&(leg.picks[i]||[]).includes(out)) hit++; }); return {hit,need,won:hit>=need}; }
+  if(g.type==='halffull'){ need=6; for(let i=1;i<=6;i++){ const r=res.outcomes[i]||{}; const p=leg.picks[i]||{half:[],full:[]}; if(p.half.includes(r.half)&&p.full.includes(r.full)) hit++; } return {hit,need,won:hit>=need}; }
+  if(g.type==='goals'){ need=4; for(let i=1;i<=4;i++){ const r=res.outcomes[i]||{}; const p=leg.picks[i]||{home:[],away:[]}; if(p.home.includes(r.home)&&p.away.includes(r.away)) hit++; } return {hit,need,won:hit>=need}; }
+}
+
+/* ---------- 公共 ---------- */
+function emptyState(t,p,cta,r){ return `<div class="empty"><div class="em">${ICONS.empty}</div><h3 class="kh">${t}</h3><p>${p}</p><button class="btn-ghost" data-route="${r}">${cta}</button></div>`; }
+
+/* ---------- 操作栏 ---------- */
+let lastBet=0;
+function renderActionbar(){
+  const ab=$('#actionbar');
+  if(route==='bet'&&!(S.lastGame==='jqc'&&jqcView==='calc')){
+    const g=GAMES[S.lastGame], d=S.drafts[g.key], r=calc(g.key,d.picks,d.selected);
+    ab.className='actionbar'; ab.style.display='flex';
+    if(r.valid){ ab.innerHTML=`<div class="ab-info"><div class="big"><span class="n num">${nf.format(r.bets)}</span>注 · <span class="num">¥${nf.format(r.bets*UNIT)}</span></div><div class="sub">单注2元 · ${r.bets>1?'复式':'单式'}</div></div><button class="btn-primary" id="addSlip">加入投注单</button>`; animateNum(); }
+    else ab.innerHTML=`<div class="ab-info invalid"><div class="big">${r.msg}</div><div class="sub">完成选择后可加入投注单</div></div><button class="btn-primary" disabled>加入投注单</button>`;
+  } else if(route==='slip'&&S.slip.length){
+    const bets=S.slip.reduce((s,i)=>s+i.bets*i.mult,0); ab.className='actionbar'; ab.style.display='flex';
+    ab.innerHTML=`<div class="ab-info"><div class="big">合计 <span class="n num">${nf.format(bets)}</span>注 · <span class="num">¥${nf.format(bets*UNIT)}</span></div><div class="sub">${S.slip.length} 个投注项</div></div><button class="btn-primary" id="reserveBtn">预约购买</button>`;
+  } else { ab.style.display='none'; ab.innerHTML=''; }
+}
+function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(!el) return;
+  const target=parseInt(el.textContent.replace(/[^\d]/g,''))||0, from=lastBet; lastBet=target; if(from===target) return;
+  const start=performance.now(),dur=220; (function step(t){ const k=Math.min(1,(t-start)/dur); el.textContent=nf.format(Math.round(from+(target-from)*(1-Math.pow(1-k,3)))); if(k<1) requestAnimationFrame(step); })(performance.now()); }
+
+/* =========================================================== 事件 =========================================================== */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
+  if(!t) return;
+  if(t.dataset.route){ go(t.dataset.route); return; }
+  if(t.dataset.game){ S.lastGame=t.dataset.game; persist(); render(); return; }
+  if(t.dataset.jqcview){ jqcView=t.dataset.jqcview; render(); return; }
+  if(t.dataset.csub){ S.calc.sub=t.dataset.csub; persist(); render(); return; }
+  if(t.dataset.cover){ S.calc.cover[+t.dataset.cover]=+t.dataset.n; persist(); render(); return; }
+  if(t.dataset.tol){ S.calc.tol=+t.dataset.tol; persist(); render(); return; }
+  if(t.dataset.pick){ togglePick(t.dataset.pick,+t.dataset.m,+t.dataset.v); return; }
+  if(t.dataset.incl){ toggleInclude(+t.dataset.incl); return; }
+  if(t.id==='addSlip'){ addToSlip(); return; }
+  if(t.id==='clearBtn'){ clearDraft(); return; }
+  if(t.dataset.toggle){ const it=S.slip.find(x=>x.id===t.dataset.toggle); if(it){ it._open=!it._open; render(); } return; }
+  if(t.dataset.mult){ const it=S.slip.find(x=>x.id===t.dataset.li); if(it){ it.mult=Math.max(1,Math.min(99,it.mult+(t.dataset.mult==='+'?1:-1))); persist(); render(); } return; }
+  if(t.dataset.edit){ editSlip(t.dataset.edit); return; }
+  if(t.dataset.del){ S.slip=S.slip.filter(x=>x.id!==t.dataset.del); persist(); render(); toast('已删除'); return; }
+  if(t.id==='reserveBtn'){ openReserveSheet(); return; }
+  if(t.dataset.ofilter){ orderFilter=t.dataset.ofilter; render(); return; }
+  if(t.dataset.otoggle){ const o=S.orders.find(x=>x.id===t.dataset.otoggle); if(o){ o._open=!o._open; render(); } return; }
+  if(t.dataset.adv){ advanceOrder(t.dataset.adv); return; }
+  if(t.dataset.clone){ cloneOrder(t.dataset.clone); return; }
+  if(t.dataset.delord){ S.orders=S.orders.filter(x=>x.id!==t.dataset.delord); persist(); render(); toast('订单已删除'); return; }
+  if(t.dataset.cell){ const [h,a]=t.dataset.cell.split('-').map(Number); selScore=[h,a]; render(); return; }
+  if(t.dataset.smode){ S.scoresPrefs.jqcMode=t.dataset.smode==='jqc'; selScore=null; persist(); render(); return; }
+  if(t.dataset.cgame){ checkGame=t.dataset.cgame; render(); return; }
+  if(t.dataset.res){ setResult(t.dataset.res,+t.dataset.m,+t.dataset.v); return; }
+  if(t.id==='saveResult'){ saveResult(); return; }
+  if(t.id==='btnHelp'){ openHelpSheet(); return; }
+  if(t.id==='confirmReserve'){ confirmReserve(); return; }
+  if(t.id==='scrim'){ closeSheet(); return; }
+});
+document.addEventListener('input',e=>{ const t=e.target;
+  if(t.dataset&&t.dataset.team){ const d=S.drafts[S.lastGame], m=d.matches[+t.dataset.m-1]; if(m){ m[t.dataset.team]=t.value; persist(); } }
+  else if(t.id==='issueInput'){ S.drafts[S.lastGame].issue=t.value.trim(); persist(); }
+  else if(t.id==='checkIssue'){ checkIssue=t.value.trim(); }
+});
+
+/* ---------- 选号逻辑 ---------- */
+function togglePick(kind,m,v){ const g=GAMES[S.lastGame], d=S.drafts[g.key];
+  if(g.type==='wdl'){ const arr=d.picks[m]; const i=arr.indexOf(v); i>=0?arr.splice(i,1):arr.push(v); }
+  else { const arr=d.picks[m][kind]; const i=arr.indexOf(v); i>=0?arr.splice(i,1):arr.push(v); }
+  persist(); render(); }
+function toggleInclude(m){ const d=S.drafts['r9']; d.selected=d.selected||[]; const i=d.selected.indexOf(m); i>=0?d.selected.splice(i,1):d.selected.push(m); persist(); render(); }
+function clearDraft(){ const issue=S.drafts[S.lastGame].issue; S.drafts[S.lastGame]=newDraft(S.lastGame); S.drafts[S.lastGame].issue=issue; persist(); render(); toast('已清空选择'); }
+function addToSlip(){ const g=GAMES[S.lastGame], d=S.drafts[g.key], r=calc(g.key,d.picks,d.selected); if(!r.valid) return;
+  S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:g.key, issue:d.issue, matches:JSON.parse(JSON.stringify(d.matches)), picks:JSON.parse(JSON.stringify(d.picks)), selected:g.key==='r9'?(d.selected||[]).slice():null, bets:r.bets, mult:1, _open:false});
+  persist(); toast(`已加入投注单 · ${nf.format(r.bets)}注`); render(); }
+function editSlip(id){ const it=S.slip.find(x=>x.id===id); if(!it) return; S.lastGame=it.game;
+  S.drafts[it.game]={issue:it.issue, matches:JSON.parse(JSON.stringify(it.matches)), picks:JSON.parse(JSON.stringify(it.picks))};
+  if(it.game==='r9') S.drafts.r9.selected=(it.selected||[]).slice(); S.slip=S.slip.filter(x=>x.id!==id); persist(); go('bet'); toast('已载入，可修改后重新加入'); }
+
+/* ---------- 预约购买 ---------- */
+function openReserveSheet(){ const bets=S.slip.reduce((s,i)=>s+i.bets*i.mult,0);
+  $('#sheet').innerHTML=`<div class="grip"></div><h3>确认预约购买</h3><p class="sub">将当前投注单生成一笔预约订单。</p>
+    <div class="sum-row"><span>投注项</span><span class="v num">${S.slip.length} 项</span></div>
+    <div class="sum-row"><span>合计注数</span><span class="v num">${nf.format(bets)} 注</span></div>
+    <div class="sum-row big"><span>合计金额</span><span class="v num">¥${nf.format(bets*UNIT)}</span></div>
+    <input class="txt" id="noteInput" placeholder="备注（可选，如：楼下彩站代购）">
+    <button class="btn-primary" id="confirmReserve">确认预约 · ¥${nf.format(bets*UNIT)}</button>`; openSheet(); }
+function confirmReserve(){ const note=($('#noteInput')?$('#noteInput').value:'').trim();
+  const legs=S.slip.map(it=>({game:it.game,issue:it.issue,matches:it.matches,picks:it.picks,selected:it.selected,bets:it.bets,mult:it.mult}));
+  const totalBets=legs.reduce((s,l)=>s+l.bets*l.mult,0);
+  S.orders.push({id:'ord'+nowId(), createdAt:Date.now(), status:'reserved', statusHistory:[{status:'reserved',at:Date.now()}], note, legs, totalBets, totalAmount:totalBets*UNIT, result:null, _open:false});
+  S.slip=[]; persist(); closeSheet(); go('orders'); toast('已生成预约订单 ✓'); }
+function advanceOrder(spec){ const [id,to]=spec.split('|'); const o=S.orders.find(x=>x.id===id); if(!o) return;
+  if(to==='back') o.status=o.status==='drawn'?'issued':'reserved';
+  else if(to==='drawn'){ checkGame=o.legs[0].game; checkIssue=o.legs[0].issue||''; persist(); go('check'); return; }
+  else o.status=to;
+  o.statusHistory.push({status:o.status,at:Date.now()}); persist(); render(); }
+function cloneOrder(id){ const o=S.orders.find(x=>x.id===id); if(!o) return;
+  o.legs.forEach(l=>S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:l.game, issue:l.issue, matches:JSON.parse(JSON.stringify(l.matches)), picks:JSON.parse(JSON.stringify(l.picks)), selected:l.selected?l.selected.slice():null, bets:l.bets, mult:l.mult, _open:false}));
+  persist(); go('slip'); toast('已复制到投注单'); }
+
+/* ---------- 核对 ---------- */
+function setResult(kind,m,v){ if(!checkIssue){ toast('请先填写期号'); return; } const key=`${checkGame}:${checkIssue}`, g=GAMES[checkGame];
+  let r=S.results[key]||{game:checkGame,issue:checkIssue,enteredAt:Date.now(),outcomes:{}};
+  if(g.type==='wdl') r.outcomes[m]=v; else { r.outcomes[m]=r.outcomes[m]||{}; r.outcomes[m][kind]=v; }
+  S.results[key]=r; persist(); render(); }
+function saveResult(){ if(!checkIssue){ toast('请先填写期号'); return; } const key=`${checkGame}:${checkIssue}`; if(!S.results[key]){ toast('请先录入彩果'); return; }
+  const res=S.results[key]; let n=0;
+  S.orders.forEach(o=>{ if(!o.legs.some(l=>l.game===checkGame&&l.issue===checkIssue)) return; const legResults=[]; let anyWon=false;
+    o.legs.forEach(l=>{ if(l.game===checkGame&&l.issue===checkIssue){ const ev=evalOrderLeg(o,checkGame,checkIssue,res); if(ev){ legResults.push({game:l.game,issue:l.issue,hit:ev.hit,need:ev.need,won:ev.won}); if(ev.won) anyWon=true; } } });
+    o.result=o.result||{legs:[],anyWon:false};
+    o.result.legs=o.result.legs.filter(x=>!(x.game===checkGame&&x.issue===checkIssue)).concat(legResults); o.result.anyWon=o.result.anyWon||anyWon;
+    if(o.status!=='drawn'){ o.status='drawn'; o.statusHistory.push({status:'drawn',at:Date.now()}); } n++; });
+  persist(); render(); toast(n?`已核对 ${n} 笔订单`:'彩果已保存（暂无匹配订单）'); }
+
+/* ---------- 帮助 ---------- */
+function openHelpSheet(){ $('#sheet').innerHTML=`<div class="grip"></div><h3>玩法 &amp; 选号说明</h3><p class="sub">本程序由原 Excel「比分表 / 进球彩 / 分析方法」整理而来。</p>
+    <div class="help-block"><h4>胜负彩（14场）</h4><p>14 场全部预测 胜(3)/平(1)/负(0)。每场可多选成复式，<b>注数 = 各场选项数连乘</b>，单注 2 元。</p></div>
+    <div class="help-block"><h4>任选九（任九）</h4><p>从 14 场里选 <b>至少 9 场</b>预测，命中其中 9 场即中奖。注数为 <code>9 次基本对称式 e₉</code>，不是简单连乘：全单式选 N 场时注数 = C(N,9)（选 10 场 = 10 注、14 场 = 2002 注）。</p></div>
+    <div class="help-block"><h4>6场半全场</h4><p>每场预测 <b>半场结果 × 全场结果</b>（各胜平负，共 9 种）。注数 = 各场（半场数 × 全场数）连乘。</p></div>
+    <div class="help-block"><h4>4场进球彩</h4><p>每场预测 <b>主队、客队进球数</b>（各 0/1/2/3+）。注数 = 各场（主队数 × 客队数）连乘，全包 16⁴ = 65,536 注。配套有「复式 / 容错计算器」帮你算覆盖成本。</p></div>
+    <div class="help-block"><h4>原表分析方法（盘口代码）</h4><p>原 Excel 用多套方法预测 14 场，盘口数字含义：</p>
+      <div class="kbd-row"><code>3 胜</code><code>1 平</code><code>0 负</code><code>30 胜或负</code><code>31 胜或平</code><code>10 平或负</code><code>310 全包</code></div>
+      <p>方法含：上下盘、胜负盘、排除法、双排法、大L小S（大小球）、单O双P（单双），最后汇总为「买盘」。本程序保留选号与注数逻辑，分析判断仍由你决定。</p></div>
+    <div class="help-block"><h4>预约购买流程</h4><p>选号 → 加入投注单 → 预约购买（生成订单）→ 标记已出票 → 录入彩果核对 → 已开奖。数据全部存在本机浏览器，离线可用。理性购彩。</p></div>`; openSheet(); }
+function openSheet(){ $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); }
+function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
+
+/* ---------- 启动 ---------- */
+(function init(){ const r=(location.hash||'').replace('#/',''); if(['bet','slip','orders','scores','check'].includes(r)) route=r; render(); })();
+</script>
+</body>
+</html>
