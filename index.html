@@ -420,22 +420,26 @@ const JQC_HIST = "13022032220132000020321111102111441244112010113113103033113121
 
 let recTier = 16; // 智能推荐当前档位
 
-function jqcDraws(){ const s=JQC_HIST+(S.jqcAdd||''); const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(Number)); return a; }
-/* 缩水推荐引擎：频率为主信号 + 和值带 + 大小/单双形态，遗漏仅作展示 */
-function recommend(lo,hi){
+function jqcDraws(){ const s=JQC_HIST+(S.jqcAdd||''); const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(ch=>Math.min(+ch,3))); return a; }
+/* 缩水推荐引擎（经 340 期 walk-forward 回测优化）：纯每位频率积，对全部 65,536 注排序取前 N。
+   回测结论：走势/遗漏对独立开奖无预测增益（甚至有害）、和值/形态硬过滤会丢弃带外真号 → 均已从打分移除。 */
+let _recCache=null, _recKey='';
+function recommend(){
+  const key=(S.jqcAdd||'').length+':'+JQC_HIST.length;
+  if(_recCache && _recKey===key) return _recCache;
   const draws=jqcDraws(), N=draws.length;
-  const freq=Array.from({length:8},()=>[0,0,0,0]);
+  const freq=Array.from({length:8},()=>[0,0,0,0]);   // 频率计数（3 含 3+）
   draws.forEach(d=>d.forEach((v,p)=>freq[p][v]++));
+  const logfr=freq.map(c=>{const t=c[0]+c[1]+c[2]+c[3]; return c.map(x=>Math.log((x+0.5)/(t+2)));});
   const om=Array.from({length:8},(_,p)=>[0,1,2,3].map(val=>{let m=0;for(let i=N-1;i>=0;i--){if(draws[i][p]===val)break;m++;}return m;}));
-  const order=freq.map(f=>[0,1,2,3].slice().sort((a,b)=>f[b]-f[a]));
+  const order=freq.map(c=>[0,1,2,3].slice().sort((a,b)=>c[b]-c[a]));
   const top2=order.map(o=>o.slice(0,2));
-  const bigc={},oddc={}; draws.forEach(d=>{const b=d.filter(x=>x>=2).length,o=d.filter(x=>x%2).length;bigc[b]=(bigc[b]||0)+1;oddc[o]=(oddc[o]||0)+1;});
-  const topk=m=>Object.keys(m).map(Number).sort((a,b)=>m[b]-m[a]).slice(0,3);
-  const bm=topk(bigc),om2=topk(oddc), pool=[];
-  (function rec(i,cur,sum){ if(i===8){ if(sum<lo||sum>hi) return; const big=cur.filter(x=>x>=2).length,odd=cur.filter(x=>x%2).length; if(bm.indexOf(big)<0||om2.indexOf(odd)<0) return; pool.push(cur.slice()); return; } top2[i].forEach(v=>{cur.push(v);rec(i+1,cur,sum+v);cur.pop();}); })(0,[],0);
-  const pr=c=>c.reduce((p,v,i)=>p*freq[i][v]/N,1);
-  pool.sort((a,b)=>pr(b)-pr(a));
-  return {N,freq,om,order,top2,pool,pr,bm,om2,lo,hi};
+  // 全 65,536 注按频率积打分，取前 200 排序
+  const scores=new Float64Array(65536);
+  for(let i=0;i<65536;i++){ let x=i,s=0; for(let p=7;p>=0;p--){ s+=logfr[p][x&3]; x>>=2; } scores[i]=s; }
+  const idx=Array.from({length:65536},(_,i)=>i); idx.sort((a,b)=>scores[b]-scores[a]);
+  const ranked=idx.slice(0,200).map(i=>{ let x=i,c=new Array(8); for(let p=7;p>=0;p--){ c[p]=x&3; x>>=2; } return {combo:c, p:Math.exp(scores[i])}; });
+  _recCache={N,freq,om,order,top2,ranked}; _recKey=key; return _recCache;
 }
 
 /* ---------- 存储 ---------- */
@@ -596,7 +600,7 @@ function viewCalc(){
 
 /* ---------- 智能推荐（缩水引擎） ---------- */
 function viewRec(){
-  const R=recommend(8,14); const gt=v=>v===3?'3+':String(v);
+  const R=recommend(); const gt=v=>v===3?'3+':String(v);
   let posRows='';
   for(let p=0;p<8;p++){
     const f=R.freq[p], mx=Math.max(...f);
@@ -607,27 +611,27 @@ function viewRec(){
     const m=Math.floor(p/2)+1, side=p%2===0?'主':'客';
     posRows+=`<div class="posblk"><div class="posh">第${m}场 ${side}队　推荐 <b>${R.top2[p].map(gt).join(' / ')}</b></div><div class="frow">${cells}</div></div>`;
   }
-  const cov=k=>R.pool.slice(0,k).reduce((a,x)=>a+R.pr(x),0);
-  const tiers=[[1,'单式胆'],[16,'小复式'],[40,'中复式'],[R.pool.length,'预算复式']];
-  const tierCards=tiers.map(([k,lab])=>{ const n=Math.min(k,R.pool.length), c=cov(n), dens=c/(n/65536);
-    return `<button class="tol ${recTier===k?'on':''}" data-rectier="${k}"><div class="t">${lab}</div><div class="v num">${nf.format(n)} 注 · ¥${nf.format(n*2)}</div><div class="s">覆盖≈${(c*100).toFixed(2)}% · 密度 ${dens.toFixed(1)}×</div></button>`; }).join('');
-  const k=Math.min(recTier,R.pool.length), c=cov(k);
-  const preview=R.pool.slice(0,12).map(cc=>`<span class="pk">${cc.map(gt).join(' ')}</span>`).join('');
+  const cov=k=>R.ranked.slice(0,k).reduce((a,x)=>a+x.p,0);
+  const tiers=[[1,'单式胆'],[16,'小复式'],[40,'中复式'],[80,'预算复式']];
+  const tierCards=tiers.map(([k,lab])=>{ const c=cov(k), dens=c/(k/65536);
+    return `<button class="tol ${recTier===k?'on':''}" data-rectier="${k}"><div class="t">${lab}</div><div class="v num">${nf.format(k)} 注 · ¥${nf.format(k*2)}</div><div class="s">覆盖≈${(c*100).toFixed(2)}% · 密度 ${dens.toFixed(1)}×</div></button>`; }).join('');
+  const k=recTier, c=cov(k);
+  const preview=R.ranked.slice(0,12).map(o=>`<span class="pk">${o.combo.map(gt).join(' ')}</span>`).join('');
   const addTxt=esc((((S.jqcAdd||'').match(/.{8}/g))||[]).join('\n'));
   return `
-    <div class="hint-line">引擎用 <b>${R.N}</b> 期历史，按<b>足球真实分布</b>为每位定号，再用<b>和值[${R.lo}–${R.hi}] + 大小/单双形态</b>缩水。下方百分比 = 该位该球的出现频率（真信号）；"漏" = 遗漏期数（走势，仅供参考，对独立开奖<b>无预测力</b>）。</div>
-    <div class="section-title">每位推荐号（高亮 = 入选前2）</div>
+    <div class="hint-line">引擎用 <b>${R.N}</b> 期历史，按<b>每位进球频率</b>对全部 65,536 注打分排序、取前 N。<b>经 340 期回测验证：纯频率命中效率最高</b>。下方百分比 = 出现频率（真信号）；"漏" = 遗漏期数（走势，回测证实对下一期<b>无预测增益</b>，仅供参考）。</div>
+    <div class="section-title">每位推荐号（高亮 = 频率前2）</div>
     ${posRows}
-    <div class="calc-big"><div class="n num">${nf.format(k)}</div><div class="y num">注 · ¥${nf.format(k*2)}</div><div class="desc">这 ${nf.format(k)} 注覆盖真实概率约 <b>${(c*100).toFixed(2)}%</b>，是同样注数盲投的 <b>${(c/(k/65536)).toFixed(1)} 倍</b>。进球彩为奖池负期望，缩水只提高"每元命中效率"，不改变长期亏损。</div></div>
+    <div class="calc-big"><div class="n num">${nf.format(k)}</div><div class="y num">注 · ¥${nf.format(k*2)}</div><div class="desc">这 ${nf.format(k)} 注覆盖真实概率约 <b>${(c*100).toFixed(2)}%</b>，是同样注数盲投的 <b>${(c/(k/65536)).toFixed(1)} 倍</b>。进球彩为奖池负期望，缩水只提高每元命中效率，不改变长期亏损。</div></div>
     <div class="section-title">购买档位</div>
     <div class="tol-chips">${tierCards}</div>
-    <div class="section-title">推荐号样例（前 12 注 / 共 ${nf.format(R.pool.length)} 注候选池）</div>
+    <div class="section-title">推荐号样例（频率最高前 12 注）</div>
     <div class="chips" style="gap:6px">${preview}</div>
     <button class="btn-ghost" id="recApply" style="width:100%;margin-top:14px">把每位推荐号（前2）填入选号 →</button>
     <div class="section-title">补充最新开奖（可选）</div>
     <div class="card"><textarea id="recAdd" rows="2" style="width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-size:16px;resize:none" placeholder="每行 8 位 0-3，如 11021320">${addTxt}</textarea>
       <button class="mini go" id="recRefresh" style="margin-top:6px">用最新数据刷新推荐</button></div>
-    <div class="hint-line" style="margin-top:12px">⚠️ 遗漏 / 冷热 / 走势是传统玩法，统计上对下一期无预测增益；本引擎默认按频率与分布缩水。设好预算、理性购彩。</div>`;
+    <div class="hint-line" style="margin-top:12px">⚠️ 经 340 期 walk-forward 回测：纯频率 top-N 命中率约盲投 3.7×（top-2000 刻度）；走势/遗漏、和值硬过滤经回测反而更差，已从打分移除。理性购彩。</div>`;
 }
 
 /* ---------- 投注单 ---------- */
@@ -803,7 +807,7 @@ function togglePick(kind,m,v){ const g=GAMES[S.lastGame], d=S.drafts[g.key];
   persist(); render(); }
 function toggleInclude(m){ const d=S.drafts['r9']; d.selected=d.selected||[]; const i=d.selected.indexOf(m); i>=0?d.selected.splice(i,1):d.selected.push(m); persist(); render(); }
 function clearDraft(){ const issue=S.drafts[S.lastGame].issue; S.drafts[S.lastGame]=newDraft(S.lastGame); S.drafts[S.lastGame].issue=issue; persist(); render(); toast('已清空选择'); }
-function recApply(){ const R=recommend(8,14); const d=S.drafts.jqc; for(let p=0;p<8;p++){ const m=Math.floor(p/2)+1, side=p%2===0?'home':'away'; d.picks[m][side]=R.top2[p].slice(); } jqcView='pick'; persist(); render(); toast('已填入选号（每位前2，复式）'); }
+function recApply(){ const R=recommend(); const d=S.drafts.jqc; for(let p=0;p<8;p++){ const m=Math.floor(p/2)+1, side=p%2===0?'home':'away'; d.picks[m][side]=R.top2[p].slice(); } jqcView='pick'; persist(); render(); toast('已填入选号（每位前2，复式）'); }
 function addToSlip(){ const g=GAMES[S.lastGame], d=S.drafts[g.key], r=calc(g.key,d.picks,d.selected); if(!r.valid) return;
   S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:g.key, issue:d.issue, matches:JSON.parse(JSON.stringify(d.matches)), picks:JSON.parse(JSON.stringify(d.picks)), selected:g.key==='r9'?(d.selected||[]).slice():null, bets:r.bets, mult:1, _open:false});
   persist(); toast(`已加入投注单 · ${nf.format(r.bets)}注`); render(); }

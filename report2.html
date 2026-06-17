@@ -1,0 +1,496 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>进球彩算法·信息图</title><style>@page{size:A4;margin:14mm 13mm 12mm;}
+html{hanging-punctuation:allow-end;-webkit-print-color-adjust:exact;print-color-adjust:exact;}*{box-sizing:border-box;}
+body{margin:0;background:#fff;color:#1a1d24;font-family:"PingFang SC","Hiragino Sans GB","Source Han Sans SC",system-ui,sans-serif;font-feature-settings:"tnum","palt";line-height:1.7;}
+.doc,.doc *{word-break:keep-all;overflow-wrap:break-word;}h1,h2,.cap{text-wrap:balance;}
+.num{white-space:nowrap;font-variant-numeric:tabular-nums;}.doc{max-width:184mm;margin:0 auto;}
+.cover{padding:40mm 0 0;break-after:page;}
+.cover .kick{font-size:12pt;letter-spacing:.34em;color:#c0392b;font-weight:800;}
+.cover h1{font-size:34pt;line-height:1.1;margin:12px 0 6px;letter-spacing:-.01em;}
+.cover .sub{font-size:13pt;color:#5b6472;max-width:30em;margin:6px 0 26px;}
+.cover .stats{display:flex;border:1px solid #e3e7ee;border-radius:14px;overflow:hidden;}
+.cover .stats .b{flex:1;padding:16px 18px;border-right:1px solid #e3e7ee;}.cover .stats .b:last-child{border-right:none;}
+.cover .stats .v{font-size:20pt;font-weight:800;color:#5b3fc4;}.cover .stats .v.red{color:#c0392b;}
+.cover .stats .l{font-size:9.5pt;color:#8a93a3;margin-top:2px;}
+.cover .note{margin-top:18px;font-size:10pt;color:#8a93a3;}
+.fig{break-inside:avoid;margin:0 0 6mm;padding-top:2mm;}.svgwrap svg{width:100%;height:auto;display:block;}
+.cap{font-size:10.5pt;color:#5b6472;margin:2px 2px 0;max-width:48em;text-wrap:pretty;}
+.foot{margin-top:6mm;border-top:1px solid #e3e7ee;padding-top:8px;font-size:8.6pt;color:#9aa3b2;text-wrap:pretty;}.foot b{color:#c0392b;}</style></head>
+<body><div class="doc"><section class="cover"><div class="kick">足彩公式 · 信息图解读</div>
+<h1>4 场进球彩<br>选号公式拆解</h1><p class="sub">把你这套「比分表」算法，一张张图看明白。</p>
+<div class="stats"><div class="b"><div class="v num">340 期</div><div class="l">历史样本（1156→3205）</div></div>
+<div class="b"><div class="v num">8 位 × 4 选</div><div class="l">每场主客各 0/1/2/3+</div></div>
+<div class="b"><div class="v red num">65,536 → 80</div><div class="l">缩水后注数</div></div></div>
+<p class="note">数据源自 比分表20231231.xlsx · 公式与口径均经独立核验 · 仅作技术解读</p></section>
+<section class="fig"><div class="svgwrap"><svg viewBox="0 0 680 620" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Light gradients for funnel bars -->
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5b3fc4" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#5b3fc4" stop-opacity="0.25"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5b3fc4" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#5b3fc4" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5b3fc4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#5b3fc4" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c0392b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#c0392b" stop-opacity="0.35"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="40" font-size="28" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    缩水：把 65,536 压到 80 注
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="40" y="65" font-size="14" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    覆盖真实高概率区
+  </text>
+
+  <!-- Stage 1: 全包 -->
+  <!-- Funnel bar 1 (widest) -->
+  <rect x="60" y="100" width="560" height="60" rx="8" fill="url(#grad1)" stroke="#8a93a3" stroke-width="1.5"/>
+  
+  <!-- Stage 1 label -->
+  <text x="75" y="125" font-size="13" font-weight="600" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    ① 全包
+  </text>
+  <text x="75" y="145" font-size="12" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    65,536 注 (¥131,072)
+  </text>
+  
+  <!-- Combination count right side -->
+  <text x="600" y="133" font-size="18" font-weight="700" fill="#c0392b" font-family="system-ui,sans-serif" text-anchor="end">
+    65,536
+  </text>
+
+  <!-- Downward arrow -->
+  <g transform="translate(340, 170)">
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#8a93a3" stroke-width="2" stroke-linecap="round"/>
+    <polygon points="0,25 -6,18 6,18" fill="#8a93a3"/>
+  </g>
+
+  <!-- Stage 2: 每位前2 -->
+  <!-- Funnel bar 2 -->
+  <rect x="125" y="200" width="430" height="60" rx="8" fill="url(#grad2)" stroke="#8a93a3" stroke-width="1.5"/>
+  
+  <!-- Stage 2 label -->
+  <text x="140" y="225" font-size="13" font-weight="600" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    ② 每位前 2
+  </text>
+  <text x="140" y="245" font-size="12" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    (每位取前 2 号)
+  </text>
+  
+  <!-- Combination count -->
+  <text x="600" y="233" font-size="18" font-weight="700" fill="#5b3fc4" font-family="system-ui,sans-serif" text-anchor="end">
+    256
+  </text>
+
+  <!-- Downward arrow -->
+  <g transform="translate(340, 270)">
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#8a93a3" stroke-width="2" stroke-linecap="round"/>
+    <polygon points="0,25 -6,18 6,18" fill="#8a93a3"/>
+  </g>
+
+  <!-- Stage 3: +和值[8–14] -->
+  <!-- Funnel bar 3 -->
+  <rect x="165" y="300" width="350" height="60" rx="8" fill="url(#grad3)" stroke="#8a93a3" stroke-width="1.5"/>
+  
+  <!-- Stage 3 label -->
+  <text x="180" y="325" font-size="13" font-weight="600" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    ③ +和值 [8–14]
+  </text>
+  <text x="180" y="345" font-size="12" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    (和值落 8–14)
+  </text>
+  
+  <!-- Combination count -->
+  <text x="600" y="333" font-size="18" font-weight="700" fill="#5b3fc4" font-family="system-ui,sans-serif" text-anchor="end">
+    128
+  </text>
+
+  <!-- Downward arrow -->
+  <g transform="translate(340, 370)">
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#8a93a3" stroke-width="2" stroke-linecap="round"/>
+    <polygon points="0,25 -6,18 6,18" fill="#8a93a3"/>
+  </g>
+
+  <!-- Stage 4: +大小单双形态 (Final - highlighted) -->
+  <!-- Funnel bar 4 (narrowest, highlighted in red) -->
+  <rect x="220" y="400" width="240" height="70" rx="8" fill="url(#grad4)" stroke="#c0392b" stroke-width="2"/>
+  
+  <!-- Stage 4 label -->
+  <text x="235" y="428" font-size="13" font-weight="600" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    ④ +大小单双形态
+  </text>
+  <text x="235" y="448" font-size="12" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    (大小·单双约束)
+  </text>
+  
+  <!-- Final combination count - HERO -->
+  <text x="600" y="440" font-size="24" font-weight="800" fill="#c0392b" font-family="system-ui,sans-serif" text-anchor="end">
+    80
+  </text>
+  
+  <!-- Final price highlight -->
+  <text x="235" y="465" font-size="12" font-weight="600" fill="#c0392b" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    ¥160 / 80 注
+  </text>
+
+  <!-- Compression ratio callout box -->
+  <rect x="40" y="520" width="600" height="80" rx="12" fill="#f6f7f9" stroke="#e3e7ee" stroke-width="1.5"/>
+  
+  <!-- Compression ratio icon circle -->
+  <circle cx="75" cy="560" r="20" fill="#5b3fc4" opacity="0.12"/>
+  <text x="75" y="567" font-size="16" font-weight="700" fill="#5b3fc4" font-family="system-ui,sans-serif" text-anchor="middle">
+    ÷
+  </text>
+  
+  <!-- Compression text -->
+  <text x="110" y="545" font-size="13" font-weight="600" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    缩水比例
+  </text>
+  <text x="110" y="563" font-size="14" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    65,536 ÷ 80 = 
+  </text>
+  <text x="275" y="563" font-size="16" font-weight="700" fill="#c0392b" font-family="system-ui,sans-serif">
+    819:1
+  </text>
+  
+  <text x="110" y="583" font-size="12" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    从全包到精选，覆盖关键概率密集区
+  </text>
+</svg></div><p class="cap">用历史规律把全包 65,536 注精选到 80 注。</p></section>
+<section class="fig"><div class="svgwrap"><svg viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg"><rect width="680" height="560" fill="#ffffff"/><text x="40" y="42" font-size="22" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">每位进球频率：1 最热，3+ 最冷</text><text x="40" y="64" font-size="13" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">深紫 = 高频　浅 = 低频　（340 期统计）</text><text x="178" y="94" font-size="14" font-weight="700" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">0</text><text x="306" y="94" font-size="14" font-weight="700" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">1</text><text x="434" y="94" font-size="14" font-weight="700" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">2</text><text x="562" y="94" font-size="14" font-weight="700" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">3+</text><text x="104" y="134" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">1 主</text><rect x="120" y="104" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.57"/><text x="178" y="135" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">22%</text><rect x="248" y="104" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.78"/><text x="306" y="135" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">32%</text><rect x="376" y="104" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.61"/><text x="434" y="135" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">24%</text><rect x="504" y="104" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.55"/><text x="562" y="135" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">21%</text><text x="104" y="191" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">1 客</text><rect x="120" y="161" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.78"/><text x="178" y="192" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">32%</text><rect x="248" y="161" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.82"/><text x="306" y="192" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">34%</text><rect x="376" y="161" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.59"/><text x="434" y="192" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">23%</text><rect x="504" y="161" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.33"/><text x="562" y="192" font-size="16" font-weight="800" fill="#3a3550" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">11%</text><text x="104" y="248" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">2 主</text><rect x="120" y="218" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.65"/><text x="178" y="249" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">26%</text><rect x="248" y="218" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.76"/><text x="306" y="249" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">31%</text><rect x="376" y="218" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.63"/><text x="434" y="249" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">25%</text><rect x="504" y="218" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.48"/><text x="562" y="249" font-size="16" font-weight="800" fill="#3a3550" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">18%</text><text x="104" y="305" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">2 客</text><rect x="120" y="275" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.72"/><text x="178" y="306" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">29%</text><rect x="248" y="275" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.80"/><text x="306" y="306" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">33%</text><rect x="376" y="275" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.55"/><text x="434" y="306" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">21%</text><rect x="504" y="275" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.46"/><text x="562" y="306" font-size="16" font-weight="800" fill="#3a3550" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">17%</text><text x="104" y="362" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">3 主</text><rect x="120" y="332" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.55"/><text x="178" y="363" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">21%</text><rect x="248" y="332" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.89"/><text x="306" y="363" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">37%</text><rect x="376" y="332" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.61"/><text x="434" y="363" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">24%</text><rect x="504" y="332" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.50"/><text x="562" y="363" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">19%</text><text x="104" y="419" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">3 客</text><rect x="120" y="389" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.76"/><text x="178" y="420" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">31%</text><rect x="248" y="389" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.93"/><text x="306" y="420" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">39%</text><rect x="376" y="389" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.53"/><text x="434" y="420" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">20%</text><rect x="504" y="389" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.29"/><text x="562" y="420" font-size="16" font-weight="800" fill="#3a3550" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">9%</text><text x="104" y="476" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">4 主</text><rect x="120" y="446" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.57"/><text x="178" y="477" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">22%</text><rect x="248" y="446" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.80"/><text x="306" y="477" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">33%</text><rect x="376" y="446" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.55"/><text x="434" y="477" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">21%</text><rect x="504" y="446" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.61"/><text x="562" y="477" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">24%</text><text x="104" y="533" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">4 客</text><rect x="120" y="503" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.80"/><text x="178" y="534" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">33%</text><rect x="248" y="503" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.82"/><text x="306" y="534" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">34%</text><rect x="376" y="503" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.50"/><text x="434" y="534" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">19%</text><rect x="504" y="503" width="116" height="50" rx="10" fill="#5b3fc4" fill-opacity="0.40"/><text x="562" y="534" font-size="16" font-weight="800" fill="#3a3550" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">14%</text></svg></div><p class="cap">每个位置「1」最常出、「3+」最罕见——按频率定号。</p></section>
+<section class="fig"><div class="svgwrap"><svg viewBox="0 0 680 470" xmlns="http://www.w3.org/2000/svg"><rect width="680" height="470" fill="#ffffff"/><text x="40" y="42" font-size="22" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">和值集中在 8–14（占 78%）</text><text x="40" y="64" font-size="13" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">8 个进球之和的分布，峰值在 10</text><rect x="236" y="95" width="290" height="305" rx="6" fill="#5b3fc4" fill-opacity="0.07"/><text x="381" y="113" font-size="13" font-weight="800" fill="#5b3fc4" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">占 78%</text><line x1="70" y1="400" x2="650" y2="400" stroke="#e3e7ee" stroke-width="1"/><text x="62" y="404" font-size="11" fill="#8a93a3" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">0</text><line x1="70" y1="315" x2="650" y2="315" stroke="#e3e7ee" stroke-width="1"/><text x="62" y="319" font-size="11" fill="#8a93a3" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">5</text><line x1="70" y1="231" x2="650" y2="231" stroke="#e3e7ee" stroke-width="1"/><text x="62" y="235" font-size="11" fill="#8a93a3" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">10</text><line x1="70" y1="146" x2="650" y2="146" stroke="#e3e7ee" stroke-width="1"/><text x="62" y="150" font-size="11" fill="#8a93a3" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">15</text><rect x="76" y="375" width="30" height="25" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="91" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">4</text><rect x="117" y="341" width="30" height="59" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="132" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">5</text><rect x="159" y="336" width="30" height="64" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="174" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">6</text><rect x="200" y="280" width="30" height="120" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="215" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">7</text><rect x="241" y="251" width="30" height="149" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="256" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">8</text><rect x="283" y="171" width="30" height="229" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="298" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">9</text><rect x="324" y="120" width="30" height="280" rx="4" fill="#c0392b" fill-opacity="1"/><text x="339" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">10</text><rect x="366" y="171" width="30" height="229" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="381" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">11</text><rect x="407" y="220" width="30" height="180" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="422" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">12</text><rect x="449" y="280" width="30" height="120" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="464" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">13</text><rect x="490" y="271" width="30" height="129" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="505" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">14</text><rect x="531" y="351" width="30" height="49" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="546" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">15</text><rect x="573" y="359" width="30" height="41" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="588" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">16</text><rect x="614" y="385" width="30" height="15" rx="4" fill="#5b3fc4" fill-opacity="0.78"/><text x="629" y="416" font-size="11" fill="#5b6472" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">17</text><text x="339" y="112" font-size="11.5" font-weight="800" fill="#c0392b" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">16.5%</text><line x1="70" y1="400" x2="650" y2="400" stroke="#1a1d24" stroke-width="1.5"/><text x="650" y="434" font-size="11.5" fill="#8a93a3" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">和值 →</text></svg></div><p class="cap">8 个进球之和集中在 8–14，占 78%。</p></section>
+<section class="fig"><div class="svgwrap"><svg viewBox="0 0 680 520" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="680" height="520" fill="white"/>
+  
+  <!-- Title -->
+  <text x="20" y="40" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="22" font-weight="bold" fill="#1a1d24">
+    这套表的两半：一半有用，一半无用
+  </text>
+  
+  <!-- Left Panel Border (Signal - Green) -->
+  <rect x="20" y="70" width="310" height="430" rx="12" fill="none" stroke="#0a8a52" stroke-width="2"/>
+  
+  <!-- Right Panel Border (Noise - Grey) -->
+  <rect x="350" y="70" width="310" height="430" rx="12" fill="none" stroke="#9aa3b2" stroke-width="2"/>
+  
+  <!-- Left Panel Header Background -->
+  <rect x="20" y="70" width="310" height="60" rx="12" fill="#f6f7f9"/>
+  
+  <!-- Right Panel Header Background -->
+  <rect x="350" y="70" width="310" height="60" rx="12" fill="#f6f7f9"/>
+  
+  <!-- Left Panel Title -->
+  <circle cx="35" cy="100" r="5" fill="#0a8a52"/>
+  <text x="50" y="105" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="14" font-weight="600" fill="#1a1d24">
+    真信号 · 按足球分布缩水
+  </text>
+  
+  <!-- Right Panel Title -->
+  <text x="365" y="105" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="14" font-weight="600" fill="#5b6472">
+    走势那一半 · 无预测力
+  </text>
+  <text x="630" y="105" font-family="'Arial',sans-serif" font-size="18" font-weight="bold" fill="#9aa3b2">✕</text>
+  
+  <!-- Left Panel Content -->
+  
+  <!-- Chip 1: 频率 -->
+  <rect x="35" y="155" width="85" height="32" rx="8" fill="white" stroke="#e3e7ee" stroke-width="1.5"/>
+  <text x="45" y="165" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#0a8a52">
+    频率
+  </text>
+  <text x="45" y="180" font-family="'Arial',sans-serif" font-size="9" fill="#5b6472">
+    可验证
+  </text>
+  
+  <!-- Chip 2: 和值 -->
+  <rect x="135" y="155" width="85" height="32" rx="8" fill="white" stroke="#e3e7ee" stroke-width="1.5"/>
+  <text x="145" y="165" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#0a8a52">
+    和值
+  </text>
+  <text x="145" y="180" font-family="'Arial',sans-serif" font-size="9" fill="#5b6472">
+    可验证
+  </text>
+  
+  <!-- Chip 3: 大小·单双 -->
+  <rect x="235" y="155" width="85" height="32" rx="8" fill="white" stroke="#e3e7ee" stroke-width="1.5"/>
+  <text x="245" y="165" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#0a8a52">
+    大小·单双
+  </text>
+  <text x="245" y="180" font-family="'Arial',sans-serif" font-size="9" fill="#5b6472">
+    可验证
+  </text>
+  
+  <!-- Left Panel Divider -->
+  <line x1="35" y1="210" x2="315" y2="210" stroke="#e3e7ee" stroke-width="1.5"/>
+  
+  <!-- Left Panel Payoff -->
+  <text x="35" y="235" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="12" fill="#5b6472">
+    相比盲投：
+  </text>
+  
+  <!-- Big Hero Number -->
+  <text x="40" y="285" font-family="'Arial',sans-serif" font-size="48" font-weight="bold" fill="#0a8a52">
+    4–6×
+  </text>
+  
+  <!-- Hero Label -->
+  <text x="40" y="310" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="12" fill="#1a1d24">
+    每元命中增益
+  </text>
+  
+  <!-- Support text -->
+  <text x="40" y="335" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#8a93a3">
+    在回测/历史数据中
+  </text>
+  <text x="40" y="350" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#8a93a3">
+    稳定重现
+  </text>
+  
+  <!-- Bottom callout -->
+  <rect x="35" y="375" width="280" height="105" rx="10" fill="#f6f7f9" stroke="#e3e7ee" stroke-width="1.5"/>
+  <text x="50" y="395" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#0a8a52">
+    ✓ 统计基础
+  </text>
+  <text x="50" y="413" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#1a1d24">
+    可用足球彩票本身的
+  </text>
+  <text x="50" y="428" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#1a1d24">
+    分布规律验证预测力
+  </text>
+  <text x="50" y="443" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#1a1d24">
+    （非心理学或市场噪声）
+  </text>
+  <text x="50" y="460" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="9" fill="#8a93a3">
+    边界清晰，可审计
+  </text>
+  
+  <!-- Right Panel Content -->
+  
+  <!-- Chip 1: 遗漏 (struck through) -->
+  <rect x="365" y="155" width="75" height="32" rx="8" fill="none" stroke="#9aa3b2" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+  <line x1="370" y1="172" x2="430" y2="172" stroke="#9aa3b2" stroke-width="1.5"/>
+  <text x="375" y="165" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#9aa3b2" opacity="0.6">
+    遗漏
+  </text>
+  <text x="375" y="180" font-family="'Arial',sans-serif" font-size="9" fill="#8a93a3">
+    幻觉
+  </text>
+  
+  <!-- Chip 2: 冷热 (struck through) -->
+  <rect x="455" y="155" width="75" height="32" rx="8" fill="none" stroke="#9aa3b2" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+  <line x1="460" y1="172" x2="520" y2="172" stroke="#9aa3b2" stroke-width="1.5"/>
+  <text x="465" y="165" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#9aa3b2" opacity="0.6">
+    冷热
+  </text>
+  <text x="465" y="180" font-family="'Arial',sans-serif" font-size="9" fill="#8a93a3">
+    幻觉
+  </text>
+  
+  <!-- Chip 3: 重号 (struck through) -->
+  <rect x="545" y="155" width="75" height="32" rx="8" fill="none" stroke="#9aa3b2" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+  <line x1="550" y1="172" x2="610" y2="172" stroke="#9aa3b2" stroke-width="1.5"/>
+  <text x="555" y="165" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#9aa3b2" opacity="0.6">
+    重号
+  </text>
+  <text x="555" y="180" font-family="'Arial',sans-serif" font-size="9" fill="#8a93a3">
+    幻觉
+  </text>
+  
+  <!-- Right Panel Divider -->
+  <line x1="365" y1="210" x2="645" y2="210" stroke="#e3e7ee" stroke-width="1.5"/>
+  
+  <!-- Right Panel Label -->
+  <text x="365" y="235" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="12" fill="#5b6472">
+    真相：
+  </text>
+  
+  <!-- Big Grey Number / Label -->
+  <text x="370" y="285" font-family="'Arial',sans-serif" font-size="48" font-weight="bold" fill="#9aa3b2" opacity="0.5">
+    0
+  </text>
+  
+  <!-- Label -->
+  <text x="370" y="310" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="12" fill="#5b6472">
+    增益
+  </text>
+  
+  <!-- Support text -->
+  <text x="370" y="335" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#8a93a3">
+    每期开奖独立，
+  </text>
+  <text x="370" y="350" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#8a93a3">
+    无记忆效应
+  </text>
+  
+  <!-- Bottom callout -->
+  <rect x="365" y="375" width="280" height="105" rx="10" fill="#f6f7f9" stroke="#e3e7ee" stroke-width="1.5"/>
+  <text x="380" y="395" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="11" font-weight="600" fill="#5b6472">
+    ✕ 赌徒谬误
+  </text>
+  <text x="380" y="413" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#1a1d24">
+    过去的开奖结果不影响
+  </text>
+  <text x="380" y="428" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#1a1d24">
+    未来的概率分布
+  </text>
+  <text x="380" y="443" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="10" fill="#1a1d24">
+    （彩票设计就是如此）
+  </text>
+  <text x="380" y="460" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif" font-size="9" fill="#8a93a3">
+    心理偏差，无可审计基础
+  </text>
+  
+  <!-- Optional: Thin separator between panels -->
+  <line x1="340" y1="70" x2="340" y2="500" stroke="#e3e7ee" stroke-width="1"/>
+</svg></div><p class="cap">频率/和值/形态有用；遗漏/走势对独立开奖无预测力。</p></section>
+<section class="fig"><div class="svgwrap"><svg viewBox="0 0 680 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c0392b"/>
+      <stop offset="100%" stop-color="#e74c3c"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="680" height="520" fill="white"/>
+  
+  <!-- Title -->
+  <text x="40" y="48" font-size="26" font-weight="bold" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    关于"中奖率"，三件事说清
+  </text>
+  
+  <!-- Panel 1: 每元命中效率 -->
+  <g>
+    <!-- Panel background -->
+    <rect x="40" y="88" width="180" height="400" fill="#f6f7f9" rx="12" stroke="#e3e7ee" stroke-width="1.5"/>
+    
+    <!-- Icon: Up Arrow -->
+    <g transform="translate(130, 160)">
+      <!-- Arrow shaft -->
+      <rect x="-8" y="-20" width="16" height="40" fill="#0a8a52" rx="4"/>
+      <!-- Arrow head -->
+      <path d="M -24,-8 L 0,-40 L 24,-8 Z" fill="#0a8a52"/>
+    </g>
+    
+    <!-- Color badge (green) -->
+    <circle cx="130" cy="240" r="28" fill="#0a8a52"/>
+    <text x="130" y="247" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      ↑
+    </text>
+    
+    <!-- Verdict label -->
+    <text x="130" y="310" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      提高
+    </text>
+    <text x="130" y="332" text-anchor="middle" font-size="11" fill="#5b6472" font-family="system-ui,sans-serif">
+      (约 4–6×)
+    </text>
+    
+    <!-- Description -->
+    <text x="130" y="380" text-anchor="middle" font-size="11" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      <tspan x="130" dy="0">每元投入的</tspan>
+      <tspan x="130" dy="15">中奖次数</tspan>
+      <tspan x="130" dy="15">显著增加</tspan>
+    </text>
+  </g>
+  
+  <!-- Panel 2: 单注中奖概率 -->
+  <g>
+    <!-- Panel background -->
+    <rect x="250" y="88" width="180" height="400" fill="#f6f7f9" rx="12" stroke="#e3e7ee" stroke-width="1.5"/>
+    
+    <!-- Icon: Equals Sign -->
+    <g transform="translate(340, 160)">
+      <!-- Top line -->
+      <rect x="-30" y="-12" width="60" height="6" fill="#9aa3b2" rx="2"/>
+      <!-- Bottom line -->
+      <rect x="-30" y="10" width="60" height="6" fill="#9aa3b2" rx="2"/>
+    </g>
+    
+    <!-- Color badge (grey) -->
+    <circle cx="340" cy="240" r="28" fill="#9aa3b2"/>
+    <text x="340" y="250" text-anchor="middle" font-size="18" font-weight="400" fill="white" font-family="system-ui,sans-serif">
+      =
+    </text>
+    
+    <!-- Verdict label -->
+    <text x="340" y="310" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      不变
+    </text>
+    <text x="340" y="332" text-anchor="middle" font-size="11" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      (靠挑组合)
+    </text>
+    
+    <!-- Description -->
+    <text x="340" y="380" text-anchor="middle" font-size="11" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      <tspan x="340" dy="0">一张彩票</tspan>
+      <tspan x="340" dy="15">的中奖概率</tspan>
+      <tspan x="340" dy="15">无法改变</tspan>
+    </text>
+  </g>
+  
+  <!-- Panel 3: 期望收益 -->
+  <g>
+    <!-- Panel background -->
+    <rect x="460" y="88" width="180" height="400" fill="#f6f7f9" rx="12" stroke="#e3e7ee" stroke-width="1.5"/>
+    
+    <!-- Icon: Down Arrow + Donut -->
+    <g transform="translate(550, 140)">
+      <!-- Arrow shaft -->
+      <rect x="-8" y="0" width="16" height="40" fill="#c0392b" rx="4"/>
+      <!-- Arrow head -->
+      <path d="M -24,32 L 0,60 L 24,32 Z" fill="#c0392b"/>
+    </g>
+    
+    <!-- Donut chart (house takeout visualization) -->
+    <g transform="translate(550, 220)">
+      <!-- Outer circle (total) -->
+      <circle cx="0" cy="0" r="20" fill="none" stroke="#e3e7ee" stroke-width="8"/>
+      <!-- House takeout segment (35-50%) - drawn as arc -->
+      <circle cx="0" cy="0" r="20" fill="none" stroke="url(#donutGrad)" 
+              stroke-width="8" stroke-dasharray="50.265 125.664" stroke-dashoffset="0" 
+              transform="rotate(-90)"/>
+    </g>
+    
+    <!-- Color badge (red) -->
+    <circle cx="550" cy="320" r="28" fill="#c0392b"/>
+    <text x="550" y="327" text-anchor="middle" font-size="18" font-weight="400" fill="white" font-family="system-ui,sans-serif">
+      ↓
+    </text>
+    
+    <!-- Verdict label -->
+    <text x="550" y="390" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      恒为负
+    </text>
+    <text x="550" y="412" text-anchor="middle" font-size="11" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      (抽水 35–50%)
+    </text>
+    
+    <!-- Description -->
+    <text x="550" y="460" text-anchor="middle" font-size="11" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+      <tspan x="550" dy="0">奖池抽水</tspan>
+      <tspan x="550" dy="15">使期望</tspan>
+      <tspan x="550" dy="15">收益为负</tspan>
+    </text>
+  </g>
+  
+  <!-- Bottom note -->
+  <text x="340" y="515" text-anchor="middle" font-size="10" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB',system-ui,sans-serif">
+    频次高 ≠ 赢钱概率高
+  </text>
+</svg></div><p class="cap">缩水提高的是每元命中效率，不是期望——期望恒为负。</p></section>
+<section class="fig"><div class="svgwrap"><svg viewBox="0 0 680 440" xmlns="http://www.w3.org/2000/svg"><rect width="680" height="440" fill="#ffffff"/><text x="40" y="42" font-size="22" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">四档怎么买（示例·下一期）</text><text x="40" y="64" font-size="13" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">日常推荐小复式 ¥32：性价比最高</text><rect x="40" y="78" width="140" height="150" rx="12" fill="#f6f7f9" stroke="#e3e7ee" stroke-width="1.2"/><text x="54" y="106" font-size="13" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">单式胆</text><text x="54" y="140" font-size="26" font-weight="800" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥2</text><text x="54" y="170" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">覆盖</text><text x="166" y="170" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">0.01%</text><text x="54" y="196" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">密度</text><text x="166" y="196" font-size="13" font-weight="700" fill="#0a8a52" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">5.9×</text><rect x="194" y="78" width="140" height="150" rx="12" fill="#f3effd" stroke="#5b3fc4" stroke-width="2.2"/><rect x="237" y="67" width="52" height="22" rx="11" fill="#5b3fc4"/><text x="263" y="82" font-size="11" font-weight="800" fill="#fff" text-anchor="middle" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">推荐</text><text x="208" y="106" font-size="13" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">小复式</text><text x="208" y="140" font-size="26" font-weight="800" fill="#5b3fc4" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥32</text><text x="208" y="170" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">覆盖</text><text x="319" y="170" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">0.13%</text><text x="208" y="196" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">密度</text><text x="319" y="196" font-size="13" font-weight="700" fill="#0a8a52" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">5.2×</text><rect x="347" y="78" width="140" height="150" rx="12" fill="#f6f7f9" stroke="#e3e7ee" stroke-width="1.2"/><text x="361" y="106" font-size="13" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">中复式</text><text x="361" y="140" font-size="26" font-weight="800" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥80</text><text x="361" y="170" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">覆盖</text><text x="472" y="170" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">0.29%</text><text x="361" y="196" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">密度</text><text x="472" y="196" font-size="13" font-weight="700" fill="#0a8a52" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">4.7×</text><rect x="500" y="78" width="140" height="150" rx="12" fill="#f6f7f9" stroke="#e3e7ee" stroke-width="1.2"/><text x="514" y="106" font-size="13" font-weight="700" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">预算复式</text><text x="514" y="140" font-size="26" font-weight="800" fill="#1a1d24" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥160</text><text x="514" y="170" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">覆盖</text><text x="626" y="170" font-size="13" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">0.50%</text><text x="514" y="196" font-size="11.5" fill="#8a93a3" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">密度</text><text x="626" y="196" font-size="13" font-weight="700" fill="#0a8a52" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">4.1×</text><text x="40" y="262" font-size="13" font-weight="700" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">金额对比</text><text x="104" y="295" font-size="12" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">单式胆</text><rect x="120" y="282" width="20" height="18" rx="5" fill="#b9aee8"/><text x="148" y="296" font-size="11.5" font-weight="700" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥2</text><text x="104" y="325" font-size="12" font-weight="700" fill="#5b3fc4" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">小复式</text><rect x="120" y="312" width="86" height="18" rx="5" fill="#5b3fc4"/><text x="214" y="326" font-size="11.5" font-weight="700" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥32</text><text x="104" y="355" font-size="12" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">中复式</text><rect x="120" y="342" width="215" height="18" rx="5" fill="#b9aee8"/><text x="343" y="356" font-size="11.5" font-weight="700" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥80</text><text x="104" y="385" font-size="12" font-weight="700" fill="#5b6472" text-anchor="end" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">预算复式</text><rect x="120" y="372" width="430" height="18" rx="5" fill="#b9aee8"/><text x="558" y="386" font-size="11.5" font-weight="700" fill="#5b6472" font-family="'PingFang SC','Hiragino Sans GB','Source Han Sans SC',system-ui,sans-serif">¥160</text></svg></div><p class="cap">日常推荐小复式 ¥32：性价比最高。</p></section>
+
+<p class="foot"><b>免责</b>　进球彩为奖池抽水制（约 35–50%），长期期望为负；缩水只提高"每元命中效率"，不改变长期亏损。所有投入请视为娱乐成本，设好预算，理性购彩。</p>
+</div></body></html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>进球彩选号公式 · 算法解读报告</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 14mm; }
+  :root{
+    --ink:#1a1d24; --dim:#444b58; --faint:#6b7280; --line:#dfe3ea; --line2:#eef0f4;
+    --red:#c0392b; --redbg:#fbeeec; --violet:#5b3fc4; --vbg:#efeafb;
+    --ok:#0a7a4f; --okbg:#e7f5ee; --warn:#9a6a00; --warnbg:#fff6e2;
+    --paper:#ffffff;
+  }
+  html{ hanging-punctuation: allow-end; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ margin:0; background:#f3f4f7; color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Source Han Sans SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-feature-settings:"tnum","palt"; line-height:1.7; font-size:10.6pt;
+  }
+  /* djhh: keep-all 全覆盖 + 正文 pretty + 标题 balance */
+  .doc, .doc *{ word-break:keep-all; overflow-wrap:break-word; }
+  h1,h2,h3,h4{ text-wrap:balance; }
+  p,li,dd,.cap,.note,td,.lead{ text-wrap:pretty; }
+  .num,.v,.pct,.amt,code{ white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+  .doc{ max-width:180mm; margin:0 auto; padding:0; }
+  .sheet{ background:var(--paper); }
+
+  /* 封面 */
+  .cover{ padding:30mm 0 14mm; border-bottom:3px solid var(--red); margin-bottom:10mm; break-after:avoid; }
+  .cover .kicker{ font-size:11pt; letter-spacing:.3em; color:var(--red); font-weight:800; }
+  .cover h1{ font-size:30pt; line-height:1.12; margin:10px 0 6px; letter-spacing:-.01em; max-width:16em; }
+  .cover .sub{ font-size:12pt; color:var(--dim); max-width:34em; margin:8px 0 18px; line-height:1.6; }
+  .cover .meta{ font-size:9.5pt; color:var(--faint); border-top:1px solid var(--line); padding-top:10px; display:flex; gap:22px; flex-wrap:wrap; }
+  .cover .meta b{ color:var(--dim); }
+
+  h2{ font-size:15pt; margin:13mm 0 4mm; padding-left:11px; border-left:4px solid var(--red); line-height:1.2; break-after:avoid; }
+  h2 .n{ color:var(--red); margin-right:8px; font-weight:800; }
+  h3{ font-size:11.5pt; margin:6mm 0 2mm; color:var(--ink); break-after:avoid; }
+  p{ margin:0 0 6px; max-width:46em; color:var(--dim); }
+  p.lead{ font-size:11pt; color:var(--ink); max-width:42em; }
+  strong{ color:var(--ink); }
+
+  .card{ border:1px solid var(--line); border-radius:9px; padding:11px 14px; margin:7px 0; background:#fff; break-inside:avoid; }
+  .card.red{ background:var(--redbg); border-color:#ecc9c3; }
+  .card.ok{ background:var(--okbg); border-color:#bfe3d0; }
+  .card.warn{ background:var(--warnbg); border-color:#ecd9a8; }
+  .card.v{ background:var(--vbg); border-color:#d4c9f1; }
+  .card h4{ margin:0 0 4px; font-size:10.6pt; }
+  .card h4 code{ color:var(--violet); }
+
+  table{ width:100%; border-collapse:collapse; margin:6px 0; font-size:9.8pt; break-inside:avoid; }
+  th,td{ border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
+  th{ background:#f6f7f9; font-weight:700; color:var(--dim); }
+  td.c,th.c{ text-align:center; } td.r,th.r{ text-align:right; }
+  .pick{ color:var(--violet); font-weight:800; }
+  tr.hl td{ background:var(--vbg); }
+
+  code{ background:#f1f3f6; padding:1px 5px; border-radius:4px; font-size:9pt; color:#7a3; font-family:"SF Mono",ui-monospace,Menlo,monospace; color:var(--warn); }
+  .feat{ display:grid; grid-template-columns:1fr; gap:6px; }
+  .feat .row{ border-left:3px solid var(--line); padding:3px 0 3px 11px; break-inside:avoid; }
+  .feat .row b{ color:var(--ink); } .feat .row .col{ color:var(--violet); font-weight:700; font-size:9pt; }
+  .tag{ display:inline-block; font-size:8pt; font-weight:800; padding:1px 7px; border-radius:5px; }
+  .tag.sig{ background:var(--okbg); color:var(--ok); } .tag.fal{ background:#f0f1f4; color:var(--faint); }
+
+  .kpi{ display:flex; gap:10px; margin:8px 0; flex-wrap:wrap; }
+  .kpi .b{ flex:1; min-width:120px; border:1px solid var(--line); border-radius:9px; padding:9px 12px; background:#fff; break-inside:avoid; }
+  .kpi .b .v{ font-size:17pt; font-weight:800; color:var(--red); } .kpi .b .l{ font-size:8.6pt; color:var(--faint); }
+
+  .note{ font-size:9pt; color:var(--faint); margin-top:6px; }
+  .foot{ margin-top:12mm; border-top:1px solid var(--line); padding-top:8px; font-size:8.6pt; color:var(--faint); }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="cover">
+    <div class="kicker">足彩公式解读</div>
+    <h1>4 场进球彩选号公式<br>算法解读报告</h1>
+    <p class="sub">逆向还原你这套「比分表」工作簿背后的选号算法，逐模块说明它在算什么、哪部分真有用、并给出可执行的购买建议。</p>
+    <div class="meta">
+      <span>数据来源　<b>比分表20231231.xlsx</b></span>
+      <span>样本　<b class="num">340 期</b>（1156 → 3205）</span>
+      <span>玩法　<b>4 场进球彩</b></span>
+      <span>口径　<b>8 位 · 每位 0/1/2/3</b></span>
+    </div>
+  </div>
+
+  <h2><span class="n">一</span>这套表本质上是什么</h2>
+  <p class="lead">它是一套针对 4 场进球彩的「遗漏 + 走势 + 大小单双形态 + 和值」缩水分析系统，整张表里约有 8 万个公式。</p>
+  <p>4 场进球彩，每场要同时猜主、客两队的进球数（各按 0 / 1 / 2 / 3+ 计），所以一注就是 <strong>8 个数字、每位 4 选 1</strong>，理论组合数 4⁸ = <span class="num">65,536</span> 种，要 8 位全对才中头奖。表的目标只有一个：<strong>用历史规律把这 65,536 种压缩到几十~几百种"高概率"组合再买</strong>，从而省钱、提高每元的命中效率。</p>
+  <p>你的表把每一期开奖都拆成 8 个位置（B–I 列），算出和值（J），再在右侧上百列里做四类分析。下面逐一还原。</p>
+
+  <h2><span class="n">二</span>算法的核心模块（逐列还原）</h2>
+  <div class="feat">
+    <div class="row"><span class="col">L–AQ（32 列）</span>　<b>遗漏矩阵</b>：每个「位置 × 号码(0/1/2/3)」的遗漏期数。公式 <code>IF(本期该位=该号,0,上期+1)</code>——即"这个号在这个位置上已经几期没出"，出了就清零。</div>
+    <div class="row"><span class="col">AS–AZ / BA–BH</span>　<b>最大遗漏与排名</b>：<code>LARGE(...)</code> 取每位最长遗漏的号，再把 8 个位置从大到小排序，看"哪个位置最该出"。</div>
+    <div class="row"><span class="col">BJ–BQ / CA–CH</span>　<b>二阶遗漏与差值</b>：次大遗漏，以及"最大 − 次大"的差（差越大说明某号越突出）。</div>
+    <div class="row"><span class="col">CJ–CQ</span>　<b>走势动量</b>：遗漏差若连续同向就 ×2 加倍、反向则变号，捕捉"持续升温/降温"。配 <code>RANK</code> 给位置排紧迫度。</div>
+    <div class="row"><span class="col">GL–GS / GU–HB</span>　<b>大小 / 单双形态</b>：每位 &lt;2 记"小"、≥2 记"大"；奇数记"单"、偶数记"双"。并统计与上期形态的一致度、按配对（1-2、3-4…）合并形态。</div>
+    <div class="row"><span class="col">J</span>　<b>和值</b>：8 位之和，用作筛选区间。</div>
+  </div>
+  <p class="note">说明：表里还有重号计数（K）、形态二进制编码（EW/FA）、各类 COUNTIF 频次统计等辅助列，思路一致，不再展开。</p>
+
+  <h2><span class="n">三</span>340 期数据告诉我们的事实</h2>
+  <p>把 340 期开奖统计出来，有两条结论非常清楚，也正是这套系统能成立的根基：</p>
+  <h3>① 每个位置上「1」最常出，「3+」最罕见</h3>
+  <table>
+    <tr><th>位置</th><th class="c">0</th><th class="c">1</th><th class="c">2</th><th class="c">3+</th><th>推荐前 2</th></tr>
+    <tr><td>第 1 场主</td><td class="c">22%</td><td class="c">32%</td><td class="c">24%</td><td class="c">21%</td><td class="pick">1 / 2</td></tr>
+    <tr><td>第 1 场客</td><td class="c">32%</td><td class="c">34%</td><td class="c">23%</td><td class="c">11%</td><td class="pick">1 / 0</td></tr>
+    <tr><td>第 2 场主</td><td class="c">32%</td><td class="c">34%</td><td class="c">21%</td><td class="c">13%</td><td class="pick">1 / 0</td></tr>
+    <tr><td>第 2 场客</td><td class="c">29%</td><td class="c">39%</td><td class="c">20%</td><td class="c">12%</td><td class="pick">1 / 0</td></tr>
+    <tr><td>第 3 场主</td><td class="c">26%</td><td class="c">31%</td><td class="c">25%</td><td class="c">18%</td><td class="pick">1 / 2</td></tr>
+    <tr><td>第 3 场客</td><td class="c">29%</td><td class="c">33%</td><td class="c">20%</td><td class="c">14%</td><td class="pick">1 / 0</td></tr>
+    <tr><td>第 4 场主</td><td class="c">29%</td><td class="c">33%</td><td class="c">21%</td><td class="c">17%</td><td class="pick">1 / 0</td></tr>
+    <tr><td>第 4 场客</td><td class="c">33%</td><td class="c">34%</td><td class="c">19%</td><td class="c">14%</td><td class="pick">1 / 0</td></tr>
+  </table>
+  <p class="note">这不是偶然：足球里每队单场进球近似均值 1 出头的泊松分布，进 0/1 最多、进 3+ 很少。按频率给每位定号，就是把钱押在概率真正密集的地方。</p>
+  <h3>② 和值集中在 8–14（峰值 12）</h3>
+  <p>8 个偏小的数相加，按概率会向中间堆积。和值落在 <strong>8–14</strong> 的占大多数，峰值在 <span class="num">12</span>；和值 4 或 18+ 极少。所以把和值限制在合理区间，能直接剔除大量几乎不可能的组合。</p>
+
+  <h2><span class="n">四</span>诚实评估：哪一半有用，哪一半没用</h2>
+  <p class="lead">经独立的统计核验，这套表其实是两半，必须分开看：</p>
+  <div class="card ok">
+    <h4><span class="tag sig">真信号</span>　按足球真实分布缩水</h4>
+    <p>每位频率（1 多、3+ 少）+ 和值带 + 大小/单双形态计数，都是在"过滤一个本就不均匀的空间"。这是有效的：同样注数下，命中概率约为<strong>盲投的 4–6 倍</strong>。这是你这套系统真正值钱的部分。</p>
+  </div>
+  <div class="card">
+    <h4><span class="tag fal">无预测力</span>　遗漏 / 冷热 / 走势 / 重号 / 动量</h4>
+    <p>每期是<strong>不同的比赛、期与期相互独立</strong>。"某号 22 期没出、该出了"是经典的赌徒谬误，对下一期没有任何预测增益。这一层做得很精巧，但本质是在给一个无记忆的过程"算记忆"。建议把它当参考、不要用来加权选号。</p>
+  </div>
+  <div class="card warn">
+    <h4>⚠️ 关于"中奖率"，必须说清三件事</h4>
+    <p><strong>(1) 每元命中效率：会提高</strong>——这是缩水唯一真实的好处。<br>
+    <strong>(2) 单注中奖概率：不变</strong>——提升来自"挑更可能的组合去买"，而非改变任何一注的概率。<br>
+    <strong>(3) 期望收益：永远为负</strong>——进球彩是奖池抽水制（约抽 35–50%），任何缩水都改不了长期亏损；而且越押"热门"组合，中奖时分得越少。</p>
+  </div>
+
+  <h2><span class="n">五</span>购买建议（基于 340 期，示例为下一期 3206）</h2>
+  <p>把上面每位的"前 2 个号"组合起来（256 注），再用<strong>和值 8–14 + 形态（2–4 个大、3–5 个单）</strong>过滤，得到 <strong>80 注的候选池</strong>，按概率排序后分四档：</p>
+  <table>
+    <tr><th>档位</th><th class="r">注数</th><th class="r">金额</th><th class="c">覆盖真实概率</th><th class="c">相对盲投</th></tr>
+    <tr><td>单式胆（锚点）</td><td class="r num">1 注</td><td class="r num">¥2</td><td class="c num">≈0.01%</td><td class="c num">5.9×</td></tr>
+    <tr class="hl"><td><strong>小复式（日常推荐）</strong></td><td class="r num">16 注</td><td class="r num">¥32</td><td class="c num">≈0.13%</td><td class="c num">5.2×</td></tr>
+    <tr><td>中复式</td><td class="r num">40 注</td><td class="r num">¥80</td><td class="c num">≈0.29%</td><td class="c num">4.7×</td></tr>
+    <tr><td>预算复式（全池）</td><td class="r num">80 注</td><td class="r num">¥160</td><td class="c num">≈0.50%</td><td class="c num">4.1×</td></tr>
+  </table>
+  <p>日常建议走 <strong>小复式 ¥32</strong> 这档：成本可控、密度增益最高。想加大投入再上中/预算档；每位上到 3 个号会让注数爆炸（3⁸ = <span class="num">6,561</span>），不划算。和值的中心在 12，所以推荐组合会自然带上一些"2"，而不是清一色的"1"。</p>
+  <div class="kpi">
+    <div class="b"><div class="v num">65,536→80</div><div class="l">候选空间压缩</div></div>
+    <div class="b"><div class="v num">¥160</div><div class="l">全池封顶成本</div></div>
+    <div class="b"><div class="v num">4–6×</div><div class="l">每元命中效率（vs 盲投）</div></div>
+  </div>
+
+  <h2><span class="n">六</span>已落地为可用工具</h2>
+  <p>这套算法已经做进一个移动端网页：打开 <strong>zucai.pages.dev → 4 场进球 → 智能推荐</strong>，即可看到每位号码的频率柱状图与遗漏值、四个购买档位的实时注数/金额/覆盖率，一键把推荐复式填入选号；底部还能"补充最新开奖"，让引擎对当前期次实时重算。</p>
+
+  <div class="card red">
+    <h4>免责声明</h4>
+    <p>本报告是对你既有表格算法的技术解读，不构成投注建议。进球彩长期期望为负，所有投入请视为娱乐成本，设好预算与止损，理性购彩。</p>
+  </div>
+
+  <div class="foot">进球彩选号公式 · 算法解读报告　|　逆向还原自 比分表20231231.xlsx（340 期）　|　数据口径与公式均经独立核验</div>
+</div>
+</body>
+</html>
