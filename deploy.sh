@@ -4,5 +4,6 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 cp index.html public/index.html
+cp three.module.min.js public/three.module.min.js
 npx wrangler pages deploy public --project-name=zucai --branch=main --commit-dirty=true
 echo "✅ 已部署 → https://zucai.pages.dev"

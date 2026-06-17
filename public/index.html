@@ -368,6 +368,21 @@
   .pstep .pl{font-size:10px; color:var(--txt-faint); margin-top:2px;}
   .parrow{display:flex; align-items:center; color:var(--txt-faint); font-weight:800; font-size:14px;}
   .cbs{gap:5px;} .pk.cb{font-family:ui-monospace,Menlo,monospace; letter-spacing:1.5px; background:var(--bg-inset); color:var(--txt-dim); font-weight:700;}
+  /* 演算过场 overlay */
+  .fx{position:fixed; inset:0; z-index:90; background:radial-gradient(circle at 50% 42%,#140f2e,#07050f 70%); opacity:0; pointer-events:none; transition:opacity .35s ease; display:flex; align-items:center; justify-content:center;}
+  .fx.on{opacity:1; pointer-events:auto;}
+  .fx #fxCanvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  .fx-hud{position:relative; width:min(78vw,320px); aspect-ratio:1; display:grid; place-items:center;}
+  .fx-rings{position:absolute; inset:0; width:100%; height:100%;}
+  .fx-sweepg{transform-origin:130px 130px; animation:fxspin 2.2s linear infinite;}
+  @keyframes fxspin{to{transform:rotate(360deg);}}
+  .fx-center{position:relative; text-align:center; color:#fff;}
+  .fx-num{font-size:34px; font-weight:900; letter-spacing:-.02em; text-shadow:0 0 24px #7c5cffaa;}
+  .fx-arrow{font-size:12px; color:#b9aaff; letter-spacing:.2em; margin:2px 0;}
+  .fx-target{font-size:20px; font-weight:800; color:#a78bfa;}
+  .fx-label{position:absolute; bottom:18%; left:0; right:0; text-align:center; color:#cfc6ff; font-size:13px; font-weight:600; letter-spacing:.04em; word-break:keep-all;}
+  .fx-skip{position:absolute; bottom:calc(8% + var(--sab)); left:0; right:0; text-align:center; color:#ffffff66; font-size:12px;}
+  @media (prefers-reduced-motion: reduce){ .fx-sweepg{animation:none;} }
   /* 降低动效偏好 */
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important; animation:none !important;}
@@ -393,6 +408,35 @@
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"></div>
+
+<!-- 演算过场：Three.js 扫描隧道 + 高精度 SVG HUD（移植自 ken-le-me ScanTunnel，f5-3d/f5-svg 风格） -->
+<div class="fx" id="fx">
+  <canvas id="fxCanvas"></canvas>
+  <div class="fx-hud">
+    <svg class="fx-rings" viewBox="0 0 260 260" aria-hidden="true">
+      <defs>
+        <linearGradient id="fxSweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a78bfa" stop-opacity="0"/><stop offset="1" stop-color="#a78bfa" stop-opacity=".9"/></linearGradient>
+        <radialGradient id="fxGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#7c5cff" stop-opacity=".35"/><stop offset="1" stop-color="#7c5cff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle cx="130" cy="130" r="120" fill="url(#fxGlow)"/>
+      <circle cx="130" cy="130" r="118" fill="none" stroke="#ffffff22" stroke-width="1"/>
+      <circle cx="130" cy="130" r="92" fill="none" stroke="#ffffff1a" stroke-width="1"/>
+      <circle cx="130" cy="130" r="66" fill="none" stroke="#ffffff14" stroke-width="1"/>
+      <circle class="fx-prog" cx="130" cy="130" r="104" fill="none" stroke="#a78bfa" stroke-width="3" stroke-linecap="round" stroke-dasharray="653.45" stroke-dashoffset="653.45" transform="rotate(-90 130 130)"/>
+      <g class="fx-ticks" stroke="#ffffff33" stroke-width="1.4">
+        <!-- ticks injected by JS -->
+      </g>
+      <g class="fx-sweepg"><path d="M130 130 L130 12 A118 118 0 0 1 232 70 Z" fill="url(#fxSweep)" opacity=".5"/></g>
+    </svg>
+    <div class="fx-center">
+      <div class="fx-num"><span id="fxCount" class="num">65,536</span></div>
+      <div class="fx-arrow">缩水 →</div>
+      <div class="fx-target"><span id="fxTarget" class="num">80</span> 注</div>
+    </div>
+  </div>
+  <div class="fx-label" id="fxLabel">智能演算中 · 全 65,536 注打分筛选</div>
+  <div class="fx-skip" id="fxSkip">点击跳过</div>
+</div>
 
 <script>
 "use strict";
@@ -436,6 +480,7 @@ const GOALS = [{v:0,t:'0'},{v:1,t:'1'},{v:2,t:'2'},{v:3,t:'3+'}];
 const JQC_HIST = "13022032220132000020321111102111441244112010113113103033113121211003022011230010130022113123303213112201202320013003023222112122100223113211210001231212110213211111302120211100000130010112313002232100031011111110121331013103321111101020001100031210233110110121110113012030311231122220331201332210212111010312131122301211112120011101001132202001013200323112001001322230322030010110110133013033221201313110311020320230321130112220010311212103202131331131113002211321310110031222021102131322101321110022003222011211221000321002113112321131330311132221012110310113102113110000131111212111002111102110103321211132313001302103023121110101332310211220202030320112111201131310103001121112212010011203102002332101011230202112121130012220321213100011333211010310200300031020223200011031101001203130113111120130330003032021103010111030303123123010112120203112100110123111211123213302311201203120001210322231023310021211213001121330023202111200003100123010100032200213110001202120010231113323102012020103101012021200212302212310312131301131003100221012302011022122020222031331203013310221012302113112003022033101010010222110022221012100111121311131211020301010022011210100310312130010033110212100102310302302222100102010121111120231010110011002102211231002322111010102302011100223101120033121113023210100111020301003011220033020311010300231301000012031200020223110022122333113220111030021003030100102001112221021233311223110012131123003113020200201302031020103200330010200121113102003231112000121101313222020023020101010221132101221231312312202100011021133112113303311210032210011033101102010113231021231011322211110020230210032101231333110212030102131103132211013211002103013110211103222102122202120030320201030110020122031111022313110310111311231202112231121132110321210212001022111211123011120101321121013222210032123001230112030102201312003012120112103102020201112310121221103120310301100120302201203100110022111212221111112012121021230100030100030200021111010210100123000130202321110211101301110123200311012030212113101310322111200311321112103011032101320303120002223211330310133221321311212331230211131122212312331311230311213302013010111011201302130222111231313313100012121003130203133301230031333000111102001301000220131101000021310311030310121122210202200113021211300221032132211201032230212133031213321300101031101300020022210213021221213210132101301121030012213213131121210100130233012300310221010313210133021121021302303120121011000202130302130203302320110302210333110322121001131120221110210203303010022110131321131320312033111131132213332330030110132020112202110442032331110103300100221101231101000031031231231101111200001231112202123102002221110302211312000200211110133123032101100013211020122201112201330023200111010";
 
 let recTier = 16; // 智能推荐当前档位
+let fxAutoPlayed=false, fxTimer=null; // 演算过场
 
 function jqcDraws(){ const s=JQC_HIST+(S.jqcAdd||''); const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(ch=>Math.min(+ch,3))); return a; }
 /* 缩水推荐引擎（经 340 期 walk-forward 回测优化）：纯每位频率积，对全部 65,536 注排序取前 N。
@@ -516,7 +561,7 @@ function render(){
   renderHeader(); renderSwitcher(); renderTabbar();
   const scr=$('#screen');
   scr.className=(route==='manual'||route==='slip')?'':'nobar';
-  if(route==='home') scr.innerHTML=viewHome();
+  if(route==='home'){ scr.innerHTML=viewHome(); if(!fxAutoPlayed){ fxAutoPlayed=true; setTimeout(()=>runAnalysis(()=>{}),90); } }
   else if(route==='manual') scr.innerHTML=viewBet(GAMES[S.lastGame]);
   else if(route==='slip') scr.innerHTML=viewSlip();
   else if(route==='orders') scr.innerHTML=viewOrders();
@@ -614,6 +659,28 @@ function viewCalc(){
   }
 }
 
+/* ---------- 演算过场（Three.js + SVG HUD） ---------- */
+function fxTicks(){ const g=document.querySelector('.fx-ticks'); if(!g||g.childElementCount) return; let s='';
+  for(let i=0;i<60;i++){ const a=i/60*Math.PI*2, r1=124, r2=(i%5===0)?113:118; const x1=130+Math.cos(a)*r1,y1=130+Math.sin(a)*r1,x2=130+Math.cos(a)*r2,y2=130+Math.sin(a)*r2;
+    s+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; } g.innerHTML=s; }
+function runAnalysis(cb){
+  const N=recTier, fx=$('#fx'); if(!fx){ cb&&cb(); return; }
+  fxTicks(); const tEl=$('#fxTarget'); if(tEl) tEl.textContent=nf.format(N);
+  const lab=$('#fxLabel'); if(lab) lab.innerHTML='智能演算中 · 全 65,536 注打分筛选';
+  fx.classList.add('on');
+  if(window.__fxReady && window.fxStart){ try{window.fxStart();}catch(e){} }
+  const DUR=reduceMotion?500:2200, prog=document.querySelector('.fx-prog'), C=653.45, cnt=$('#fxCount');
+  const start=performance.now(); let raf;
+  (function step(now){ const k=Math.min(1,(now-start)/DUR), e=1-Math.pow(1-k,3);
+    if(cnt) cnt.textContent=nf.format(Math.round(65536+(N-65536)*e));
+    if(prog) prog.style.strokeDashoffset=(C*(1-e)).toFixed(1);
+    if(k<1) raf=requestAnimationFrame(step); })(start);
+  let done=false;
+  const finish=()=>{ if(done) return; done=true; cancelAnimationFrame(raf); clearTimeout(fxTimer);
+    if(window.fxStop){ try{window.fxStop();}catch(e){} } fx.classList.remove('on'); cb&&cb(); };
+  fxTimer=setTimeout(finish, DUR+150); fx._finish=finish;
+}
+
 /* ---------- 智能演算（首页 · 核心） ---------- */
 function viewHome(){
   const R=recommend(); const gt=v=>v===3?'3+':String(v);
@@ -630,7 +697,7 @@ function viewHome(){
     <div class="hero-badge">✓ 340 期回测验证 · 纯频率最优</div>
     <button class="btn-primary" id="recAddSlip">加入投注单 →</button>
   </div>`;
-  const pipe=`<div class="section-title">演算过程</div><div class="pipe">
+  const pipe=`<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">演算过程 <button class="mini go" id="recReplay">✦ 重新演算</button></div><div class="pipe">
     <div class="pstep"><div class="pn num">${R.N}</div><div class="pl">期开奖</div></div><div class="parrow">›</div>
     <div class="pstep"><div class="pn">8×4</div><div class="pl">每位频率</div></div><div class="parrow">›</div>
     <div class="pstep"><div class="pn num">65,536</div><div class="pl">全注打分</div></div><div class="parrow">›</div>
@@ -796,7 +863,8 @@ function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(
 
 /* =========================================================== 事件 =========================================================== */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#recAddSlip,#goManual,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
+  if(e.target.closest('#fx')){ const fx=$('#fx'); if(fx&&fx._finish) fx._finish(); return; }
+  const t=e.target.closest('[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#recAddSlip,#goManual,#recReplay,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
   if(!t) return;
   if(t.dataset.route){ go(t.dataset.route); return; }
   if(t.dataset.game){ S.lastGame=t.dataset.game; persist(); render(); return; }
@@ -809,6 +877,7 @@ document.addEventListener('click',e=>{
   if(t.id==='recRefresh'){ const v=$('#recAdd'); if(v){ S.jqcAdd=(v.value||'').replace(/[^0-3]/g,''); persist(); } _recCache=null; render(); toast('已用最新数据刷新推荐'); return; }
   if(t.id==='recAddSlip'){ addRecToSlip(); return; }
   if(t.id==='goManual'){ S.lastGame='jqc'; jqcView='pick'; go('manual'); return; }
+  if(t.id==='recReplay'){ runAnalysis(()=>render()); return; }
   if(t.dataset.pick){ togglePick(t.dataset.pick,+t.dataset.m,+t.dataset.v); return; }
   if(t.dataset.incl){ toggleInclude(+t.dataset.incl); return; }
   if(t.id==='addSlip'){ addToSlip(); return; }
@@ -907,6 +976,67 @@ function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList
 
 /* ---------- 启动 ---------- */
 (function init(){ const r=(location.hash||'').replace('#/',''); if(['home','manual','slip','orders','scores','check'].includes(r)) route=r; render(); })();
+</script>
+
+<!-- 演算 3D 场景：穿梭光环 + 雷达扇扫 + 汇聚粒子涡流 + 脉冲核心（vanilla three，移植自 ken-le-me ScanTunnel） -->
+<script type="module">
+try{
+  const THREE = await import('./three.module.min.js');
+  const canvas=document.getElementById('fxCanvas');
+  let renderer,scene,cam,clock,raf,running=false,rings=[],radarMat,vortex,vstate,core,glow;
+  const VIO=['#7c5cff','#a78bfa','#ffffff','#6741d9','#b9aaff','#7c5cff'];
+  function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
+  function build(){
+    renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));
+    renderer.setClearColor(0x07050f,1);
+    scene=new THREE.Scene();
+    cam=new THREE.PerspectiveCamera(50, innerWidth/innerHeight, .1, 100); cam.position.z=6;
+    clock=new THREE.Clock();
+    // 穿梭光环
+    for(let i=0;i<6;i++){ const m=new THREE.Mesh(new THREE.TorusGeometry(2.7,0.014,8,96),
+      new THREE.MeshBasicMaterial({color:new THREE.Color(VIO[i]),transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+      m.position.z=-i*5; rings.push(m); scene.add(m); }
+    // 雷达扇扫
+    radarMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+      uniforms:{uTime:{value:0},uColor:{value:new THREE.Color('#8b6dff')}},
+      vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+      fragmentShader:'uniform float uTime; uniform vec3 uColor; varying vec2 vUv; void main(){ vec2 p=vUv-0.5; float r=length(p); if(r>0.5) discard; float ang=atan(p.y,p.x); float sweep=pow(fract(-ang/6.28318 - uTime*0.22),7.0); float rings=smoothstep(0.012,0.0,abs(fract(r*6.0)-0.5)*0.16); float edge=smoothstep(0.5,0.42,r); float a=(sweep*0.55+rings*0.10)*edge; gl_FragColor=vec4(uColor,a); }'});
+    const radar=new THREE.Mesh(new THREE.PlaneGeometry(5.6,5.6),radarMat); radar.position.z=-1.5; scene.add(radar);
+    // 汇聚粒子涡流（65,536 候选 → 收束）
+    const N=window.innerWidth<480?260:380;
+    vstate={r:new Float32Array(N),th:new Float32Array(N),z:new Float32Array(N),n:N};
+    for(let i=0;i<N;i++){ vstate.r[i]=1.2+Math.random()*5.5; vstate.th[i]=Math.random()*6.283; vstate.z[i]=-16+Math.random()*18; }
+    const pos=new Float32Array(N*3); const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    vortex=new THREE.Points(geo,new THREE.PointsMaterial({size:0.05,color:new THREE.Color('#d9ccff'),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}));
+    vortex.frustumCulled=false; scene.add(vortex);
+    // 脉冲核心
+    const c=document.createElement('canvas'); c.width=c.height=128; const cx=c.getContext('2d');
+    const g=cx.createRadialGradient(64,64,0,64,64,64); g.addColorStop(0,'rgba(140,108,255,0.95)'); g.addColorStop(1,'rgba(124,92,255,0)');
+    cx.fillStyle=g; cx.fillRect(0,0,128,128);
+    glow=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0.85}));
+    glow.scale.set(2.6,2.6,1); glow.position.z=-1; scene.add(glow);
+    core=new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,1), new THREE.MeshBasicMaterial({color:new THREE.Color('#b9aaff'),wireframe:true,transparent:true,opacity:0.9}));
+    core.position.z=-1; scene.add(core);
+    addEventListener('resize',resize); resize();
+  }
+  function frame(){ if(!running) return; raf=requestAnimationFrame(frame);
+    const dt=Math.min(0.05,clock.getDelta()), t=clock.elapsedTime;
+    rings.forEach(m=>{ m.position.z+=dt*3.2; if(m.position.z>5) m.position.z-=30; m.material.opacity=(1-Math.min(1,Math.abs(m.position.z-1)/16))*0.55; });
+    radarMat.uniforms.uTime.value=t;
+    const p=vortex.geometry.getAttribute('position'); const s=vstate;
+    for(let i=0;i<s.n;i++){ s.th[i]+=dt*(2.4/Math.max(0.4,s.r[i])); s.r[i]-=dt*0.5; s.z[i]+=dt*2.2;
+      if(s.r[i]<0.25||s.z[i]>4){ s.r[i]=4.5+Math.random()*2.5; s.z[i]=-15; }
+      p.setXYZ(i, Math.cos(s.th[i])*s.r[i], Math.sin(s.th[i])*s.r[i]*0.85, s.z[i]); }
+    p.needsUpdate=true;
+    const sc=1+Math.sin(t*2.6)*0.12; core.scale.setScalar(sc); core.rotation.x=t*0.5; core.rotation.y=t*0.8;
+    glow.scale.setScalar(2.6+Math.sin(t*2.6)*0.5);
+    renderer.render(scene,cam);
+  }
+  window.fxStart=function(){ if(!renderer) build(); running=true; clock.start(); clock.getDelta(); cancelAnimationFrame(raf); frame(); };
+  window.fxStop=function(){ running=false; cancelAnimationFrame(raf); };
+  window.__fxReady=true;
+}catch(e){ window.__fxReady=false; console.warn('three fx unavailable',e); }
 </script>
 </body>
 </html>
