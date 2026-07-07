@@ -1,4 +1,4 @@
-const SW_VERSION = 'zucai-pwa-v2';
+const SW_VERSION = 'zucai-pwa-v3';
 const SHELL_CACHE = `${SW_VERSION}-shell`;
 const RUNTIME_CACHE = `${SW_VERSION}-runtime`;
 const SHELL = [
