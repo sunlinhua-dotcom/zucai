@@ -1,0 +1,15 @@
+{
+  "name": "足彩预约购买·选号投注",
+  "short_name": "足彩",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1f6",
+  "theme_color": "#eef1f6",
+  "description": "足彩预约购买、智能选号、走势复盘与本地订单核对工具。",
+  "icons": [
+    {"src": "icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable"},
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

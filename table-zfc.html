@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1115" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="足彩" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<title>胜负14场 · 遗漏走势分析表（复刻原表）</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --cell:#1b1f29; --cell2:#20242f; --line:#2a3140; --line2:#222836;
+    --txt:#e9edf5; --dim:#9aa3b5; --faint:#6c7488;
+    --accent:#7c5cff; --win:#e5484d; --draw:#e3b341; --loss:#5b9bff;
+    --head-bg:rgba(15,17,21,.92); --even-bg:rgba(255,255,255,.012); --latest-bg:rgba(124,92,255,.10); --zero-bg:rgba(22,163,74,.16); --toast-bg:#000d;
+    --sat:env(safe-area-inset-top);
+  }
+  html[data-theme="light"]{
+    --bg:#eef1f6; --panel:#ffffff; --cell:#ffffff; --cell2:#f4f6fa; --line:#dde2ea; --line2:#e9edf3;
+    --txt:#161a22; --dim:#4c5564; --faint:#6e7686;
+    --accent:#6741d9; --win:#e5343b; --draw:#c97a06; --loss:#1971c2;
+    --head-bg:rgba(255,255,255,.92); --even-bg:rgba(22,30,52,.018); --latest-bg:rgba(103,65,217,.08); --zero-bg:rgba(10,138,82,.10); --toast-bg:#161a22;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; background:var(--bg); color:var(--txt); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  /* djhh：中文标题/段落不掉孤字，数字不断行 */
+  h1,.sub,.legend,.hint,.posh,.rec-note{word-break:keep-all; text-wrap:balance; overflow-wrap:break-word;}
+  .num{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  header{position:sticky; top:0; z-index:30; padding:calc(var(--sat) + 12px) 14px 10px; background:var(--head-bg); backdrop-filter:blur(14px); border-bottom:1px solid var(--line2);}
+  .topline{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
+  .topline .spacer{flex:1;}
+  .topline a{text-decoration:none;}
+  header h1{margin:0; font-size:17px; font-weight:800; letter-spacing:.2px;}
+  header .sub{font-size:11.5px; color:var(--faint); margin-top:2px; max-width:44ch;}
+  .bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:10px 14px; background:var(--panel); border-bottom:1px solid var(--line2); position:sticky; top:calc(var(--sat) + 56px); z-index:29;}
+  .fld{display:flex; align-items:center; gap:6px; background:var(--cell); border:1px solid var(--line); border-radius:9px; padding:7px 10px; font-size:13px; color:var(--dim);}
+  .fld input{background:transparent; border:none; outline:none; color:var(--txt); font-weight:700; font-size:14px;}
+  .fld input#tIssue{width:74px;} .fld input#tDig{width:200px; letter-spacing:1.5px;}
+  .btn{border:none; border-radius:9px; padding:8px 14px; font-size:13px; font-weight:800; background:var(--accent); color:#fff;}
+  .btn:active{transform:scale(.97);} .btn.ghost{background:var(--cell); color:var(--dim); border:1px solid var(--line);}
+  .tog{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap;}
+  .tog button{border:1px solid var(--line); background:var(--cell); color:var(--dim); border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700;}
+  .tog button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+
+  /* ---- 本期推荐 ---- */
+  .rec{margin:14px; padding:14px; border-radius:16px; background:linear-gradient(160deg,#1c2030,#15171f); border:1px solid var(--line);}
+  .rec-tag{font-size:11.5px; font-weight:800; color:var(--accent); letter-spacing:.4px;}
+  .rec-str{margin:8px 0 4px; display:flex; flex-wrap:wrap; gap:4px;}
+  .rb{display:inline-flex; flex-direction:column; align-items:center; min-width:30px; padding:4px 0; border-radius:7px; font-size:13px; font-weight:800; border:1px solid transparent;}
+  .rb small{font-size:9px; font-weight:700; opacity:.7; margin-bottom:1px;}
+  .rb.w{background:rgba(229,72,77,.16); color:#ff9a9d; border-color:rgba(229,72,77,.4);}
+  .rb.d{background:rgba(227,179,65,.16); color:#ffd877; border-color:rgba(227,179,65,.4);}
+  .rb.l{background:rgba(91,155,255,.16); color:#a3c4ff; border-color:rgba(91,155,255,.4);}
+  .rb.dbl{outline:2px dashed var(--accent); outline-offset:1px;}
+  .rec-kpis{display:flex; gap:18px; margin-top:10px; font-size:12px; color:var(--faint); flex-wrap:wrap;}
+  .rec-kpis b{color:var(--txt); font-size:15px;}
+  .tiers{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .tier{flex:1; min-width:96px; text-align:left; border:1px solid var(--line); background:var(--cell); border-radius:11px; padding:9px 11px; color:var(--dim);}
+  .tier.on{border-color:var(--accent); background:rgba(124,92,255,.12);}
+  .tier .t{font-size:12px; font-weight:800; color:var(--txt);} .tier .v{font-size:12px; margin-top:3px;} .tier .s{font-size:10.5px; color:var(--faint); margin-top:2px;}
+  .rec-note{font-size:11px; color:var(--faint); line-height:1.7; margin-top:10px; max-width:46ch;}
+
+  .stat{padding:8px 14px; font-size:12px; color:var(--faint); border-bottom:1px solid var(--line2); background:var(--bg);}
+  .stat b{color:var(--dim);}
+  .wrap{overflow:auto; -webkit-overflow-scrolling:touch; max-width:100%;}
+  table{border-collapse:separate; border-spacing:0; font-size:12px; white-space:nowrap;}
+  th,td{border-right:1px solid var(--line2); border-bottom:1px solid var(--line2); padding:5px 7px; text-align:center; font-variant-numeric:tabular-nums;}
+  thead th{position:sticky; top:0; z-index:12; background:var(--panel); color:var(--dim); font-weight:700; font-size:11px;}
+  thead tr.r2 th{top:25px; z-index:11;}
+  .col-iss{position:sticky; left:0; z-index:13; background:var(--panel); min-width:58px; text-align:left; padding-left:10px;}
+  tbody td.col-iss{z-index:9; background:var(--cell2); color:var(--dim); font-weight:700;}
+  .grp{border-left:2px solid var(--line);}
+  td.r{font-weight:800;}
+  td.r.w{color:#ff8a8d; background:rgba(229,72,77,.10);}
+  td.r.d{color:#ffd877; background:rgba(227,179,65,.10);}
+  td.r.l{color:#a3c4ff; background:rgba(91,155,255,.10);}
+  td.cnt{font-weight:800; color:var(--accent); background:var(--cell2);}
+  td.cnt span{font-weight:800;} td.cnt .cw{color:#ff8a8d;} td.cnt .cd{color:#ffd877;} td.cnt .cl{color:#a3c4ff;}
+  td.dup{color:var(--faint); background:var(--cell2);}
+  td.om{color:var(--dim);}
+  td.om.zero{color:#7ee2a8; font-weight:800; background:var(--zero-bg);}
+  td.om.max{color:#ff8a8d; font-weight:800; box-shadow:inset 0 0 0 1.5px var(--win);}
+  td.mx{color:var(--dim); font-weight:800; background:var(--cell);}
+  td.mx b{font-size:9px; margin-left:2px;} td.mx .ow{color:#ff8a8d;} td.mx .od{color:#ffd877;} td.mx .ol{color:#a3c4ff;}
+  tbody tr:nth-child(even) td{background-color:var(--even-bg);}
+  tbody tr.latest td{background-color:var(--latest-bg);}
+  tbody tr.season td{border-top:2px solid var(--accent);}
+  .legend{padding:8px 14px 28px; font-size:11px; color:var(--faint); line-height:1.8; max-width:60ch;}
+  .legend .k{display:inline-block; padding:1px 7px; border-radius:5px; margin:0 4px; font-weight:800;}
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--toast-bg); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; font-weight:700; opacity:0; transition:opacity .2s; pointer-events:none; z-index:50;}
+  .toast.on{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <div class="topline"><a class="btn ghost" href="index.html#/sf">← 返回 App</a><span class="spacer"></span><button class="btn ghost" id="themeBtn">亮色</button></div>
+  <h1>胜负14场 · 遗漏走势分析表</h1>
+  <div class="sub">复刻原 Excel「胜负彩」全场胜负口径 · 14 场 胜 / 平 / 负 · 206 期真实开奖 · 录入新一期自动算 遗漏 / 最大遗漏 / 胜平负个数</div>
+</header>
+<div class="bar">
+  <div class="fld">期号 <input id="tIssue" inputmode="numeric" placeholder="如 23160"></div>
+  <div class="fld">开奖 <input id="tDig" placeholder="14 场 如 胜平负负胜… 或 3/1/0"></div>
+  <button class="btn" id="tAdd">录入</button>
+  <button class="btn ghost" id="tUndo">撤销</button>
+  <div class="tog">
+    <button data-grp="om" class="on">遗漏矩阵</button>
+    <button data-grp="mx" class="on">最大遗漏</button>
+  </div>
+</div>
+
+<div id="rec"></div>
+<div class="stat" id="stat"></div>
+<div class="wrap"><table id="tbl"></table></div>
+<div class="legend" id="legend"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const ROWS=[["22005","PPPLWLWLLWWPLW"],["22006","WLWPLLLPPWPLPW"],["22007","PWWPPPPLWWLPLP"],["22008","WWPPLWWLLWPPPP"],["22009","PWWPLLPLPPPLPP"],["22010","WLWPPLWPPLWLLL"],["22011","LLPPLPPLPPPPPW"],["22012","PWLPWWLWPLPPLP"],["22013","PPWLPPWWWPPPLP"],["22014","PLLWWLWPLWWWLP"],["22015","PWLPWLPLWPWWWW"],["22016","PWPPWLWWLPPWPL"],["22017","PPLLPLLWPPWWPL"],["22018","WWLLWLWWPPPWLW"],["22019","WPLPPLLLWLLWWW"],["22020","WLLPWWLWPLWWPP"],["22021","WPWWPPLLWPPPWW"],["22022","LWLPPWLLWPWLPP"],["22023","WLPLLWWLPWWPPP"],["22024","LPWWWLLWPLWLWP"],["22025","PWWWPWWPPPLWLL"],["22026","LWPPWLWLPPLPPL"],["22027","WLPPWPPWWWPWLW"],["22028","PWPLPWPLPPLWPL"],["22029","LPPWWWWLWWLWLP"],["22030","LPLPLWWPWWPWWL"],["22031","WLWWLWPWWWPPPW"],["22032","LLPLPWPWPLPWPW"],["22033","PPPWLWWLWPPWWW"],["22034","PPWWLPWWPPLWPP"],["22035","PPWWPLPPLWPLWW"],["22036","WLPWLWWWPPPLPP"],["22037","PPWWLLPLPLPWWP"],["22038","PWPPLWPLWPPWPL"],["22039","WLPPPPPLPPLPLW"],["22040","LWWPLWLPWWPLLP"],["22041","LLPWPLPLLPPLPL"],["22042","WLWWLWLPLPPLWW"],["22043","LLLLWLPWWLPWPW"],["22044","WPPPPLWPPWWWWP"],["22045","PLWPPPLPLPLWPP"],["22046","PLWPWWWWWLPWPW"],["22047","WWLPPWLPLWWLLL"],["22048","PWWWWWPPWWLPPP"],["22049","WPPWLPPLPLPPLW"],["22050","PPWWPWPPPPPWWW"],["22051","WWWPWWPLLPLWLP"],["22052","WLPWPPWPPWPWPL"],["22053","WPPPLLPWWWLWWP"],["22054","WWPWLPLWWWLWWL"],["22055","PWLPPLLWWLPWPW"],["22056","WWWLWWWPLPWWWW"],["22057","LWWWWWLLWPWWLP"],["22058","LPWWLPLLPLPLLP"],["22059","WPPPPPLWLPPPWW"],["22060","WWPWWWLWWWWPPP"],["22061","LWWPPPWLPWLPWW"],["22062","LWLPLWPPWPPLWL"],["22063","PWPPPLWPWPPPPW"],["22064","WPWPWWPPWPWLPP"],["22065","PWPLLPWWLPWPWW"],["22066","PLPWWWLWWPPPPW"],["22067","LLLLWWPWWPWPWL"],["22068","PLLWWWPLLWLWWP"],["22069","WPLLPPPLWLWLLW"],["22070","PLPLPPWPWLWLPP"],["22071","PPLLLPWWLWLWWP"],["22072","WPWPPPPWLPLWLL"],["22073","PPWWLWWWWWLPPL"],["22074","WWPPPWPWPWWWWW"],["22075","WWPPWPLWWWLPPW"],["22076","WLPWPWWLPWWWWP"],["22077","WLPLPPPWPWPLWW"],["22078","WWWLPPPLPWWPWP"],["22079","LPLWWPWWWWPPWP"],["22080","PWWWWPPLWLWLPW"],["22081","PLWPWLPLPPWPWW"],["23031","WWWPPWPWWWPLWL"],["23032","LPWWLPPPLWWLPL"],["23033","PLPWLPLPWPPPLP"],["23034","WWPPPWWWPWLPWW"],["23035","PPWPPLWLPWWPLL"],["23036","PWLWLLPPWPPPPP"],["23037","WPLPPWWLLPLPPP"],["23038","PPWWPPWLPPPWPP"],["23039","PWLLLPWLWPPWPL"],["23040","LWWWWPPPPPPWPP"],["23041","PWWLPPPPPWWPPW"],["23042","WWLWLPWWPPWWLW"],["23043","LLPWPPWLWWWPLP"],["23044","PPLWWLPLLWWPPW"],["23045","WLWPPPWLPPWLWP"],["23046","PPPWWLLPPWLPWL"],["23047","WWWPWPWPPLWPPP"],["23048","WLLWLWWPWLWPPP"],["23049","PWPLLWLWPWPPPL"],["23050","WLLPPPPWPWPWWP"],["23051","WPWPLPWLPWWPPL"],["23052","PLPPPWLWPPWLLW"],["23053","PPWPWLLLWLPPWW"],["23054","WLLWLPWWLPPPLP"],["23055","PLPPPWWLLLWWWP"],["23056","PWPLLPPWLPPWPP"],["23057","WWLWPPLWPLLPWW"],["23058","LPWPPWPLWPWPWP"],["23059","LWLWWLLPLPPLPP"],["23060","PWPPLWWWLPPPWP"],["23061","LWLPLWLPWLLLPP"],["23062","PWLPLWPPWWPLPW"],["23063","LLPWPLLWLPPLPP"],["23064","WLPPWLPPPPLWPP"],["23065","LPPPPWPPLLPPLL"],["23066","LLLPLPWLPPWPWW"],["23067","PPWPLWWPWPPPWP"],["23068","LWLPLPWPPLPPLW"],["23069","WPPWPPLPLPPPWL"],["23070","WWPWLWWLLWWLPP"],["23071","WPWWPPPLLLWWWL"],["23072","PWWPLLLLPLWLLP"],["23073","LLWWPWWWWPPLPW"],["23074","WWWLWLWLWPWPPW"],["23075","LWPPWLWPWWLPWL"],["23076","LWWPPPLLPPPWLP"],["23077","WWLPPPWWWLPWLL"],["23078","PWLLLPWWLWWLWW"],["23079","LWPWWPLWWPPWLP"],["23080","PPWPWWLPWWLWPW"],["23081","PLPPWLPPPWLPPP"],["23082","LWWWWPLPLLLWLW"],["23083","WLLPLLPWPLWLWW"],["23084","WPLPWPPPWWWWWP"],["23085","PWPPLPLPPPLPWW"],["23086","PLLPPLPLPWWPPL"],["23087","PWLPLLWWLWWLPL"],["23088","LPWLWPLLPLPPPP"],["23089","PPPWWPPWLLPPPL"],["23090","PPPPLPLPLPPWLL"],["23091","WWPPPLPPPLPPPL"],["23092","PWWWPWWPWLPPWP"],["23093","WPWWPLLLLPWWLP"],["23094","LPPWWWPPWPPWWL"],["23095","LWPWLPPLWLLPPL"],["23096","WLLLWPWPWWWPWW"],["23097","WPLWWPWWLWLWPL"],["23098","PPWPWPWPLWPPLL"],["23099","LLPLWWLWWPPWWW"],["23100","WWPWWPLWLLLPPL"],["23101","WPLLWPWWPLWWPP"],["23102","LLLWPWPWWWWWLW"],["23103","LLLWLPPLWPLLWP"],["23104","WPPPPPLPWPLPWW"],["23105","PWLWLLWPPWPWLL"],["23106","WLPPWLWPPLLWPL"],["23107","WWPWWLPLLPWPWP"],["23108","WWPPPWWPPWPPPL"],["23109","LWLPWPLPWWWWWW"],["23110","LWLPLWWLLWLLWP"],["23111","PLWPPLPPWLPPPW"],["23112","LPPWWPPWPPLLWP"],["23113","WPWLLLPPPPWPPP"],["23114","PPLWWWWWPWPWPW"],["23115","PWPLPWLWPLWWPL"],["23116","LPPPLWPLPLPWLW"],["23117","LLWLLPLWPPWPPL"],["23118","LPLPWWWPWWPLPL"],["23119","LWLPWLLWLWWWLP"],["23120","WPLWWPLPPPLWPL"],["23121","WPWWWLLWPPWWWP"],["23122","WLPPWLLPPLPLWW"],["23123","LWLWLWPPPLWLPP"],["23124","WLLWWWLLPPLWLP"],["23125","LWPPPPPLPPPLWW"],["23126","PLPWPWWWPWWPPP"],["23127","PWWLLWLPWLWPPP"],["23128","LWLLWLPPPPWLPP"],["23129","WPPPWPWPPWWWWL"],["23130","PLLLLPPWPLPPPP"],["23131","PLPLWWWLLPPPPP"],["23132","WPWWWWPLWLPPWL"],["23133","PPLWPWWWWWPLPW"],["23134","PWWWLLWLWWWPWW"],["23135","LWLWWPLPPLLWLL"],["23136","PPPLWPPPPWPPPW"],["23137","WLWWPWWPWWLWPL"],["23138","PLLPPLPPWWWPPP"],["23139","WPLPPPPWPWWPPW"],["23140","WPPLWLWLPPWLWW"],["23141","WLPPPLLWPPLPPW"],["23142","LWWLWLWLLWWLPL"],["23143","PWPWWPPPLWPLWP"],["23144","LPPWWPPWWWPWWW"],["23145","PLWLPWWPPPWPWL"],["23146","WWPWPWPPPPLPPL"],["23147","WLWPLLWPPWWPPP"],["23148","LLPLWPWWWPLWWP"],["23149","PLPWWPPLPPPPLW"],["23150","LPLPWPPPWLWWWP"],["23151","PPWLLLPPWPPPWW"],["23152","PLLPWWPWPLWWPP"],["23153","PLWPWWPWWLPWLP"],["23154","PWLLPPPPLLWPLP"],["23155","WLPWLWLLPWPLWP"],["23156","PWPPPPWWPWWWPP"],["23157","WPLPPLWWPPPWPW"],["23158","LPWLLWWLWPLLWL"],["23159","PLPLWLWPPPLPPP"]];
+const OUT=[{k:'W',t:'胜',c:'w'},{k:'P',t:'平',c:'d'},{k:'L',t:'负',c:'l'}];  // 顺序：胜/平/负
+const KI={W:0,P:1,L:2};
+const $=s=>document.querySelector(s);
+let added=JSON.parse(localStorage.getItem('zfc-twin')||'[]');
+let liveRows=[];
+let show={om:true,mx:true};
+let recTier=0;  // 复式：加倍场数（默认单关，最保守）
+const THEME_KEY='twin-theme';
+function applyTheme(){
+  const th=localStorage.getItem(THEME_KEY)==='light'?'light':'dark';
+  document.documentElement.dataset.theme=th;
+  const b=$('#themeBtn'); if(b) b.textContent=th==='light'?'暗色':'亮色';
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content',th==='light'?'#eef1f6':'#0f1115');
+}
+function heatBg(a){ const light=document.documentElement.dataset.theme==='light'; return `background:rgba(${light?'103,65,217':'124,92,255'},${(light?a*.45:a).toFixed(2)})`; }
+
+// 录入归一化：胜/W/3→W，平/P/1→P，负/L/0→L
+function normDig(raw){
+  const map={'胜':'W','w':'W','W':'W','3':'W','平':'P','p':'P','P':'P','1':'P','负':'L','l':'L','L':'L','0':'L'};
+  return [...raw].map(c=>map[c]).filter(Boolean);
+}
+function mergedRows(){
+  const map=new Map();
+  ROWS.concat(liveRows,added).forEach(([iss,d])=>{
+    const id=String(iss||'').trim(), dig=normDig(String(d||'')).join('');
+    if(id&&dig.length===14) map.set(id,[id,dig]);
+  });
+  return [...map.values()].sort((a,b)=>(+a[0])-(+b[0]));
+}
+
+function compute(){
+  const seq=mergedRows().map(([iss,d],i,arr)=>({iss, r:[...d], prevIss:i>0?arr[i-1][0]:null}));
+  const om=Array.from({length:14},()=>[0,0,0]);   // 当前遗漏：[W,P,L] 出现清零，否则+1
+  let prev=null;
+  seq.forEach((row,i)=>{
+    const r=row.r;
+    for(let m=0;m<14;m++) for(let o=0;o<3;o++) om[m][o]= r[m]===OUT[o].k ? 0 : om[m][o]+1;
+    row.om=om.map(a=>a.slice());
+    // 该场最大遗漏 + 是哪个结果最该出
+    row.mx=om.map(a=>{ const mv=Math.max(...a); return {v:mv, o:a.indexOf(mv)}; });
+    row.cnt={W:r.filter(x=>x==='W').length, P:r.filter(x=>x==='P').length, L:r.filter(x=>x==='L').length};
+    row.dup=prev? r.reduce((s,x,k)=>s+(x===prev[k]?1:0),0):0;
+    row.season=i>0 && String(row.iss).slice(0,2)!==String(seq[i-1].iss).slice(0,2);
+    prev=r;
+  });
+  return seq;
+}
+
+// 推荐：每场按全史频率取众数；复式在“最不确定”的场上加次选
+function recommend(seq){
+  const N=seq.length;
+  const freq=Array.from({length:14},()=>[0,0,0]); // [W,P,L] 计数
+  seq.forEach(row=>row.r.forEach((x,m)=>freq[m][KI[x]]++));
+  const last=seq[N-1];
+  const perMatch=freq.map((f,m)=>{
+    const ord=[0,1,2].slice().sort((a,b)=>f[b]-f[a]);
+    const gap=(f[ord[0]]-f[ord[1]])/N;             // 越小越不确定
+    return {m, f, ord, top:ord[0], second:ord[1], gap, om:last.om[m]};
+  });
+  // 加倍优先级：gap 最小（最不确定）的场
+  const byUncertain=perMatch.slice().sort((a,b)=>a.gap-b.gap).map(x=>x.m);
+  return {freq, perMatch, byUncertain, N};
+}
+
+function renderRec(seq){
+  const R=recommend(seq);
+  const dblSet=new Set(R.byUncertain.slice(0,recTier));
+  const bets=Math.pow(2,recTier);
+  // 单关串
+  const strs=R.perMatch.map(pm=>{
+    const o1=OUT[pm.top], dbl=dblSet.has(pm.m);
+    const picks=dbl?[OUT[pm.top].t,OUT[pm.second].t].join('/'):o1.t;
+    return `<div class="rb ${o1.c} ${dbl?'dbl':''}"><small>${pm.m+1}</small>${picks}</div>`;
+  }).join('');
+  const tiers=[[0,'单关',1],[5,'稳健 +5双',32],[9,'激进 +9双',512]];
+  const tierCards=tiers.map(([n,lab,b])=>`<button class="tier ${recTier===n?'on':''}" data-tier="${n}"><div class="t">${lab}</div><div class="v num">${b.toLocaleString()} 注 · ¥${(b*2).toLocaleString()}</div><div class="s">${n?('加倍 '+n+' 场'):'14 场各 1 选'}</div></button>`).join('');
+  // 全史胜平负基准率
+  const tot=R.freq.reduce((a,f)=>[a[0]+f[0],a[1]+f[1],a[2]+f[2]],[0,0,0]); const T=tot[0]+tot[1]+tot[2];
+  $('#rec').innerHTML=`<div class="rec">
+    <div class="rec-tag">本期单关推荐 · 频率众数（第 ${seq.length} 期后）</div>
+    <div class="rec-str">${strs}</div>
+    <div class="rec-kpis">
+      <span>复式注数 <b class="num">${bets.toLocaleString()}</b></span>
+      <span>金额 <b class="num">¥${(bets*2).toLocaleString()}</b></span>
+      <span>全史基准 <b class="num">胜${(tot[0]/T*100).toFixed(0)}% 平${(tot[1]/T*100).toFixed(0)}% 负${(tot[2]/T*100).toFixed(0)}%</b></span>
+    </div>
+    <div class="tiers">${tierCards}</div>
+    <div class="rec-note">推荐 = 每场历史出现最多的结果；复式在最“胜平负接近”的场加次选。注意：胜负彩各场基本独立，历史频率只是<b>基准率</b>，真正信号是<b>赔率 / 盘口</b>，本表用于走势复盘与复式注数估算。奖池负期望，理性购彩。</div>
+  </div>`;
+}
+
+function render(){
+  const seq=compute();
+  const N=seq.length;
+  let h1='<tr><th class="col-iss" rowspan="2">期号</th>';
+  for(let m=1;m<=14;m++) h1+=`<th class="grp" rowspan="2">${m}</th>`;
+  h1+='<th class="grp" rowspan="2">胜平负</th><th rowspan="2">重</th>';
+  if(show.om) for(let m=1;m<=14;m++) h1+=`<th class="grp" colspan="3">${m}</th>`;
+  if(show.mx) h1+=`<th class="grp" colspan="14">每场最大遗漏</th>`;
+  h1+='</tr><tr class="r2">';
+  if(show.om) for(let m=0;m<14;m++) OUT.forEach(o=>h1+=`<th>${o.t}</th>`);
+  if(show.mx) for(let m=1;m<=14;m++) h1+=`<th>${m}</th>`;
+  h1+='</tr>';
+  let body='';
+  for(let i=N-1;i>=0;i--){
+    const r=seq[i]; const latest=i===N-1?' latest':''; const season=r.season?' season':'';
+    let tr=`<tr class="${latest}${season}"><td class="col-iss">${r.iss}</td>`;
+    r.r.forEach((x,m)=>{ const o=OUT[KI[x]]; tr+=`<td class="r ${o.c} grp">${o.t}</td>`; });
+    tr+=`<td class="cnt grp"><span class="cw">${r.cnt.W}</span> <span class="cd">${r.cnt.P}</span> <span class="cl">${r.cnt.L}</span></td><td class="dup">${r.dup}</td>`;
+    if(show.om) for(let m=0;m<14;m++){ const mxp=r.mx[m].v; for(let o=0;o<3;o++){ const v=r.om[m][o];
+      const cls=v===0?'zero':(v===mxp&&v>0?'max':''); const bg=v>0&&cls!=='max'?heatBg(Math.min(v/22,0.5)):'';
+      tr+=`<td class="om ${cls} ${o===0?'grp':''}" style="${bg}">${v}</td>`; } }
+    if(show.mx) r.mx.forEach((mm,m)=>{ const oc=['ow','od','ol'][mm.o]; tr+=`<td class="mx ${m===0?'grp':''}">${mm.v}<b class="${oc}">${OUT[mm.o].t}</b></td>`; });
+    tr+='</tr>'; body+=tr;
+  }
+  $('#tbl').innerHTML='<thead>'+h1+'</thead><tbody>'+body+'</tbody>';
+  const last=seq[N-1];
+  $('#stat').innerHTML=`共 <b>${N}</b> 期（内置 ${ROWS.length} 期 + 实时 ${liveRows.length} 期 + 手动 ${added.length} 期）　最新 <b>${last.iss}</b> = ${last.r.map(x=>OUT[KI[x]].t).join('')}　胜平负 <b>${last.cnt.W}/${last.cnt.P}/${last.cnt.L}</b>`;
+  $('#legend').innerHTML=`口径同原表：每场 <span class="k" style="background:rgba(229,72,77,.12);color:#ff8a8d">胜</span><span class="k" style="background:rgba(227,179,65,.12);color:#ffd877">平</span><span class="k" style="background:rgba(91,155,255,.12);color:#a3c4ff">负</span>。遗漏矩阵 = 每场各结果已连续多少期未出（<span class="k" style="background:rgba(22,163,74,.16);color:#7ee2a8">绿=本期开出</span>，<span class="k" style="box-shadow:inset 0 0 0 1.5px var(--win);color:#ff8a8d">红框=该场当前最久未出</span>）。胜平负 = 当期 14 场里 胜 / 平 / 负 各几场；重 = 与上期相同场数；紫线 = 跨赛季分隔。`;
+  renderRec(seq);
+}
+
+$('#tAdd').onclick=()=>{
+  const iss=$('#tIssue').value.trim(); const d=normDig($('#tDig').value);
+  if(!iss){ toast('请填期号'); return; }
+  if(d.length!==14){ toast('开奖需 14 场（胜平负 / 3 1 0），现 '+d.length+' 场'); return; }
+  added.push([iss,d.join('')]); localStorage.setItem('zfc-twin',JSON.stringify(added));
+  $('#tIssue').value=''; $('#tDig').value=''; render(); toast('已录入 '+iss);
+  $('.wrap').scrollTop=0;
+};
+$('#tUndo').onclick=()=>{ if(!added.length){ toast('无录入可撤销'); return; } const x=added.pop(); localStorage.setItem('zfc-twin',JSON.stringify(added)); render(); toast('已撤销 '+x[0]); };
+document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{ const g=b.dataset.grp; show[g]=!show[g]; b.classList.toggle('on',show[g]); render(); });
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-tier]'); if(t){ recTier=+t.dataset.tier; render(); } });
+$('#themeBtn').onclick=()=>{ const next=document.documentElement.dataset.theme==='light'?'dark':'light'; localStorage.setItem(THEME_KEY,next); applyTheme(); render(); };
+let tt; function toast(m){ const e=$('#toast'); e.textContent=m; e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),1600); }
+async function loadOfficial(){
+  try{
+    const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),8000);
+    let r; try{ r=await fetch('api/zfc',{signal:ctl.signal,cache:'no-store'}); } finally{ clearTimeout(timer); }
+    if(!r.ok) return; const j=await r.json(); if(!j||!j.ok||!Array.isArray(j.recent)) return;
+    const newest=+ROWS[ROWS.length-1][0]||0;
+    liveRows=j.recent.map(x=>[String(x[0]||''),normDig(String(x[1]||'')).join('')])
+      .filter(([iss,d])=>(+iss||0)>newest&&d.length===14).sort((a,b)=>(+a[0])-(+b[0]));
+    render();
+  }catch(e){}
+}
+applyTheme(); render(); loadOfficial();
+</script>
+</body>
+</html>

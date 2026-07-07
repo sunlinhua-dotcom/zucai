@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f7f4ef" />
+<title>进球彩遗漏走势表 · 每列公式逻辑全解</title>
+<style>
+  :root{
+    --bg:#f6f3ee; --card:#ffffff; --ink:#1c1a17; --ink-dim:#56514a; --ink-faint:#8a8378;
+    --line:#e8e1d6; --line-soft:#f0ebe2; --inset:#f4efe7;
+    --coral:#df5d36; --coral-soft:#df5d361a; --coral-line:#df5d3650;
+    --hot:#d23b34;  --hot-bg:#fdecea;
+    --warm:#c9871a; --warm-bg:#fbf2dd;
+    --cold:#2f6fb0; --cold-bg:#e9f1fb;
+    --green:#2f8a57; --green-bg:#e6f4ec;
+    --purple:#6b4bd6; --purple-bg:#efe9fb;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --r:16px; --r-sm:11px;
+    --shadow:0 1px 2px rgba(28,26,23,.04), 0 6px 20px rgba(28,26,23,.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; background:var(--bg); color:var(--ink);}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif; line-height:1.75; -webkit-font-smoothing:antialiased;}
+  /* djhh 中文排版 */
+  h1,h2,h3,h4,p,li,dd,dt,td,th,figcaption,.kh{word-break:keep-all; text-wrap:pretty; hanging-punctuation:allow-end;}
+  h1,h2,h3{text-wrap:balance;}
+  .num,.formula,code{font-variant-numeric:tabular-nums;}
+  .nowrap{white-space:nowrap;}
+  p{max-width:42em;}
+
+  /* 顶栏 */
+  header.top{position:sticky; top:0; z-index:20; background:rgba(246,243,238,.86); backdrop-filter:saturate(160%) blur(14px); -webkit-backdrop-filter:saturate(160%) blur(14px); border-bottom:1px solid var(--line); }
+  .top-in{max-width:1080px; margin:0 auto; padding:13px clamp(16px,4vw,40px); display:flex; align-items:center; gap:14px;}
+  .logo{flex:0 0 auto; width:34px; height:34px;}
+  .top h1{font-size:16px; margin:0; font-weight:800; letter-spacing:-.01em; flex:1; min-width:0;}
+  .top h1 small{display:block; font-weight:500; font-size:11.5px; color:var(--ink-faint); letter-spacing:0;}
+  .nav{display:flex; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .nav::-webkit-scrollbar{display:none;}
+  .nav a{flex:0 0 auto; font-size:12px; font-weight:700; color:var(--ink-dim); text-decoration:none; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:var(--card); white-space:nowrap;}
+  .nav a:hover{border-color:var(--coral-line); color:var(--coral);}
+  @media(max-width:760px){ .nav{display:none;} }
+
+  main{max-width:1080px; margin:0 auto; padding:clamp(20px,5vw,52px) clamp(16px,4vw,40px) 80px;}
+
+  /* Hero */
+  .hero{position:relative; border-radius:var(--r); overflow:hidden; background:linear-gradient(135deg,#2a2622,#3a332c); color:#fff; padding:clamp(24px,5vw,44px); margin-bottom:30px; box-shadow:var(--shadow);}
+  .hero .eyebrow{font-size:12.5px; font-weight:700; letter-spacing:.14em; color:#e9b9a6; text-transform:uppercase;}
+  .hero h2{font-size:clamp(24px,4.6vw,38px); margin:10px 0 12px; line-height:1.25; font-weight:850; letter-spacing:-.02em;}
+  .hero h2 b{color:#f4a07e;}
+  .hero p{color:#e6ded3; font-size:15px; margin:0; max-width:50em;}
+  .hero .stats{display:flex; flex-wrap:wrap; gap:10px 26px; margin-top:20px;}
+  .hero .stat b{font-size:24px; font-weight:850; color:#fff; letter-spacing:-.02em;}
+  .hero .stat span{font-size:12.5px; color:#c9bfb2; margin-left:6px;}
+  .hero-svg{position:absolute; right:-30px; top:-30px; width:260px; height:260px; opacity:.5; pointer-events:none;}
+
+  /* 概念图例 */
+  .legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:0 0 34px;}
+  .lc{background:var(--card); border:1px solid var(--line); border-radius:var(--r-sm); padding:15px 17px; box-shadow:var(--shadow);}
+  .lc h4{margin:0 0 4px; font-size:15px; display:flex; align-items:center; gap:8px;}
+  .lc .dot{width:11px; height:11px; border-radius:3px; flex:0 0 auto;}
+  .lc p{font-size:13px; color:var(--ink-dim); margin:0; line-height:1.65;}
+  .lc .ex{margin-top:9px; display:flex; gap:5px; flex-wrap:wrap;}
+
+  /* 例子条 */
+  .demo{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:18px clamp(16px,3vw,24px); margin-bottom:34px; box-shadow:var(--shadow);}
+  .demo h3{margin:0 0 4px; font-size:16px;}
+  .demo .sub{font-size:12.5px; color:var(--ink-faint); margin:0 0 14px;}
+  .demo-grid{display:flex; gap:18px 28px; flex-wrap:wrap;}
+  .dblock{min-width:140px;}
+  .dblock .t{font-size:11px; font-weight:800; color:var(--ink-faint); letter-spacing:.04em; margin-bottom:6px;}
+  .pills{display:flex; gap:4px; flex-wrap:wrap;}
+  .pill{font-family:var(--mono); font-size:13px; font-weight:700; padding:3px 8px; border-radius:7px; background:var(--inset); color:var(--ink-dim); border:1px solid var(--line); min-width:26px; text-align:center;}
+  .pill.hot{background:var(--hot-bg); color:var(--hot); border-color:#f3c8c4;}
+  .pill.warm{background:var(--warm-bg); color:var(--warm); border-color:#eed9a6;}
+  .pill.cold{background:var(--cold-bg); color:var(--cold); border-color:#c3dbf2;}
+  .pill.big{background:#fbeae3; color:#c2502b; border-color:#f0c9b8;}
+  .pill.green{background:var(--green-bg); color:var(--green); border-color:#bfe2cd;}
+
+  /* 分组卡 */
+  .group{background:var(--card); border:1px solid var(--line); border-radius:var(--r); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; scroll-margin-top:74px;}
+  .g-head{display:flex; align-items:flex-start; gap:14px; padding:18px clamp(16px,3vw,24px); cursor:pointer; user-select:none;}
+  .g-bar{flex:0 0 auto; width:5px; align-self:stretch; border-radius:3px; min-height:38px;}
+  .g-no{flex:0 0 auto; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-weight:850; font-size:14px; color:#fff;}
+  .g-tt{flex:1; min-width:0;}
+  .g-tt h3{margin:0; font-size:17px; letter-spacing:-.01em;}
+  .g-tt .cols{font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+  .g-tt .oneline{font-size:13.5px; color:var(--ink-dim); margin-top:6px; line-height:1.6;}
+  .g-toggle{flex:0 0 auto; color:var(--ink-faint); font-size:13px; font-weight:700; align-self:center; transition:transform .2s;}
+  .group.open .g-toggle{transform:rotate(180deg);}
+  .g-body{display:none; padding:0 clamp(16px,3vw,24px) 6px; border-top:1px solid var(--line-soft);}
+  .group.open .g-body{display:block;}
+  .intent{font-size:13.5px; color:var(--ink-dim); background:var(--coral-soft); border-left:3px solid var(--coral); border-radius:0 8px 8px 0; padding:10px 13px; margin:16px 0 4px; max-width:none;}
+  .intent b{color:var(--coral);}
+
+  .row{padding:15px 0; border-bottom:1px dashed var(--line);}
+  .row:last-child{border-bottom:none;}
+  .row .rh{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:7px;}
+  .col-tag{font-family:var(--mono); font-size:12px; font-weight:800; color:var(--coral); background:var(--coral-soft); padding:2px 8px; border-radius:6px; white-space:nowrap;}
+  .row .nm{font-size:14.5px; font-weight:800;}
+  .row .desc{font-size:13.5px; color:var(--ink-dim); margin:0 0 8px; max-width:none; line-height:1.7;}
+  .formula{font-family:var(--mono); font-size:12.5px; color:#a8421f; background:var(--inset); border:1px solid var(--line); border-radius:8px; padding:9px 12px; overflow-x:auto; white-space:pre; line-height:1.5;}
+  .formula .k{color:var(--purple); font-weight:700;}
+  .eg{font-size:12.5px; color:var(--ink-faint); margin-top:7px;}
+  .eg b{color:var(--ink-dim); font-family:var(--mono);}
+
+  /* 索引表 */
+  .idx-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); background:var(--card);}
+  table.idx{border-collapse:collapse; width:100%; font-size:13px; min-width:560px;}
+  table.idx th,table.idx td{text-align:left; padding:9px 13px; border-bottom:1px solid var(--line-soft); vertical-align:top;}
+  table.idx th{background:var(--inset); font-size:12px; color:var(--ink-dim); position:sticky; top:0;}
+  table.idx td.c{font-family:var(--mono); font-weight:800; color:var(--coral); white-space:nowrap;}
+  table.idx td.g{white-space:nowrap; font-size:12px; color:var(--ink-faint);}
+  table.idx tr:hover td{background:#fcfaf7;}
+
+  .section-h{font-size:13px; font-weight:800; color:var(--ink-faint); letter-spacing:.08em; text-transform:uppercase; margin:38px 4px 14px;}
+  footer{margin-top:46px; padding-top:22px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-faint); line-height:1.8;}
+  footer b{color:var(--ink-dim);}
+  .tip{font-size:12.5px; color:var(--ink-faint); text-align:center; margin:8px 0 26px;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <svg class="logo" viewBox="0 0 36 36" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="29" height="29" rx="7" fill="#fff" stroke="#df5d36" stroke-width="2"/><path d="M3.5 19h29" stroke="#df5d36" stroke-width="1.6" stroke-dasharray="2.4 2.2" opacity=".5"/><circle cx="12" cy="11" r="1.7" fill="#df5d36"/><circle cx="24" cy="11" r="1.7" fill="#df5d36"/><circle cx="18" cy="27" r="3" fill="#df5d36"/></svg>
+    <h1>进球彩遗漏走势表 · 公式逻辑全解<small>比分表20231231.xlsx「进球彩」sheet · 266 列逆向解读</small></h1>
+    <nav class="nav" id="nav"></nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <svg class="hero-svg" viewBox="0 0 200 200" fill="none"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4a07e"/><stop offset="1" stop-color="#df5d36" stop-opacity="0"/></linearGradient></defs><circle cx="100" cy="100" r="78" stroke="url(#hg)" stroke-width="1.5"/><circle cx="100" cy="100" r="56" stroke="url(#hg)" stroke-width="1.5"/><circle cx="100" cy="100" r="34" stroke="url(#hg)" stroke-width="1.5"/>
+      <g stroke="#f4a07e" stroke-width="2">
+        <rect x="60" y="120" width="9" height="20" rx="2" opacity=".7"/><rect x="74" y="108" width="9" height="32" rx="2" opacity=".8"/><rect x="88" y="96" width="9" height="44" rx="2"/><rect x="102" y="112" width="9" height="28" rx="2" opacity=".8"/><rect x="116" y="124" width="9" height="16" rx="2" opacity=".6"/></g>
+    </svg>
+    <div class="eyebrow">Reverse-engineered · 真实公式</div>
+    <h2>这张表在干什么:<br>用 <b>遗漏(冷热温)</b> + <b>大小单双形态</b> 给每位号码"该不该出"打分</h2>
+    <p>B–I 列是每期 4 场比赛、主客各进几个球的<b style="color:#f4a07e">真实开奖结果</b>(0/1/2/3+,共 8 位)。后面 250 多列没有一列是新数据 —— 全是从这 8 位结果<b style="color:#f4a07e">推导</b>出来的:每个号多久没出(遗漏)、谁最该出(冷号)、大小单双怎么走、形态有没有重复。下面把它们拆成 9 块讲清逻辑与意图。</p>
+    <div class="stats">
+      <div class="stat"><b class="num">266</b><span>总列数</span></div>
+      <div class="stat"><b class="num">8</b><span>真实结果位 (B–I)</span></div>
+      <div class="stat"><b class="num">9</b><span>推导逻辑块</span></div>
+      <div class="stat"><b class="num">3</b><span>核心: 遗漏 / 大小 / 单双</span></div>
+    </div>
+  </section>
+
+  <div class="legend">
+    <div class="lc">
+      <h4><span class="dot" style="background:var(--hot)"></span>遗漏 = 冷 / 热 / 温</h4>
+      <p>某个号(某位上的 0/1/2/3+)<b>距上次出现隔了几期</b>。这是全表的地基。</p>
+      <div class="ex"><span class="pill hot">0 热</span><span class="pill warm">3~6 温</span><span class="pill cold">15 冷</span></div>
+    </div>
+    <div class="lc">
+      <h4><span class="dot" style="background:#c2502b"></span>大小</h4>
+      <p>进球数 <b>&lt;2 算"小"</b>(0、1),<b>≥2 算"大"</b>(2、3+)。逐位 + 每场合计两种口径。</p>
+      <div class="ex"><span class="pill green">小</span><span class="pill big">大</span></div>
+    </div>
+    <div class="lc">
+      <h4><span class="dot" style="background:var(--purple)"></span>单 / 双</h4>
+      <p>进球数<b>奇数为"单"、偶数为"双"</b>(0 算双)。同样有逐位与每场合计。</p>
+      <div class="ex"><span class="pill">单</span><span class="pill">双</span></div>
+    </div>
+  </div>
+
+  <div class="demo" id="demo">
+    <h3>跟着一期看 —— 第 26117 期</h3>
+    <p class="sub">下面每块的"例"都用这期的真实数字,方便对照公式。</p>
+    <div class="demo-grid" id="demoGrid"></div>
+  </div>
+
+  <div class="section-h">九大逻辑块(点开看每列公式)</div>
+  <div id="groups"></div>
+
+  <div class="section-h" id="index">全列速查索引</div>
+  <p class="tip">266 列里大量是"同一公式套在 8 个位 / 4 个场上"的重复块,下表按块归并,一眼看全。</p>
+  <div class="idx-wrap">
+    <table class="idx"><thead><tr><th>列</th><th>名称</th><th>所属块</th><th>含义(一句话)</th></tr></thead><tbody id="idxBody"></tbody></table>
+  </div>
+
+  <footer>
+    <p><b>口径说明:</b> 3+ 表示进 3 球及以上,统一记为 3。"遗漏 0"= 本期刚开出(最热);遗漏越大越久未出(越冷)。"连号放大器"是原表的一种自定义强度分:形态与上期相同就把上一期的分翻倍累加(正分),一旦改变就翻成负分,用来量化"连续稳定 / 刚突变"。</p>
+    <p><b>提醒:</b> 这些是原 Excel 作者的统计/形态方法,用于辅助观察走势。进球彩各期相互独立、奖池负期望,遗漏冷热不构成必然预测。理性购彩。</p>
+    <p style="margin-top:14px"><b>数据源:</b> 比分表20231231.xlsx · 进球彩 sheet(26089–26129 真实开奖)。本页为公式逆向解读,B–I 为真实结果,其余列均由公式推导。 &nbsp;<a href="table.html" style="color:var(--coral);font-weight:800;text-decoration:none">→ 打开互动走势表</a></p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+/* ---- 第 26117 期真实示例(经 Excel 计算值核对) ---- */
+const DEMO={
+  digits:[3,1,2,2,1,0,3,1], sum:13,
+  posLabel:['1主','1客','2主','2客','3主','3客','4主','4客'],
+  om1:[5,1,2,0], om2:[2,0,4,15],
+  bigsmall:['大','小','大','大','小','小','大','小'],
+  oddeven:['单','单','双','双','单','双','单','单'],
+  matchBS:['大','大','小','大'], matchOE:['双','双','单','双'], quad:['D','D','A','D'],
+  bin:'01101011', dec:107
+};
+function demoRender(){
+  const g=document.getElementById('demoGrid');
+  const dg=DEMO.digits.map(v=>`<span class="pill">${v===3?'3+':v}</span>`).join('');
+  const bs=DEMO.bigsmall.map(v=>`<span class="pill ${v==='大'?'big':'green'}">${v}</span>`).join('');
+  const oe=DEMO.oddeven.map(v=>`<span class="pill">${v}</span>`).join('');
+  const om1=DEMO.om1.map((v,i)=>`<span class="pill ${v===0?'hot':v>=10?'cold':'warm'}">${v}</span>`).join('');
+  g.innerHTML=`
+   <div class="dblock"><div class="t">8 位真实进球 (B–I)</div><div class="pills">${dg}</div></div>
+   <div class="dblock"><div class="t">和值 J</div><div class="pills"><span class="pill">${DEMO.sum}</span></div></div>
+   <div class="dblock"><div class="t">第1主 各值遗漏 (L–O = 值0/1/2/3)</div><div class="pills">${om1}</div></div>
+   <div class="dblock"><div class="t">逐位大小 (GF–GM)</div><div class="pills">${bs}</div></div>
+   <div class="dblock"><div class="t">逐位单双 (GO–GV)</div><div class="pills">${oe}</div></div>
+   <div class="dblock"><div class="t">二进制指纹 EW→EX</div><div class="pills"><span class="pill">${DEMO.bin}</span><span class="pill green">${DEMO.dec}</span></div></div>`;
+}
+
+/* ---- 九大逻辑块 ---- */
+const GROUPS=[
+ {no:0,color:'#3a332c',title:'开奖原始数据',cols:'A · B–I · J · K · JF',
+  one:'唯一的"输入":期号 + 8 位真实进球;再加和值、与 2 期前的重合度、结果指纹串。',
+  intent:'整张表只有 <b>B–I 这 8 个数</b>是真实开奖,其余全部由它们算出。先把"原料"和最基本的派生量摆出来。',
+  rows:[
+   {c:'A',n:'场次 / 期号',f:'(手动录入)',d:'第几期,如 26117。'},
+   {c:'B–I',n:'8 位真实进球',f:'(手动录入开奖结果)',d:'第1场主、第1场客、第2场主… 第4场客,各 0/1/2/3+。这是全表唯一的真实数据,3+ 统一记 3。',eg:'26117 = 3 1 2 2 1 0 3 1'},
+   {c:'J',n:'和值',f:'=IF(B="","",SUM(B:I))',d:'当期 8 位进球总和,看大年/小年、整体进球高低。',eg:'3+1+2+2+1+0+3+1 = 13'},
+   {c:'K',n:'与 2 期前重合位数',f:'=SUMPRODUCT((上2期 B:I = 本期 B:I)*1)',d:'本期 8 位里有几位和"上上期"完全一样,衡量形态是否雷同。'},
+   {c:'JF',n:'结果指纹串',f:'=B&C&D&E&F&G&H&I',d:'把 8 位连写成一个字符串,当作该期"指纹"用于查重/比对。',eg:'31221031'},
+  ]},
+ {no:1,color:'#d23b34',title:'遗漏矩阵 —— 冷 / 热 / 温的地基',cols:'L–AQ (32 列) · AR',
+  one:'8 个位 × 每个可能值(0/1/2/3+)= 32 格,每格记"这个号已经几期没在这一位出现"。',
+  intent:'这是<b>整张表的核心</b>。遗漏 = <b>0 就是本期热号</b>,数字越大越冷。后面所有"谁该出"的判断都从这 32 个遗漏值长出来。',
+  rows:[
+   {c:'L–O',n:'第 1 主 · 值 0/1/2/3 的遗漏',f:'=IF($B=列头值, 0, 上期同格 + 1)',d:'L 盯"第1主进 0 球"、M 盯进 1、N 盯进 2、O 盯进 3+。本期这一位正好开出该值就归 0,否则在上期基础上 +1。',eg:'26117 第1主开 3+ → O=0(热);0 已 5 期没出 → L=5'},
+   {c:'P–AQ',n:'第 2~8 位的遗漏',f:'同上,分别盯 $C…$I',d:'P–S=第1客,T–W=第2主,… AN–AQ=第4客。每位一组 4 格,合计 32 格。',eg:'26117 第1客开 1 → Q=0;值3+ 已 15 期没出 → S=15(很冷)'},
+   {c:'AR',n:'遗漏矩阵与 2 期前重合数',f:'=SUMPRODUCT((本期 L:AQ = 上2期 L:AQ)*1)',d:'整张遗漏矩阵有多少格和 2 期前相同,看冷热分布是否回到老样子。'},
+  ]},
+ {no:2,color:'#2f6fb0',title:'最大 / 次大遗漏 + 排序',cols:'AS–AZ · BA–BI · BJ–BZ · CA–CI',
+  one:'每位挑出"最该出"的冷号(最大遗漏)和第二冷号,再跨 8 位排名、算两者差距。',
+  intent:'矩阵有 32 格太碎。这里<b>每位只留最该出的 1~2 个冷号</b>,并按全局排序,告诉你"哪个位的冷号憋得最久、领先第二名多少"。',
+  rows:[
+   {c:'AS–AZ',n:'每位最大遗漏',f:'=LARGE(本位 4 个遗漏, 1)',d:'该位 4 个值里遗漏最久的那个等了多少期 = 这一位"最该出"的冷号强度。',eg:'26117 第1主最大遗漏=5,第1客=15'},
+   {c:'BA–BH',n:'8 位最大遗漏降序',f:'=LARGE(AS:AZ, 1…8)',d:'把 8 个位的"最大遗漏"从大到小排,快速看哪几位最冷。'},
+   {c:'BI',n:'最大遗漏较上期 +1 的位数',f:'=SUMPRODUCT(((AS:AZ − 上期) = 1)*1)',d:'有多少位的冷号"继续没出"(遗漏又涨了 1)。'},
+   {c:'BJ–BQ',n:'每位第 2 大遗漏',f:'=LARGE(本位 4 个遗漏, 2)',d:'每位"第二该出"的号的遗漏,作冷号备选。'},
+   {c:'BR–BZ',n:'第 2 大遗漏排序 / 不变位数',f:'=LARGE(BJ:BQ,1…8) · SUMPRODUCT(差=0)',d:'同上对第二冷号做排序与稳定度统计。'},
+   {c:'CA–CH',n:'最大 − 次大 遗漏差',f:'=AS − BJ (逐位)',d:'每位"最冷"比"第二冷"领先多少。差大 = 那个冷号特别突出、特别该出。'},
+   {c:'CI',n:'遗漏差与 2 期前相同位数',f:'=SUMPRODUCT(((CA:CH − 上2期)=0)*1)',d:'冷号领先优势是否和 2 期前一致。'},
+  ]},
+ {no:3,color:'#7a5d2e',title:'连号放大器 + 强弱位定位',cols:'CJ–CR · CS–CV · CW–DE · DF–DM',
+  one:'追踪"遗漏差"连续稳定还是突变,稳定就把分数翻倍累加,并挑出形态最强/最弱的位。',
+  intent:'原表想抓"<b>正在走稳定形态</b>"的位置。差值连着不变就视为趋势,逐期 ×2 放大;一旦变化立刻翻成负分。再把分最高的位的真实号<b>直接挑出来</b>当候选。',
+  rows:[
+   {c:'CJ–CQ',n:'遗漏差·连号放大器',f:'=IF(差=上期差, 1, −1) × IF(上期值>0, 上期值×2, 1)',d:'差和上期一样 → 延续正趋势、数值翻倍;不一样 → 翻成负的。绝对值越大,连续性越强。',eg:'连续 3 期不变 → 1→2→4'},
+   {c:'CR',n:'刚翻转(±1)的位数',f:'=COUNT(值=−1) + COUNT(值=1)',d:'有多少位的趋势刚刚开始或刚刚被打断。'},
+   {c:'CS·CT·CU·CV',n:'最强 / 3 强 / 最弱 / 4 强 所在位',f:'=INDEX(位号, MATCH(MAX 或 LARGE/SMALL, …))',d:'放大器分数最高(最稳)、最低(刚突变)的是第几位。'},
+   {c:'CW–DD',n:'放大器分数降序',f:'=LARGE(CJ:CQ, 1…8)',d:'8 位强度从高到低排。'},
+   {c:'DE',n:'翻负比例',f:'=COUNT(本期 −1) / COUNT(上期 <0)',d:'趋势瓦解的换手率。'},
+   {c:'DF–DM',n:'强稳定位的号码直出',f:'=IF(对应放大器>1, 该位真实进球, "X")',d:'只在"形态够稳"(>1)的位上吐出真实进球数,其余打 X —— 等于一份"稳定位候选号"。'},
+  ]},
+ {no:4,color:'#6b4bd6',title:'涨跌方向 + 二进制指纹',cols:'DN–DU · DV–EC · ED–EM · EN–EX',
+  one:'把每位遗漏差的"涨/平/跌"编码,拼成模式串查历史频次,再压成一个十进制指纹号。',
+  intent:'用"<b>方向 + 指纹</b>"给每期形态一个<b>可检索的编号</b>:哪些位在变、整体"平/不平"的组合长什么样、这个组合历史上出现过几次。',
+  rows:[
+   {c:'DN–DU',n:'各位强度排名',f:'=RANK(上期放大器, 上期 8 位中)',d:'每位的趋势强度在上期里排第几。'},
+   {c:'DV–EC',n:'遗漏差方向码',f:'=IF(差=上期,2, IF(差>上期,3,1))',d:'2 = 持平、3 = 上升、1 = 下降,逐位记方向。'},
+   {c:'ED–EK · EL · EM',n:'变向位 → 模式串 → 历史频次',f:'EL=拼接非持平的位号; EM=COUNTIF(EL列, 本串)',d:'把"哪些位改变了方向"拼成一个模式字符串,数它历史上出现过几次。'},
+   {c:'EN–EU · EV',n:'是否持平的二进制位',f:'=IF(方向=2, 1, 0); EV=与上期相同位数',d:'每位"平不平"记 1/0;EV 看方向整体和上期多像。'},
+   {c:'EW · EX',n:'8 位二进制串 → 十进制',f:'EW=拼 8 个 0/1;EX=BIN2DEC(EW)',d:'把"平/不平"组合压成 0–255 的一个数 = 该期形态指纹,方便编号归类。',eg:'26117 平态 01101011 → 107'},
+  ]},
+ {no:5,color:'#c2502b',title:'大小形态',cols:'GF–GN · GX–HE',
+  one:'每位进球 <2 记"小"、≥2 记"大";统计与上期重合,并对大小走势做连号放大。',
+  intent:'换一个角度看走势:不看具体数字,只看<b>大小</b>。同样有"和上期重合几位"(大小遗漏)和"连号放大器"两套强度。',
+  rows:[
+   {c:'GF–GM',n:'逐位大小',f:'=IF(位 < 2, "小", "大")',d:'8 位每位判大小。0、1 = 小;2、3+ = 大。',eg:'26117 → 大 小 大 大 小 小 大 小'},
+   {c:'GN',n:'大小与上期重合位数',f:'=SUMPRODUCT((上期大小 = 本期)*1)',d:'有多少位大小和上期一样,即大小形态的"遗漏/重复"度。'},
+   {c:'GX–HE',n:'大小·连号放大器',f:'=IF(大小=上期, 1, −1) × IF(上期>0, 上期×2, 1)',d:'同第 3 块逻辑,但作用在"大小"上,量化大小连续性。'},
+  ]},
+ {no:6,color:'#2f8a57',title:'单双形态',cols:'GO–GW · HF–HQ',
+  one:'每位进球奇为"单"、偶为"双";同样统计重合并做连号放大,末尾取大小单双强度 Top4。',
+  intent:'第三个观察角度:<b>单双</b>。与大小并列,合起来描述每位号码的"<b>大小×单双</b>"形态走向。',
+  rows:[
+   {c:'GO–GV',n:'逐位单双',f:'=IF(MOD(位,2), "单", "双")',d:'奇数 = 单,偶数(含 0)= 双。',eg:'26117 → 单 单 双 双 单 双 单 单'},
+   {c:'GW',n:'单双与上期重合位数',f:'=SUMPRODUCT((上期单双 = 本期)*1)',d:'单双形态和上期的重合度。'},
+   {c:'HF–HM',n:'单双·连号放大器',f:'=IF(单双=上期, 1, −1) × IF(上期>0, 上期×2, 1)',d:'单双连续性强度。'},
+   {c:'HN–HQ',n:'大小+单双 强度 Top4',f:'=LARGE(GX:HM, 1…4)',d:'把大小、单双两套放大器合起来取最强的 4 个值。'},
+  ]},
+ {no:7,color:'#b06a1a',title:'每场总进球:大小 / 单双 / 合成',cols:'HR–IZ · JB–JE',
+  one:'不再看单个位,而是"每场主+客合计"的大小、单双、四态(A/B/C/D),并合成趋势分。',
+  intent:'把口径从"逐位"升到"<b>整场</b>":一场比赛总进球的大小单双,通常更贴近实际看球与盘口。每组都配一个"漏"(与上期相同的场数)。',
+  rows:[
+   {c:'HR–HU · HV',n:'每场总进球大小',f:'=IF(主+客 < 3, "小", "大");HV=与上期相同场数',d:'一场合计 0~2 球 = 小,3+ = 大。4 场各一个。',eg:'26117 四场和 4/4/1/4 → 大 大 小 大'},
+   {c:'HX–IA · IB',n:'每场总进球单双',f:'=IF(MOD(主+客,2), "单", "双")',d:'一场合计奇偶。',eg:'→ 双 双 单 双'},
+   {c:'ID–IG · IH',n:'大小 × 单双 四态码',f:'小单=A, 小双=B, 大单=C, 大双=D',d:'把每场的大小、单双合成一个 A/B/C/D 状态。',eg:'→ D D A D'},
+   {c:'IJ–IM · IP–IS',n:'大小 / 单双 趋势码',f:'大小:同上期=2 否则 −1;单双:同=2 否则 −3',d:'分别给大小、单双一个"延续/突变"的分。'},
+   {c:'IV–IY · IZ',n:'合成趋势分',f:'=大小趋势码 + 单双趋势码',d:'两者相加成每场一个合成分(范围 −4…4)。'},
+   {c:'JB–JE',n:'合成分布计数',f:'=COUNTIF(IV:IY, 4 / −4 / 1 / −1)',d:'4 场里合成分等于 4、−4、1、−1 的各有几场 = 整体延续 vs 突变的分布。'},
+  ]},
+ {no:8,color:'#8a8378',title:'静态参照区(非计算)',cols:'EZ–GE (32 格)',
+  one:'8 位 × 4 值的空白参照网格,无公式,供手工标注 / 对照,不参与计算。',
+  intent:'这块<b>没有公式</b>,是作者留的手填/参照模板(表头 0/1/2/3 × 8 位),阅读时可忽略其"计算意义"。',
+  rows:[
+   {c:'EZ–GE',n:'参照网格',f:'(空白,无公式)',d:'32 个静态格,通常用于手动比对或留白,不影响其它列。'},
+  ]},
+];
+
+function fmtFormula(s){ return s.replace(/(IF|SUM|SUMPRODUCT|LARGE|SMALL|INDEX|MATCH|MAX|MIN|RANK|COUNTIF|COUNT|MOD|BIN2DEC|AND)\b/g,'<span class="k">$1</span>'); }
+function groupsRender(){
+  const wrap=document.getElementById('groups'); const nav=document.getElementById('nav');
+  wrap.innerHTML=GROUPS.map(g=>`
+   <section class="group${g.no===1?' open':''}" id="g${g.no}">
+     <div class="g-head" data-toggle="${g.no}">
+       <div class="g-bar" style="background:${g.color}"></div>
+       <div class="g-no" style="background:${g.color}">${g.no}</div>
+       <div class="g-tt"><h3>${g.title}</h3><div class="cols">${g.cols}</div><div class="oneline">${g.one}</div></div>
+       <div class="g-toggle">▾</div>
+     </div>
+     <div class="g-body">
+       <div class="intent">意图 · ${g.intent}</div>
+       ${g.rows.map(r=>`<div class="row"><div class="rh"><span class="col-tag">${r.c}</span><span class="nm">${r.n}</span></div>
+         <p class="desc">${r.d}</p>
+         <div class="formula">${fmtFormula(r.f)}</div>
+         ${r.eg?`<div class="eg">例(26117): <b>${r.eg}</b></div>`:''}</div>`).join('')}
+     </div>
+   </section>`).join('');
+  nav.innerHTML=GROUPS.map(g=>`<a href="#g${g.no}">${g.no} ${g.title.replace(/ —— .*/,'').replace(/[(（].*/,'')}</a>`).join('')+`<a href="#index">索引</a>`;
+  wrap.querySelectorAll('[data-toggle]').forEach(h=>h.addEventListener('click',()=>{ document.getElementById('g'+h.dataset.toggle).classList.toggle('open'); }));
+}
+
+/* ---- 索引表(按块归并) ---- */
+const IDX=[
+ ['A','场次 / 期号','原始','第几期'],
+ ['B–I','8 位真实进球','原始','4 场×主客,0/1/2/3+ 真实开奖(唯一输入)'],
+ ['J','和值','原始','8 位之和 =SUM(B:I)'],
+ ['K','与 2 期前重合位数','原始','本期 8 位有几位同上上期'],
+ ['L–AQ','遗漏矩阵 (8 位×4 值)','① 遗漏','每个号几期没出;0=热,大=冷'],
+ ['AR','遗漏矩阵 vs 2 期前','① 遗漏','遗漏分布重合数'],
+ ['AS–AZ','每位最大遗漏','② 冷号','每位最该出的冷号已等几期'],
+ ['BA–BI','最大遗漏排序/增量','② 冷号','8 位最大遗漏降序、+1 位数'],
+ ['BJ–BZ','第 2 大遗漏 + 排序','② 冷号','次冷号及其排序、稳定度'],
+ ['CA–CI','最大−次大 遗漏差','② 冷号','冷号领先优势及其稳定度'],
+ ['CJ–CR','遗漏差·连号放大器','③ 趋势','差稳定×2 累加,量化连续性'],
+ ['CS–CV','强/弱形态所在位','③ 趋势','放大器最高/最低的位号'],
+ ['CW–DE','放大器排序/换手','③ 趋势','强度降序、翻负比例'],
+ ['DF–DM','强稳定位号码直出','③ 趋势','形态够稳的位吐真实号,否则 X'],
+ ['DN–DU','各位强度排名','④ 指纹','上期放大器名次'],
+ ['DV–EC','遗漏差方向码','④ 指纹','涨3/平2/跌1'],
+ ['ED–EM','变向模式串+频次','④ 指纹','哪些位变向、该模式历史次数'],
+ ['EN–EX','平/不平 二进制→十进制','④ 指纹','形态压成 0–255 指纹号'],
+ ['EZ–GE','静态参照网格','⑨ 静态','空白手填,无公式'],
+ ['GF–GN','逐位大小 + 重合','⑤ 大小','<2 小 / ≥2 大,大小遗漏'],
+ ['GX–HE','大小·连号放大器','⑤ 大小','大小连续性强度'],
+ ['GO–GW','逐位单双 + 重合','⑥ 单双','奇单偶双,单双遗漏'],
+ ['HF–HQ','单双放大器 + Top4','⑥ 单双','单双连续性、大小单双合并 Top4'],
+ ['HR–HV','每场总进球大小','⑦ 整场','主+客<3 小,与上期相同场数'],
+ ['HX–IB','每场总进球单双','⑦ 整场','每场合计奇偶'],
+ ['ID–IH','大小×单双 四态','⑦ 整场','小单A/小双B/大单C/大双D'],
+ ['IJ–IT','大小/单双 趋势码','⑦ 整场','同=2,异=−1/−3'],
+ ['IV–JE','合成趋势分 + 分布','⑦ 整场','两码相加,统计 4/−4/1/−1 场数'],
+ ['JF','结果指纹串','原始','8 位连写 =B&…&I'],
+];
+function idxRender(){
+  document.getElementById('idxBody').innerHTML=IDX.map(r=>`<tr><td class="c">${r[0]}</td><td>${r[1]}</td><td class="g">${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+}
+
+demoRender(); groupsRender(); idxRender();
+</script>
+</body>
+</html>

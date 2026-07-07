@@ -4,6 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <meta name="theme-color" content="#eef1f6" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="足彩" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <title>足彩预约购买 · 选号投注</title>
 <style>
   :root{
@@ -147,6 +152,7 @@
   }
   .btn-primary:active{transform:scale(.97);}
   .btn-primary:disabled{background:var(--bg-inset); color:var(--txt-faint); box-shadow:none;}
+  .actionbar .btn-ghost{flex:0 0 auto; padding:12px 14px; min-height:50px; white-space:nowrap;}
 
   /* 底部 Tab */
   nav.tabbar{
@@ -358,7 +364,9 @@
   .hero-tier{font-size:15px; font-weight:800; margin-top:8px;}
   .hero-num{margin:1px 0 5px;} .hero-num .n{font-size:40px; font-weight:900; letter-spacing:-.02em;} .hero-num .u{font-size:15px; font-weight:700; color:#ffffffe0;}
   .hero-kpis{display:flex; gap:16px; font-size:12.5px; color:#ffffffd6;} .hero-kpis b{color:#fff; font-weight:800;}
+  .hero-human{margin-top:7px; font-size:13px; font-weight:800; color:#fff;}
   .hero-badge{display:inline-block; margin-top:12px; font-size:11px; font-weight:700; background:#ffffff26; border:1px solid #ffffff4d; padding:4px 11px; border-radius:999px;}
+  .hero-badge small{display:block; margin-top:2px; font-size:10.5px; font-weight:700; color:#ffffffbf;}
   .hero .btn-primary{width:100%; margin-top:14px; background:#fff; color:#5b3fc4; box-shadow:0 4px 14px rgba(0,0,0,.16);}
   .hero .btn-primary::before{display:none;}
   .pipe{display:flex; align-items:stretch; gap:4px;}
@@ -394,6 +402,41 @@
     .chip:active,.gchip:active,.fchip:active,.mini:active,.btn-primary:active,.card:active,.item:active,.cell:active,.cover button:active{transform:none !important; filter:brightness(.94) !important;}
     .gchip[aria-selected="true"]{transform:none !important;}
   }
+  /* ---- 胜负14场（双信号预测 + 走势） ---- */
+  .rec-str{display:flex; flex-wrap:wrap; gap:5px; margin:12px 0 2px;}
+  .rb{display:inline-flex; flex-direction:column; align-items:center; min-width:31px; padding:4px 2px; border-radius:9px; font-size:14px; font-weight:800; border:1.5px solid var(--line); background:#fff;}
+  .rb small{font-size:9px; font-weight:700; opacity:.55; margin-bottom:1px;}
+  .rb.w{background:var(--win-bg); color:var(--win); border-color:var(--win-line);}
+  .rb.d{background:var(--draw-bg); color:var(--draw); border-color:var(--draw-line);}
+  .rb.l{background:var(--loss-bg); color:var(--loss); border-color:var(--loss-line);}
+  .rb.bk{box-shadow:0 0 0 2px var(--accent);}
+  .rb.dbl{border-style:dashed; border-width:2px;}
+  .sflist{display:flex; flex-direction:column; gap:8px;}
+  .sfm{display:grid; grid-template-columns:24px 1fr auto auto; align-items:center; gap:10px; background:var(--bg-card); border:1px solid var(--line); border-radius:var(--r-sm); padding:9px 11px; box-shadow:var(--shadow-sm);}
+  .sfm.bk{border-color:var(--accent-line); background:linear-gradient(90deg,var(--accent-soft),var(--bg-card) 60%);}
+  .sfm.dl{border-style:dashed;}
+  .sfm-no{font-weight:800; color:var(--txt-faint); font-size:13px; text-align:center;}
+  .sfm-tm .t{font-size:14px; font-weight:700; color:var(--txt-dim);}
+  .sfm-tm .t b{color:var(--txt);}
+  .sfm-tm .vs{color:var(--txt-faint); font-weight:600; font-size:11px; margin:0 3px;}
+  .sfm-tm .lg{font-size:11px; color:var(--txt-faint); margin-top:2px;}
+  .sfm-bars{display:flex; align-items:flex-end; gap:3px; height:30px;}
+  .sfm-bars i{width:7px; min-height:5%; border-radius:2px 2px 0 0; display:block;}
+  .sfm-bars i.w{background:var(--win);} .sfm-bars i.d{background:var(--draw);} .sfm-bars i.l{background:var(--loss);}
+  .sfm-pk{min-width:48px; text-align:center; font-weight:800; border-radius:9px; padding:6px 4px; display:flex; flex-direction:column; align-items:center; line-height:1.15;}
+  .sfm-pk small{font-size:10px; font-weight:700; opacity:.7;}
+  .sfm-pk.w{background:var(--win-bg); color:var(--win);} .sfm-pk.d{background:var(--draw-bg); color:var(--draw);} .sfm-pk.l{background:var(--loss-bg); color:var(--loss);}
+  .r9m{grid-template-columns:24px 1fr auto;}
+  .r9m .sfm-pk{min-width:58px;}
+  .r9m.low{border-style:dashed; border-color:var(--accent-line);}
+  .zwrap{overflow:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line); border-radius:var(--r-sm); margin-top:4px; max-height:60vh;}
+  .ztbl{border-collapse:separate; border-spacing:0; font-size:12px; white-space:nowrap;}
+  .ztbl th,.ztbl td{border-right:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); padding:4px 7px; text-align:center; font-variant-numeric:tabular-nums;}
+  .ztbl thead th{position:sticky; top:0; background:var(--bg-card-2); color:var(--txt-dim); font-weight:700; font-size:11px; z-index:2;}
+  .ztbl .zi{position:sticky; left:0; background:var(--bg-card-2); color:var(--txt-dim); font-weight:700; z-index:1; text-align:left; padding-left:9px;}
+  .ztbl thead .zi{z-index:3;}
+  .ztbl .zr{font-weight:800;} .ztbl .zr.w{color:var(--win); background:var(--win-bg);} .ztbl .zr.d{color:var(--draw); background:var(--draw-bg);} .ztbl .zr.l{color:var(--loss); background:var(--loss-bg);}
+  .ztbl .zc{font-weight:800; background:var(--bg-card-2);} .ztbl .zc .cw{color:var(--win);} .ztbl .zc .cd{color:var(--draw);} .ztbl .zc .cl{color:var(--loss);}
 </style>
 </head>
 <body>
@@ -484,7 +527,7 @@ const GOALS = [{v:0,t:'0'},{v:1,t:'1'},{v:2,t:'2'},{v:3,t:'3+'}];
 const JQC_HIST = "13022032220132000020321111102111441244112010113113103033113121211003022011230010130022113123303213112201202320013003023222112122100223113211210001231212110213211111302120211100000130010112313002232100031011111110121331013103321111101020001100031210233110110121110113012030311231122220331201332210212111010312131122301211112120011101001132202001013200323112001001322230322030010110110133013033221201313110311020320230321130112220010311212103202131331131113002211321310110031222021102131322101321110022003222011211221000321002113112321131330311132221012110310113102113110000131111212111002111102110103321211132313001302103023121110101332310211220202030320112111201131310103001121112212010011203102002332101011230202112121130012220321213100011333211010310200300031020223200011031101001203130113111120130330003032021103010111030303123123010112120203112100110123111211123213302311201203120001210322231023310021211213001121330023202111200003100123010100032200213110001202120010231113323102012020103101012021200212302212310312131301131003100221012302011022122020222031331203013310221012302113112003022033101010010222110022221012100111121311131211020301010022011210100310312130010033110212100102310302302222100102010121111120231010110011002102211231002322111010102302011100223101120033121113023210100111020301003011220033020311010300231301000012031200020223110022122333113220111030021003030100102001112221021233311223110012131123003113020200201302031020103200330010200121113102003231112000121101313222020023020101010221132101221231312312202100011021133112113303311210032210011033101102010113231021231011322211110020230210032101231333110212030102131103132211013211002103013110211103222102122202120030320201030110020122031111022313110310111311231202112231121132110321210212001022111211123011120101321121013222210032123001230112030102201312003012120112103102020201112310121221103120310301100120302201203100110022111212221111112012121021230100030100030200021111010210100123000130202321110211101301110123200311012030212113101310322111200311321112103011032101320303120002223211330310133221321311212331230211131122212312331311230311213302013010111011201302130222111231313313100012121003130203133301230031333000111102001301000220131101000021310311030310121122210202200113021211300221032132211201032230212133031213321300101031101300020022210213021221213210132101301121030012213213131121210100130233012300310221010313210133021121021302303120121011000202130302130203302320110302210333110322121001131120221110210203303010022110131321131320312033111131132213332330030110132020112202110442032331110103300100221101231101000031031231231101111200001231112202123102002221110302211312000200211110133123032101100013211020122201112201330023200111010";
 
 /* 实时数据快照（部署时由本机直连体彩 gameNo=94 抓取；CF 边缘跨境到 .cn 不稳，故内嵌兜底） */
-const JQC_SNAPSHOT={asOf:"2026-06-17",latest:"26119",results:[{"issue":"26119","d":"31133031"},{"issue":"26118","d":"00111122"},{"issue":"26117","d":"31221031"},{"issue":"26116","d":"11110120"},{"issue":"26115","d":"20211131"},{"issue":"26114","d":"21002130"},{"issue":"26113","d":"22301211"},{"issue":"26112","d":"02110112"},{"issue":"26111","d":"31103120"},{"issue":"26110","d":"30223221"},{"issue":"26109","d":"11033032"},{"issue":"26108","d":"31222122"},{"issue":"26107","d":"10200002"},{"issue":"26106","d":"11202120"},{"issue":"26105","d":"12111210"},{"issue":"26104","d":"30331021"},{"issue":"26103","d":"10113112"},{"issue":"26102","d":"03131221"},{"issue":"26101","d":"10112123"},{"issue":"26100","d":"22131131"},{"issue":"26099","d":"01311102"},{"issue":"26098","d":"30021020"},{"issue":"26097","d":"11232312"},{"issue":"26096","d":"22010120"},{"issue":"26095","d":"00300102"},{"issue":"26094","d":"32213210"},{"issue":"26092","d":"10110210"},{"issue":"26091","d":"13333010"},{"issue":"26090","d":"30321202"}]};
+const JQC_SNAPSHOT={asOf:"2026-06-27",latest:"26129",results:[{"issue":"26129","d":"13300113"},{"issue":"26128","d":"21111332"},{"issue":"26127","d":"21030310"},{"issue":"26126","d":"30000110"},{"issue":"26125","d":"20303212"},{"issue":"26124","d":"30002213"},{"issue":"26123","d":"31210003"},{"issue":"26122","d":"20013001"},{"issue":"26121","d":"11313010"},{"issue":"26120","d":"11321013"},{"issue":"26119","d":"31133031"},{"issue":"26118","d":"00111122"},{"issue":"26117","d":"31221031"},{"issue":"26116","d":"11110120"},{"issue":"26115","d":"20211131"},{"issue":"26114","d":"21002130"},{"issue":"26113","d":"22301211"},{"issue":"26112","d":"02110112"},{"issue":"26111","d":"31103120"},{"issue":"26110","d":"30223221"},{"issue":"26109","d":"11033032"},{"issue":"26108","d":"31222122"},{"issue":"26107","d":"10200002"},{"issue":"26106","d":"11202120"},{"issue":"26105","d":"12111210"},{"issue":"26104","d":"30331021"},{"issue":"26103","d":"10113112"},{"issue":"26102","d":"03131221"},{"issue":"26101","d":"10112123"},{"issue":"26100","d":"22131131"}]};
 let recTier = 16; // 智能推荐当前档位
 let fxAutoPlayed=false, fxTimer=null; // 演算过场
 let liveData=null; // 当前生效数据（snapshot 内置快照 / api 实时）
@@ -492,7 +535,9 @@ function applyLive(data, source){
   const res=(data.results||[]).map(r=> r.d!==undefined ? {issue:r.issue,d:r.d} : {issue:r.issue, d:(r.digits||[]).map(x=>Math.min(x,3)).join('')} ).filter(r=>r.d&&r.d.length===8);
   liveData={asOf:data.asOf||'', latest:data.latest||(res[0]&&res[0].issue)||'', source, issues:res.map(r=>r.issue), results:res};
   S.jqcLive=res.slice().reverse().map(r=>r.d).join('');
-  if(!S.drafts.jqc.issue) S.drafts.jqc.issue=nextIssue();
+  // 自动选期：为空时填下一期；若已存的是「≤最新（已开过）」的陈旧期号（如快照默认被实时数据超过），推进到下一期
+  const nx=nextIssue(), cur=S.drafts.jqc.issue;
+  if(!cur || (/^\d+$/.test(cur) && /^\d+$/.test(nx) && +cur<+nx)) S.drafts.jqc.issue=nx;
   _recCache=null;
 }
 function nextIssue(){ const l=liveData&&liveData.latest||''; return /^\d+$/.test(l)?String(+l+1):l; }
@@ -504,27 +549,233 @@ async function loadLive(){
   }catch(e){}
 }
 
-function jqcDraws(){ const s=JQC_HIST+(S.jqcLive||'')+(S.jqcAdd||''); const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(ch=>Math.min(+ch,3))); return a; }
-/* 缩水推荐引擎（经 340 期 walk-forward 回测优化）：纯每位频率积，对全部 65,536 注排序取前 N。
-   回测结论：走势/遗漏对独立开奖无预测增益（甚至有害）、和值/形态硬过滤会丢弃带外真号 → 均已从打分移除。 */
+function normJqcTwin(d){ return (Array.isArray(d)?d.join(''):String(d||'')).replace(/[^0-3]/g,''); }
+function normZfcTwin(d){ const map={'胜':'W','w':'W','W':'W','3':'W','平':'P','p':'P','P':'P','1':'P','负':'L','l':'L','L':'L','0':'L'};
+  return [...(Array.isArray(d)?d.join(''):String(d||''))].map(c=>map[c]).filter(Boolean).join(''); }
+function twinRows(key,n,norm){
+  try{ const raw=JSON.parse(localStorage.getItem(key)||'[]'); if(!Array.isArray(raw)) return [];
+    const seen=new Set();
+    return raw.map(x=>Array.isArray(x)?{issue:String(x[0]||'').trim(),d:norm(x[1])}:null)
+      .filter(x=>x&&x.issue&&x.d.length===n&&!seen.has(x.issue)&&seen.add(x.issue));
+  }catch(e){ return []; }
+}
+function jqcTwinRows(){ const liveIssues=new Set((liveData&&liveData.issues)||[]);
+  return twinRows('jqc-twin',8,normJqcTwin).filter(r=>!liveIssues.has(r.issue)).sort((a,b)=>(+a.issue)-(+b.issue)); }
+function zfcTwinRows(){ return twinRows('zfc-twin',14,normZfcTwin).sort((a,b)=>(+a.issue)-(+b.issue)); }
+function jqcDraws(){ const twin=jqcTwinRows().map(r=>r.d).join(''); const s=JQC_HIST+(S.jqcLive||'')+(S.jqcAdd||'')+twin; const a=[]; for(let i=0;i+8<=s.length;i+=8) a.push(s.slice(i,i+8).split('').map(ch=>Math.min(+ch,3))); return a; }
+/* 缩水推荐引擎 v2（2026-07-07，370 期 walk-forward 模型对决后升级）：三模型等权平均——
+   A 长期每位频率 · B 近期加权频率(半衰 160 期) · C 同场主客 4×4 联合分布(捕捉同场主客进球相关性)。
+   三者各是归一化分布，等权平均后对全部 65,536 注排序取前 N。
+   对决结果（180 期样本外）：log-loss 显著优于纯频率(配对 bootstrap p≈0.03)、真号中位名次 13604→12537、前后半窗方向一致。
+   回测结论保持：走势/遗漏对独立开奖无预测增益（甚至有害）、和值/形态硬过滤会丢弃带外真号 → 均不参与打分。 */
 let _recCache=null, _recKey='';
 function recommend(){
-  const key=(S.jqcLive||'').length+':'+(S.jqcAdd||'').length+':'+JQC_HIST.length;
+  const twinKey=jqcTwinRows().map(r=>r.issue+':'+r.d).join('|');
+  const key=(S.jqcLive||'').length+':'+(S.jqcAdd||'').length+':'+JQC_HIST.length+':'+twinKey.length+':'+twinKey;
   if(_recCache && _recKey===key) return _recCache;
   const draws=jqcDraws(), N=draws.length;
   const freq=Array.from({length:8},()=>[0,0,0,0]);   // 频率计数（3 含 3+）
   draws.forEach(d=>d.forEach((v,p)=>freq[p][v]++));
-  const logfr=freq.map(c=>{const t=c[0]+c[1]+c[2]+c[3]; return c.map(x=>Math.log((x+0.5)/(t+2)));});
   const om=Array.from({length:8},(_,p)=>[0,1,2,3].map(val=>{let m=0;for(let i=N-1;i>=0;i--){if(draws[i][p]===val)break;m++;}return m;}));
   const order=freq.map(c=>[0,1,2,3].slice().sort((a,b)=>c[b]-c[a]));
   const top2=order.map(o=>o.slice(0,2));
-  // 全 65,536 注按频率积打分，取前 200 排序
+  // 三模型概率表：A 长期频率 / B 半衰 160 期近期加权 / C 同场主客联合（各自归一化，按位/按场乘积 = 全注真概率）
+  const PM=freq.map(c=>{const t=c[0]+c[1]+c[2]+c[3]; return c.map(x=>(x+0.5)/(t+2));});
+  const HL=160, wstep=Math.pow(0.5,1/HL);
+  const wfreq=Array.from({length:8},()=>[0,0,0,0]);
+  { let w=Math.pow(wstep,N-1); for(let i=0;i<N;i++){ const d=draws[i]; for(let p=0;p<8;p++) wfreq[p][d[p]]+=w; w/=wstep; } }
+  const PH=wfreq.map(c=>{const t=c[0]+c[1]+c[2]+c[3]; return c.map(x=>(x+0.5)/(t+2));});
+  const jc=new Float64Array(16);
+  draws.forEach(d=>{ for(let m=0;m<4;m++) jc[(d[2*m]<<2)|d[2*m+1]]++; });
+  const PJ=Array.from({length:16},(_,c)=>(jc[c]+0.5)/(N*4+8));
+  // 全 65,536 注按三模型平均概率打分，取前 200 排序
   const scores=new Float64Array(65536);
-  for(let i=0;i<65536;i++){ let x=i,s=0; for(let p=7;p>=0;p--){ s+=logfr[p][x&3]; x>>=2; } scores[i]=s; }
+  for(let i=0;i<65536;i++){
+    let x=i, a=1, b=1;
+    for(let p=7;p>=0;p--){ const v=x&3; a*=PM[p][v]; b*=PH[p][v]; x>>=2; }
+    const c=PJ[i&15]*PJ[(i>>4)&15]*PJ[(i>>8)&15]*PJ[(i>>12)&15];
+    scores[i]=(a+b+c)/3;
+  }
   const idx=Array.from({length:65536},(_,i)=>i); idx.sort((a,b)=>scores[b]-scores[a]);
-  const ranked=idx.slice(0,200).map(i=>{ let x=i,c=new Array(8); for(let p=7;p>=0;p--){ c[p]=x&3; x>>=2; } return {combo:c, p:Math.exp(scores[i])}; });
+  const ranked=idx.slice(0,200).map(i=>{ let x=i,c=new Array(8); for(let p=7;p>=0;p--){ c[p]=x&3; x>>=2; } return {combo:c, p:scores[i]}; });
   _recCache={N,freq,om,order,top2,ranked}; _recKey=key; return _recCache;
 }
+
+const ZFC_SNAPSHOT = {"asOf":"2026-06-18","game":"胜负游戏","gameNo":90,"eloConfig":{"H":80.0,"K":24.0,"base":1500.0,"tauW":15,"tauL":15},"latest":"26085","elo":{"科隆":1399,"赫塔":1492,"马格德":1447,"纽伦堡":1439,"桑德豪":1474,"罗斯托":1501,"拉齐奥":1624,"莱切":1395,"马洛卡":1467,"加的斯":1442,"朗斯":1544,"兰斯":1499,"威廉":1564,"乌青年":1503,"布雷达":1470,"赫拉克":1488,"阿青年":1451,"阿尔青":1491,"芬洛":1439,"格拉夫":1539,"奥斯":1401,"埃青年":1499,"马斯特":1442,"特尔斯":1443,"登博思":1439,"阿尔城":1527,"奥德":1474,"利勒斯":1496,"切尔西":1599,"诺丁汉":1585,"曼联":1635,"狼队":1415,"维拉":1673,"热刺":1544,"水晶宫":1553,"伯恩茅":1607,"拜仁":1856,"沙尔克":1518,"法兰克":1511,"美因茨":1528,"柏林联":1466,"弗赖堡":1536,"波鸿":1380,"奥格斯":1484,"沃尔夫":1426,"霍芬海":1548,"多特":1650,"门兴":1460,"斯佩齐":1500,"AC米兰":1586,"奥萨苏":1459,"阿尔梅":1392,"比利亚":1536,"毕尔巴":1512,"皇马":1721,"赫塔费":1499,"埃弗顿":1559,"曼城":1776,"布伦特":1604,"西汉姆":1520,"阿森纳":1789,"布赖顿":1600,"斯图加":1594,"勒沃":1644,"莱比锡":1619,"不来梅":1465,"佛罗伦":1524,"乌迪内":1522,"蒙扎":1385,"那不勒":1654,"博洛尼":1542,"罗马":1634,"尤文":1680,"克雷莫":1462,"巴利亚":1402,"塞维利":1455,"西班人":1470,"巴萨":1805,"雷恩":1581,"特鲁瓦":1513,"图卢兹":1522,"南特":1422,"摩纳哥":1542,"里尔":1529,"山形":1472,"大分":1473,"枥木":1481,"东京":1509,"町田":1526,"山口":1466,"长崎":1510,"冈山":1477,"秋田":1498,"甲府":1487,"国米":1736,"阿尔克":1594,"巴塞尔":1438,"纽卡斯":1571,"维京":1637,"特罗姆":1530,"博德":1639,"基尔":1444,"圣保利":1394,"达姆施":1431,"萨索洛":1473,"里昂":1617,"罗达JC":1539,"海尔蒙":1478,"兹沃勒":1490,"海牙":1614,"埃因FC":1534,"多德勒":1497,"利物浦":1648,"富勒姆":1530,"亚特兰":1632,"维罗纳":1378,"桑普多":1468,"塞尔塔":1507,"社会":1537,"马赛":1595,"南安普":1426,"都灵":1518,"马竞技":1610,"巴伦西":1477,"贝蒂斯":1577,"尼斯":1480,"洛里昂":1520,"欧塞尔":1516,"日尔曼":1738,"赫罗纳":1460,"埃尔切":1512,"巴列卡":1507,"佐加顿":1510,"赫根":1468,"蒙彼利":1497,"布雷斯":1519,"斯特堡":1561,"克莱蒙":1434,"莱切城":1405,"利兹":1563,"恩波利":1403,"萨勒尼":1406,"昂热":1473,"阿雅克":1499,"川崎":1531,"广岛":1505,"索尔纳":1475,"埃尔夫":1516,"天狼星":1496,"哥德堡":1542,"北雪平":1459,"米亚尔":1586,"奥勒松":1463,"汉坎":1489,"海于松":1402,"桑纳菲":1452,"莫尔德":1538,"萨堡":1470,"斯塔贝":1443,"罗森博":1514,"瓦勒伦":1482,"斯特罗":1424,"布兰":1506,"瑞典":1491,"新西兰":1485,"塞尔维":1488,"约旦":1544,"波兰":1460,"德国":1627,"芬兰":1393,"斯洛文":1476,"白俄":1507,"以色列":1533,"安道尔":1410,"瑞士":1556,"丹麦":1556,"北爱":1482,"拉脱维":1439,"土耳其":1605,"威尔士":1507,"亚美尼":1456,"直布罗":1445,"法国":1630,"希腊":1494,"爱尔兰":1502,"科索沃":1513,"罗马尼":1525,"北马":1483,"乌克兰":1519,"圣马力":1423,"哈萨克":1445,"金泽":1491,"水户":1487,"大宫":1465,"德岛":1479,"卢森堡":1414,"列支敦":1409,"黑山":1444,"匈牙利":1498,"阿塞拜":1417,"爱沙尼":1396,"挪威":1564,"苏格兰":1503,"葡萄牙":1624,"波黑":1483,"冰岛":1466,"斯洛伐":1513,"比利时":1564,"奥地利":1576,"法罗":1454,"捷克":1513,"阿尔巴":1474,"摩尔多":1468,"塞浦路":1397,"格鲁吉":1498,"英格兰":1618,"保加利":1426,"湘南":1504,"鸟栖":1496,"横滨":1546,"大阪":1574,"鹿岛":1500,"东京FC":1515,"名古屋":1471,"京都":1531,"横滨FC":1464,"太阳神":1523,"新泻":1474,"浦和":1506,"千叶":1551,"神户":1593,"札幌":1485,"清水":1519,"群马":1509,"磐田":1480,"仙台":1469,"哈尔姆":1495,"瓦尔贝":1488,"卡尔马":1424,"哈马比":1532,"美国":1480,"特立尼":1485,"墨西哥":1537,"卡塔尔":1539,"福冈":1506,"樱花":1537,"韦纳穆":1446,"布鲁马":1470,"代格福":1443,"马尔默":1486,"林肯鬼":1444,"卡拉巴":1497,"哈姆伦":1492,"海法":1506,"奥匹亚":1499,"瓦米耶":1477,"琴斯托":1478,"弗罗拉":1469,"克拉克":1526,"费伦茨":1499,"沙姆洛":1453,"贝雷达":1488,"日利纳":1508,"利瓦迪":1455,"哈卡":1453,"十字军":1506,"邓多克":1500,"雷维京":1483,"下科恩":1507,"托尔斯":1488,"德里城":1512,"阿克雷":1512,"斯肯迪":1502,"马里博":1475,"新西女":1476,"澳洲女":1504,"爱尔女":1480,"谢里夫":1445,"康斯坦":1506,"新圣徒":1469,"第比利":1470,"阿斯塔":1481,"布拉迪":1488,"美国女":1549,"赞比女":1460,"日本女":1544,"英格女":1524,"海地女":1468,"丹麦女":1523,"中国女":1486,"意大女":1490,"阿根女":1477,"德国女":1540,"巴西女":1487,"巴拿女":1463,"哥斯女":1476,"西班女":1508,"加拿女":1538,"尼日女":1485,"赫尔辛":1492,"萨格勒":1524,"塞维特":1473,"亨克":1535,"哥本哈":1539,"卢多戈":1486,"特温特":1510,"瑞典女":1524,"法国女":1525,"牙买女":1511,"汉堡":1495,"奥斯纳":1466,"卡尔斯":1536,"凯泽":1485,"韦恩":1450,"杜塞尔":1508,"中日兰":1533,"根特":1526,"希伯尼":1471,"埃国际":1495,"巴战士":1489,"迪弗当":1500,"吉马良":1559,"采列":1521,"诺维奇":1444,"赫尔城":1460,"布里斯":1521,"普雷斯":1453,"斯托克":1450,"罗瑟汉":1472,"斯旺西":1449,"伯明翰":1453,"米德尔":1492,"米尔沃":1540,"普利茅":1474,"哈德斯":1452,"沃特福":1519,"巡游者":1517,"布莱克":1482,"西布罗":1434,"罗德兹":1505,"瓦朗谢":1467,"亚眠":1421,"奎维利":1500,"巴黎FC":1512,"卡昂":1477,"考文垂":1489,"加的夫":1443,"桑德兰":1564,"伊普斯":1454,"不伦瑞":1528,"汉诺威":1550,"卢顿":1427,"谢菲联":1379,"拉斯帕":1399,"海伦芬":1475,"瓦尔韦":1440,"阿贾克":1489,"鹿特丹":1480,"阿弗尔":1432,"梅斯":1437,"布拉格":1489,"托波拉":1419,"布拉加":1618,"加拉塔":1498,"格拉茨":1426,"埃因霍":1580,"流浪者":1482,"帕纳辛":1507,"兹林尼":1499,"奥林匹":1561,"阿罗卡":1450,"奈梅亨":1534,"坎布尔":1537,"埃门":1442,"海登":1426,"弗洛西":1442,"年轻人":1489,"阿伯丁":1472,"圣吉联":1517,"卢加诺":1483,"林茨":1462,"布鲁日":1551,"格拉纳":1443,"伯恩利":1432,"热那亚":1459,"雅典":1457,"安特卫":1525,"格罗宁":1515,"阿拉维":1505,"荷兰":1560,"西班牙":1673,"克罗地":1571,"意大利":1558,"日本":1618,"韩国":1590,"沙特":1512,"帕德博":1562,"菲尔特":1510,"沙特亚":1512,"伊朗亚":1512,"中国亚":1506,"韩国亚":1541,"科威亚":1493,"日本亚":1501,"红星":1462,"本菲卡":1604,"萨茨堡":1478,"越南亚":1476,"泰国亚":1483,"里斯本":1658,"卡利亚":1494,"谢周三":1459,"哥伦比":1571,"乌拉圭":1531,"阿根廷":1562,"巴拉圭":1491,"玻利维":1463,"厄瓜多":1535,"智利":1459,"秘鲁":1432,"巴西":1540,"委内瑞":1495,"矿工":1485,"费耶诺":1502,"凯尔特":1541,"利阿里":1466,"斯拉维":1464,"萨尔布":1515,"帕尔马":1450,"埃沃斯":1522,"福图纳":1488,"泰国":1495,"中国":1459,"乌兹别":1560,"伊朗":1569,"叙利亚":1480,"波尔图":1600,"波尔多":1505,"孔卡诺":1470,"埃蒂安":1451,"甘冈":1473,"波城FC":1499,"格勒诺":1457,"拉瓦勒":1424,"巴斯蒂":1516,"阿纳西":1520,"敦刻克":1511,"德比郡":1479,"林肯城":1501,"剑桥联":1499,"埃克塞":1480,"朴次茅":1476,"斯蒂文":1496,"阿马多":1491,"维兹拉":1455,"法伦斯":1477,"吉维森":1469,"雷克斯":1504,"博尔顿":1502,"彼得堡":1476,"布莱浦":1488,"里奥阿":1463,"波蒂芒":1456,"法马利":1509,"沙维什":1497,"澳大利":1591,"印度":1458,"塔吉克":1478,"越南":1475,"阿联酋":1505,"中国港":1454,"巴勒斯":1490,"尼日利":1556,"赤道几":1500,"巴林":1449,"印尼":1465,"伊拉克":1551,"马来":1461,"吉尔吉":1448,"阿曼":1485,"塞内加":1534,"冈比亚":1476,"喀麦隆":1522,"几内亚":1479,"阿尔及":1498,"安哥拉":1494,"布基纳":1492,"毛里塔":1491,"突尼斯":1457,"纳米比":1512,"马里":1520,"南非":1498,"黎巴嫩":1500,"摩洛哥":1509,"坦桑尼":1491,"民刚果":1509,"赞比亚":1490,"几比绍":1477,"科特迪":1510,"埃及":1522,"加纳":1498,"佛得角":1511,"莫桑比":1502,"维迪斯":1467,"埃斯托":1470,"精英":1512,"浦项":1499,"全北":1492,"蔚山":1500,"曼谷联":1505,"艾因":1519,"纳萨夫":1460,"利胜利":1498,"华沙":1511,"维冈":1497,"切尔滕":1512,"乌德勒":1527,"莱顿":1511,"博阿维":1479,"卡萨":1500,"利新月":1564,"吉联合":1487,"泰山":1478,"前进鹰":1466,"牛津联":1451,"博塔弗":1532,"科洛":1502,"新加坡":1466,"土库曼":1480,"科威特":1446,"菲律宾":1471,"摩雷伦":1509,"奥斯KF":1554,"福伦丹":1503,"费内巴":1552,"比尔森":1533,"塞萨洛":1512,"巴恩斯":1489,"盖斯":1545,"罗萨里":1469,"米内罗":1508,"佩纳罗":1512,"基体大":1495,"巴兰基":1509,"韦斯罗":1462,"塔奇拉":1477,"蒙国民":1537,"克里斯":1445,"腓特烈":1478,"富山":1475,"雷根堡":1448,"玻利瓦":1518,"格雷米":1529,"波特诺":1490,"帕尔梅":1524,"圣洛伦":1500,"德尔瓦":1518,"华盛顿":1488,"多伦多":1475,"纽红牛":1499,"奥兰多":1516,"费城":1491,"蒙特利":1498,"芝加哥":1515,"洛银河":1512,"明尼苏":1487,"堪萨斯":1485,"纳什维":1484,"新英格":1488,"盐湖城":1511,"奥斯汀":1475,"洛杉FC":1485,"达拉斯":1518,"波特兰":1481,"休斯敦":1500,"温哥华":1514,"科罗拉":1492,"亚特联":1454,"夏洛特":1534,"孟加拉":1477,"巴基斯":1476,"加拿大":1514,"拉大学":1499,"西雅图":1497,"圣路易":1493,"磐城":1516,"熊本":1469,"藤枝":1478,"鹿儿岛":1500,"爱媛":1490,"纽约城":1486,"哥伦布":1558,"牙买加":1464,"巴拿马":1503,"哥斯达":1517,"辛辛那":1469,"圣何塞":1463,"德契奇":1487,"拉恩":1499,"里足校":1496,"阿根奥":1502,"摩洛奥":1523,"乌兹奥":1474,"西班奥":1532,"几内奥":1468,"新西奥":1491,"伊拉奥":1490,"乌克奥":1486,"日本奥":1517,"巴拉奥":1518,"法国奥":1532,"美国奥":1505,"澳大女":1486,"哥伦女":1492,"明迪纳":1488,"多米奥":1483,"埃及奥":1526,"以色奥":1471,"马里奥":1482,"佩特罗":1499,"希腊人":1481,"圣科UE":1476,"贝游击":1483,"迪纳摩":1513,"锡尔克":1511,"布加勒":1537,"比亚韦":1474,"特拉布":1480,"快速":1525,"里耶卡":1482,"布隆德":1479,"苏黎世":1477,"基马诺":1503,"乌尔姆":1503,"圣克拉":1470,"弗鲁米":1526,"圣红星":1507,"阿维SA":1446,"莱加内":1464,"威尼斯":1460,"哈茨":1475,"贝西克":1526,"圣加仑":1499,"马蒂格":1449,"明斯特":1484,"阿艾因":1501,"多萨德":1491,"鲁警察":1478,"吉国民":1579,"赖加拉":1469,"申花":1481,"海港":1478,"柔佛":1507,"葡国民":1454,"安德莱":1491,"科莫":1533,"布里兰":1517,"光州FC":1506,"棉农":1499,"比勒费":1489,"奥莫尼":1487,"赖扬":1478,"色格拉":1499,"帕福斯":1506,"厄斯特":1466,"圣保罗":1511,"竞技":1525,"福塔雷":1500,"巴伊亚":1477,"科中央":1488,"弗拉门":1551,"布莱尼":1496,"巴国际":1495,"麦国民":1495,"迈国际":1559,"开国民":1493,"奥克城":1486,"多米尼":1479,"海地":1463,"苏里南":1479,"圣迭戈":1530,"博卡":1497,"突希望":1496,"河床":1489,"马姆洛":1503,"蒙特雷":1517,"卡热爱":1476,"帕丘卡":1473,"洪都拉":1494,"坦山猫":1518,"科特卡":1478,"雅罗":1475,"AC奥卢":1514,"瓦萨":1491,"库普斯":1513,"塞伊奈":1488,"玛丽港":1492,"国际图":1556,"赫火花":1498,"米尔萨":1489,"阿拉木":1474,"戈塔":1475,"阿夸维":1476,"萨巴赫":1503,"拉纳卡":1482,"保克什":1488,"克卢日":1488,"特尔纳":1487,"索斯基":1497,"沃夫斯":1499,"通德拉":1484,"阿维卡":1487,"奥维耶":1444,"南锡":1430,"布洛涅":1455,"莱万特":1458,"比萨":1421,"勒芒":1564,"阿布联":1531,"江原FC":1505,"德累斯":1470,"首尔":1488,"迪国青":1481,"沙迦":1477,"查尔顿":1482,"萨姆松":1489,"奥洛穆":1474,"博茨瓦":1482,"加蓬":1476,"贝宁":1495,"乌干达":1484,"维尔港":1485,"斯达":1474,"科林蒂":1495,"厄格里":1477,"拉赫蒂":1488,"库奥皮":1516},"recent":[["26011","WWPWLPWWPLWWWW"],["26012","PLPPLLWWWWWLPW"],["26013","WLWWWWLLWWWLWL"],["26014","PPLWLWPLWWWWWL"],["26016","PWWLLLWWLLPWWL"],["26017","LLLLLWWWWPWWWL"],["26019","WLWLLLWWWPLPLW"],["26020","WWPPWWWWWPWWWW"],["26021","LWLPWLWLWLWPPW"],["26022","LLWWLWLPPWWPPL"],["26023","LWPPWWPLLWPPWL"],["26025","WLWWLLLWWWWLWW"],["26026","WPPLPPLPPLPLPL"],["26027","WPLLLLLLWPLPWP"],["26028","LLWWLPWLLPPWWW"],["26029","PPLLPLWPLLPWPP"],["26030","WLPWWWPWLLPWWL"],["26031","WLWWWPWPWPPWWW"],["26032","LWLLLPWWLLWWLL"],["26033","WWWWWLWWPWPLWW"],["26034","PWLWLLWPLWLWWL"],["26035","WLLPWLLPWWPPPW"],["26036","LLWWWWLLLWPPPW"],["26037","PLPLPWLLPWPWLL"],["26038","WPLLPWWWPWWWPP"],["26039","WLWPPWWWWLPLPW"],["26040","PLWLPWWLWLLPWP"],["26041","WWWPWPWLLWWPPL"],["26042","PLWPWPPWLWWWWL"],["26043","WPPPLLWWWWPWPP"],["26044","WWLLWWWWWWWPPW"],["26045","WLLWWWPLPWLLPL"],["26046","PWWWWLLWWLLPPW"],["26047","WWPWPPLWWPLWWL"],["26048","WLLWLLLWWPLWWP"],["26049","WPWWWLPLWLPWLW"],["26050","LWLPLPLWPWWWLW"],["26051","PPLWPWPWLPPLWP"],["26052","LLPWPPWWWWPWWW"],["26053","WWLLPWPLLLPWPL"],["26054","PPPLLWLWPPPPPW"],["26055","PWWWPPPPLWWWWP"],["26056","LLLWPLWPWWWLLP"],["26057","WPPLWWPWWPPPWP"],["26058","PWLWWLLLLWWWPW"],["26059","WPWLWWLPWLWLLL"],["26060","LLPWLWWLWWWWPP"],["26061","PPWWWWWLWWWWPL"],["26062","WLLWLLWLLPPWPP"],["26063","WLWWWWPLLWPPLL"],["26064","PWWLPLWPWWPLWW"],["26065","LPLPPWLWWWPWPW"],["26066","LWWLWPPLWWPLLW"],["26067","WWLWWPLWLPLLLW"],["26068","WPWLPPLWWLPLWP"],["26069","WPWWWPPLWPPPWW"],["26070","WPWPLPPLWPPLLL"],["26071","WWLLWPWPWLWLLW"],["26073","LPWWWWWLLLLWLP"],["26074","PPPLWLLWPLLLPW"],["26075","WLWLWWPPWLLLWW"],["26076","LWWPLPWLWLPLWW"],["26078","LWPWLLWLLWPLWW"],["26079","WPWWWPWLWWWWWL"],["26080","PLWPLPWWWLPLWL"],["26081","WPWPPWWPWPWWWL"],["26082","PWLWWPWPPWLWPW"],["26083","WWWWLWWWWWPWLW"],["26084","PWPWWWLPPWWWLP"],["26085","WWPWPPLWPWWPPP"]],"upcoming":{"issue":"26087","drawTime":"2026-06-24","matches":[{"no":1,"h":"荷兰","a":"瑞典","oh":1.59,"od":3.58,"oa":4.52,"league":"世界杯"},{"no":2,"h":"德国","a":"科特迪","oh":1.4,"od":4.15,"oa":5.75,"league":"世界杯"},{"no":3,"h":"突尼斯","a":"日本","oh":5.75,"od":3.7,"oa":1.46,"league":"世界杯"},{"no":4,"h":"西班牙","a":"沙特","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":5,"h":"乌拉圭","a":"佛得角","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":6,"h":"新西兰","a":"埃及","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":7,"h":"阿根廷","a":"奥地利","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":8,"h":"法国","a":"伊拉克","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":9,"h":"挪威","a":"塞内加","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":10,"h":"约旦","a":"阿尔及","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":11,"h":"葡萄牙","a":"乌兹别","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":12,"h":"英格兰","a":"加纳","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":13,"h":"巴拿马","a":"克罗地","oh":null,"od":null,"oa":null,"league":"世界杯"},{"no":14,"h":"哥伦比","a":"刚果金","oh":null,"od":null,"oa":null,"league":"世界杯"}]}};
+
+/* ===================== 胜负14场（胜负彩）预测引擎 ===================== */
+/* 数据：体彩 gameNo=90 真实开奖。算法：赔率隐含概率(主) + Elo 实力分(辅/兜底)。
+   走势回测(566 期 walk-forward)结论 → 见 openZfcAlgoSheet：纯频率≈基准率(预测胜44.6%)；
+   遗漏/冷热反而更差(31-35%)，已弃用；Elo 实力分 out-of-sample 50.4%、强信号场 69%。 */
+const ZFC_OUT=[{k:'W',t:'胜',c:'w',v:3},{k:'P',t:'平',c:'d',v:1},{k:'L',t:'负',c:'l',v:0}];
+const ZKI={W:0,P:1,L:2};
+let zfcLive=null, sfTier=0, r9SmartTier=0, sfShowTrend=false, _zfcShow={om:true,mx:true};
+function zfcData(){ return zfcLive||ZFC_SNAPSHOT; }
+function zfcLatestDrawn(){ const rec=(zfcLive&&zfcLive.recent)||ZFC_SNAPSHOT.recent||[]; return rec.length?String(rec[rec.length-1][0]):''; }
+function zfcUpcoming(){ // 在售期：实时优先；期号 ≤ 最新开奖（如无在售期时回落到陈旧快照）视为无在售期，避免把已开期当推荐
+  const up=(zfcLive&&zfcLive.upcoming)||ZFC_SNAPSHOT.upcoming; if(!up) return null;
+  const ld=zfcLatestDrawn();
+  if(/^\d+$/.test(String(up.issue)) && /^\d+$/.test(ld) && +up.issue<=+ld) return null;
+  return up;
+}
+async function loadZfcLive(){
+  try{ const r=await fetch('api/zfc',{cache:'no-store'}); if(!r.ok) return; const j=await r.json();
+    if(!j||!j.ok) return; if(!j.upcoming && !(Array.isArray(j.recent)&&j.recent.length)) return;
+    zfcLive=j; if(route==='sf') render(); }catch(e){}
+}
+function zfcElo(){
+  const cfg=ZFC_SNAPSHOT.eloConfig, H=cfg.H, K=cfg.K, base=cfg.base;
+  const R=Object.assign({}, ZFC_SNAPSHOT.elo); const snapLatest=+ZFC_SNAPSHOT.latest;
+  const live=(zfcLive&&zfcLive.results)||[];
+  live.forEach(([iss,games])=>{ if(+iss<=snapLatest) return; games.forEach(([h,a,o])=>{
+    const rh=(R[h]==null?base:R[h]), ra=(R[a]==null?base:R[a]);
+    const eh=1/(1+Math.pow(10,-((rh+H)-ra)/400)), sh=o==='W'?1:o==='P'?0.5:0;
+    R[h]=rh+K*(sh-eh); R[a]=ra-K*(sh-eh); }); });
+  return {R,H,base};
+}
+function zfcDevig(oh,od,oa){ if(!(oh&&od&&oa)) return null; const i=[1/oh,1/od,1/oa],s=i[0]+i[1]+i[2]; return {W:i[0]/s,P:i[1]/s,L:i[2]/s}; }
+function zfcElo3(d){ // 评分差 → 胜平负三路概率
+  const pHome=1/(1+Math.pow(10,-d/400));
+  const pd=Math.min(0.30,Math.max(0.12,0.30*Math.exp(-Math.abs(d)/300)));
+  return {W:(1-pd)*pHome, P:pd, L:(1-pd)*(1-pHome)};
+}
+function zfcPredict(){
+  const up=zfcUpcoming();
+  const {R,H,base}=zfcElo();
+  const matches=(up&&up.matches)||[];
+  const rows=matches.map(m=>{
+    const od=zfcDevig(m.oh,m.od,m.oa);
+    const rh=(R[m.h]==null?base:R[m.h]), ra=(R[m.a]==null?base:R[m.a]), d=(rh+H)-ra;
+    const probs= od || zfcElo3(d);
+    const src= od?'赔率':'实力';
+    const ord=ZFC_OUT.slice().sort((x,y)=>probs[y.k]-probs[x.k]);
+    const conf=probs[ord[0].k];
+    return {no:m.no,home:m.h,away:m.a,league:m.league,probs,src,top:ord[0],second:ord[1],conf,d:Math.round(d)};
+  });
+  // 复式：置信度最低的 sfTier 场加次选(拖)；其余单选；conf 高者为胆
+  const byConf=rows.map((r,i)=>[i,r.conf]).sort((a,b)=>a[1]-b[1]);
+  const dbl=new Set(byConf.slice(0,sfTier).map(x=>x[0]));
+  rows.forEach((r,i)=>{ r.dbl=dbl.has(i); r.banker=r.conf>=0.55 && !r.dbl; });
+  const bets=Math.pow(2,sfTier);
+  return {up,rows,bets};
+}
+function zfcSrcLabel(){ const up=zfcUpcoming();
+  const hasOdds=up&&up.matches&&up.matches.some(m=>m.oh);
+  if(zfcLive) return hasOdds?'<span class="live-dot">● 实时赔率</span>':'<span class="live-dot snap">◐ 实时(待开盘)</span>';
+  return '<span class="live-dot off">○ 内置快照</span>'; }
+
+/* ---------- 胜负14场 视图 ---------- */
+function viewSF(){
+  const P=zfcPredict(); const up=P.up;
+  if(!up||!P.rows.length){
+    const ld=zfcLatestDrawn();
+    const trendBtn=`<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">走势 / 遗漏复盘 <button class="mini go" data-sftog="trend">${sfShowTrend?'收起':'展开'}</button></div>`;
+    return `<div class="meta-row"><div class="field" style="flex:1">暂无在售期${ld?(' · 最新已开 '+esc(ld)+' 期'):''} ${zfcSrcLabel()}</div><div class="field btn" id="sfRefresh">刷新</div></div>
+      <div class="empty" style="padding:36px 24px 22px"><div class="em">${ICONS.empty}</div><h3 class="kh">暂无在售期赛程</h3><p>体彩 14 场胜负彩当前没有在售期，开售后这里自动出现推荐。可先复盘走势：</p>
+      <a class="btn-ghost" style="display:inline-flex;align-items:center;text-decoration:none" href="table-zfc.html">↗ 打开完整走势分析表</a></div>`
+      + trendBtn + (sfShowTrend?zfcTrend():'');
+  }
+  const str=P.rows.map(r=>`<div class="rb ${r.top.c} ${r.dbl?'dbl':''} ${r.banker?'bk':''}"><small>${r.no}</small>${r.dbl?(r.top.t+'/'+r.second.t):r.top.t}</div>`).join('');
+  const bankers=P.rows.filter(r=>r.banker).length;
+  const hero=`<div class="hero">
+    <div class="hero-tag">第 ${esc(up.issue)} 期推荐 · 赔率 + 实力双信号</div>
+    <div class="hero-tier">${sfTier?('复式 · '+P.bets+' 注'):'单关 · 14 场各 1 选'}</div>
+    <div class="hero-num"><span class="n num">${nf.format(P.bets)}</span><span class="u"> 注 · ¥${nf.format(P.bets*2)}</span></div>
+    <div class="hero-kpis"><span>胆(强信号) <b class="num">${bankers}</b> 场 · 回测强信号命中约 <b class="num">69%</b></span></div>
+    <div class="rec-str">${str}</div>
+    <button class="btn-primary" id="sfAddSlip">加入投注单 →</button>
+  </div>`;
+  const tiers=[[0,'单关',1],[5,'稳健 +5拖',32],[9,'激进 +9拖',512]];
+  const tierCards=tiers.map(([n,lab,b])=>`<button class="tol ${sfTier===n?'on':''}" data-sftier="${n}"><div class="t">${lab}</div><div class="v num">${nf.format(b)} 注 · ¥${nf.format(b*2)}</div><div class="s">${n?('最不确定 '+n+' 场加拖'):'每场只买最优'}</div></button>`).join('');
+  let cards='';
+  P.rows.forEach(r=>{ const band=r.banker?'bk':(r.dbl?'dl':''); const tag=r.banker?'胆':(r.dbl?'拖':'');
+    const bars=ZFC_OUT.map(o=>`<i class="${o.c}" style="height:${Math.max(5,Math.round(r.probs[o.k]*100))}%" title="${o.t} ${(r.probs[o.k]*100).toFixed(0)}%"></i>`).join('');
+    cards+=`<div class="sfm ${band}">
+      <div class="sfm-no num">${r.no}</div>
+      <div class="sfm-tm"><div class="t"><b>${esc(r.home)}</b> <span class="vs">vs</span> ${esc(r.away)}</div><div class="lg">${esc(r.league||'')} · 信号 ${r.src}${tag?(' · '+tag):''}</div></div>
+      <div class="sfm-bars">${bars}</div>
+      <div class="sfm-pk ${r.top.c}">${r.top.t}<small class="num">${(r.conf*100).toFixed(0)}%</small></div>
+    </div>`; });
+  const issueRow=`<div class="meta-row"><div class="field" style="flex:1">第 ${esc(up.issue)} 期 · 截止 ${esc(up.saleEnd||up.drawTime||'')} ${zfcSrcLabel()}</div><div class="field btn" id="sfRefresh">刷新赔率</div></div>`;
+  const trendBtn=`<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">走势 / 遗漏复盘 <button class="mini go" data-sftog="trend">${sfShowTrend?'收起':'展开'}</button></div>`;
+  return issueRow+hero
+    +r9SmartBlock()
+    +`<div class="section-title">预算档位（点击切换）</div><div class="tol-chips">${tierCards}</div>`
+    +`<div class="section-title">逐场预测（柱=胜/平/负概率，高亮=推荐）</div><div class="sflist">${cards}</div>`
+    +`<button class="algo-link" id="sfAlgo">ⓘ 这套预测怎么来的 · 回测验证</button>`
+    +trendBtn+(sfShowTrend?zfcTrend():'')
+    +`<a class="algo-link" href="table-zfc.html" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">↗ 打开完整「胜负14场遗漏走势分析表」</a>`
+    +`<div class="hint-line" style="margin-top:12px">推荐 = 每场概率最高的结果。<b>赔率</b>（去水后的隐含概率）是最强信号；缺赔率时用 <b>Elo 实力分</b> 兜底。回测证明遗漏/冷热无效已弃用。胜负彩奖池负期望，理性购彩。</div>`;
+}
+function zfcTrend(){
+  const base=(zfcData().recent||[]).slice();
+  const latest=base.reduce((m,x)=>Math.max(m,+x[0]||0),0), seen=new Set(base.map(x=>String(x[0])));
+  const rec=base.concat(zfcTwinRows().filter(r=>(+r.issue||0)>latest&&!seen.has(r.issue)).map(r=>[r.issue,r.d]));
+  if(!rec.length) return '';
+  const seq=rec.map(([iss,d])=>({iss,r:[...d]}));
+  const N=seq.length; const om=Array.from({length:14},()=>[0,0,0]); let prev=null;
+  seq.forEach(row=>{ const r=row.r;
+    for(let m=0;m<14;m++)for(let o=0;o<3;o++) om[m][o]= r[m]===ZFC_OUT[o].k?0:om[m][o]+1;
+    row.om=om.map(a=>a.slice()); row.mx=om.map(a=>{const v=Math.max(...a);return{v,o:a.indexOf(v)};});
+    row.cnt={W:r.filter(x=>x==='W').length,P:r.filter(x=>x==='P').length,L:r.filter(x=>x==='L').length};
+    prev=r; });
+  let h1='<tr><th class="zi">期号</th>'; for(let m=1;m<=14;m++) h1+=`<th>${m}</th>`; h1+='<th>胜平负</th></tr>';
+  let body='';
+  for(let i=N-1;i>=0;i--){ const r=seq[i];
+    let tr=`<tr><td class="zi">${r.iss}</td>`;
+    r.r.forEach(x=>{const o=ZFC_OUT[ZKI[x]]; tr+=`<td class="zr ${o.c}">${o.t}</td>`;});
+    tr+=`<td class="zc"><span class="cw">${r.cnt.W}</span> <span class="cd">${r.cnt.P}</span> <span class="cl">${r.cnt.L}</span></td></tr>`;
+    body+=tr; }
+  return `<div class="zwrap"><table class="ztbl"><thead>${h1}</thead><tbody>${body}</tbody></table></div><div class="hint-line">近 ${N} 期开奖走势（最新在上）。胜平负 = 当期 14 场各结果场数。</div>`;
+}
+function sfAddSlip(){ const P=zfcPredict(); const up=P.up;
+  const matches=P.rows.map(r=>({home:r.home,away:r.away}));
+  const picks={}; P.rows.forEach((r,i)=>{ picks[i+1]= r.dbl?[r.top.v,r.second.v]:[r.top.v]; });
+  S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:'zfc', issue:up.issue, matches, picks, selected:null, bets:P.bets, mult:1, _open:false});
+  persist(); toast(`已加入投注单 · ${nf.format(P.bets)} 注`); go('slip'); }
+function r9Plan(extra){
+  const P=zfcPredict(), rows=P.rows.map((r,i)=>Object.assign({noNum:+r.no||i+1},r));
+  const selectedRows=rows.slice().sort((a,b)=>b.conf-a.conf).slice(0,9).sort((a,b)=>a.noNum-b.noNum);
+  const lows=new Set(selectedRows.slice().sort((a,b)=>a.conf-b.conf).slice(0,extra).map(r=>r.noNum));
+  const picks={}; for(let i=1;i<=14;i++) picks[i]=[];
+  selectedRows.forEach(r=>{ picks[r.noNum]=lows.has(r.noNum)?[r.top.v,r.second.v]:[r.top.v]; });
+  const selected=selectedRows.map(r=>r.noNum).sort((a,b)=>a-b);
+  const bets=e_k(selected.map(no=>picks[no].length),9);
+  const matches=rows.map(r=>({home:r.home,away:r.away}));
+  return {P,up:P.up,rows,selectedRows,lows,picks,selected,bets,matches,extra};
+}
+function r9SmartBlock(){
+  const plans=[0,2,4].map(n=>r9Plan(n));
+  const active=plans.find(p=>p.extra===r9SmartTier)||plans[0];
+  const tierCards=plans.map(p=>`<button class="tol ${r9SmartTier===p.extra?'on':''}" data-r9tier="${p.extra}"><div class="t">${p.extra?`低信心 ${p.extra} 场加次选`:'单式稳九场'}</div><div class="v num">${nf.format(p.bets)} 注 · ¥${nf.format(p.bets*2)}</div><div class="s">${p.extra?'稳九场里加拖':'置信最高 9 场'}</div></button>`).join('');
+  const cards=active.selectedRows.map(r=>{
+    const low=active.lows.has(r.noNum), picks=active.picks[r.noNum].map(wdlName).join('/');
+    return `<div class="sfm r9m ${low?'low':''}">
+      <div class="sfm-no num">${r.noNum}</div>
+      <div class="sfm-tm"><div class="t"><b>${esc(r.home)}</b> <span class="vs">vs</span> ${esc(r.away)}</div><div class="lg">${esc(r.league||'')} · 置信 ${(r.conf*100).toFixed(0)}%${low?' · 加次选':''}</div></div>
+      <div class="sfm-pk ${r.top.c}">${picks}<small class="num">${(r.conf*100).toFixed(0)}%</small></div>
+    </div>`;
+  }).join('');
+  return `<div class="section-title">任选九智能推荐</div><div class="hint-line">从同一期 14 场里按置信度取前 9 场，低信心场可加次选。</div><div class="tol-chips">${tierCards}</div><div class="sflist">${cards}</div><button class="btn-ghost" id="r9AddSmart" style="width:100%;margin:10px 0 4px">加入任九投注单 · ${nf.format(active.bets)} 注 ¥${nf.format(active.bets*2)}</button>`;
+}
+function r9AddSmartSlip(){
+  const plan=r9Plan(r9SmartTier), r=calc('r9',plan.picks,plan.selected);
+  if(!r.valid||r.bets!==plan.bets){ toast('任九注数校验失败，请重试'); return; }
+  S.slip.push({id:'li'+Math.random().toString(36).slice(2,8), game:'r9', issue:plan.up.issue, matches:plan.matches, picks:plan.picks, selected:plan.selected, bets:r.bets, mult:1, _open:false});
+  persist(); toast(`已加入任九 · ${nf.format(r.bets)} 注`); go('slip');
+}
+function openZfcAlgoSheet(){ const P=zfcPredict();
+  $('#sheet').innerHTML=`<div class="grip"></div><h3>14 场预测怎么来的</h3><p class="sub">用 566 期真实开奖做 walk-forward 回测，挑出命中率最高的公式。</p>
+    <div class="help-block"><h4>结论：实力 &gt; 基准 &gt; 走势</h4>
+      <p>每场只预测一个结果，<b>每场命中率</b>（样本外）：</p>
+      <div class="kbd-row"><code>随机 33%</code><code>always 胜 45%</code><code>遗漏/冷热 31–35%</code><code>Elo 实力 48–50%</code></div>
+      <p><b>强信号场（实力差大）命中约 69%</b>——这些标「胆」。</p></div>
+    <div class="help-block"><h4>① 赔率隐含概率（主信号）</h4><p>把每场欧赔 h/d/a 取倒数、去水(归一)，得到市场对 胜/平/负 的真实概率。盘口是所有信号里最准的，有赔率就以它为准。</p></div>
+    <div class="help-block"><h4>② Elo 实力分（兜底）</h4><p>用历史比分滚动维护每支球队实力分（主场加成 ${ZFC_SNAPSHOT.eloConfig.H}、K=${ZFC_SNAPSHOT.eloConfig.K}），评分差 → 胜平负概率。开赔前 / 冷门队用它兜底。</p></div>
+    <div class="help-block"><h4>为什么不用走势 / 遗漏</h4><p>每期是不同的比赛、相互独立，"某结果该出了"是赌徒谬误。回测里遗漏/冷热命中率<b>掉到 31–35%</b>（比随机还差），已全部弃用——和 4 场进球的结论一致。</p></div>
+    <div class="help-block"><h4>红线</h4><p>胜负彩同样是奖池抽水制，<b>长期期望为负</b>。预测只提高命中效率，改变不了长期亏损。设好预算，理性购彩。</p></div>
+    <a class="algo-link" href="table-zfc.html" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">↗ 打开完整「胜负14场遗漏走势分析表」· 206 期 + 遗漏矩阵</a>`; openSheet(); }
+
 
 /* ---------- 存储 ---------- */
 const KEY='zc:v2';
@@ -579,12 +830,13 @@ window.addEventListener('hashchange',()=>{ const r=(location.hash||'').replace('
 
 /* =========================================================== 渲染 =========================================================== */
 function render(){
-  setAccent(route==='manual'?GAMES[S.lastGame].accent:'#6741d9');  // 演算核心用进球紫
+  setAccent(route==='manual'?GAMES[S.lastGame].accent:'#6741d9');  // 演算 / 14场 预测核心用紫
   renderHeader(); renderSwitcher(); renderTabbar();
   const scr=$('#screen');
   scr.className=(route==='manual'||route==='slip')?'':'nobar';
   if(route==='home'){ scr.innerHTML=viewHome(); if(!fxAutoPlayed){ fxAutoPlayed=true; setTimeout(()=>runAnalysis(()=>{}),90); } }
   else if(route==='manual') scr.innerHTML=viewBet(GAMES[S.lastGame]);
+  else if(route==='sf') scr.innerHTML=viewSF();
   else if(route==='slip') scr.innerHTML=viewSlip();
   else if(route==='orders') scr.innerHTML=viewOrders();
   else if(route==='scores') scr.innerHTML=viewScores();
@@ -593,7 +845,7 @@ function render(){
   $('#btnHelp').innerHTML=ICONS.help;
 }
 function renderHeader(){
-  const map={home:['智能演算','4场进球 · 缩水推荐引擎'],manual:['手动选号',GAMES[S.lastGame].full+' · 单注2元'],slip:['投注单','确认后生成预约'],orders:['购买记录','预约 → 出票 → 开奖'],scores:['比分表','比分 → 胜平负 速查'],check:['开奖核对','录入彩果自动核对']};
+  const map={home:['智能演算','4场进球 · 缩水推荐引擎'],sf:['胜负14场','赔率 + 实力 双信号预测'],manual:['手动选号',GAMES[S.lastGame].full+' · 单注2元'],slip:['投注单','确认后生成预约'],orders:['购买记录','预约 → 出票 → 开奖'],scores:['比分表','比分 → 胜平负 速查'],check:['开奖核对','录入彩果自动核对']};
   const [t,s]=map[route]||map.home; $('#hdrTitle').innerHTML=`${t}<small>${s}</small>`;
 }
 function renderSwitcher(){
@@ -603,7 +855,7 @@ function renderSwitcher(){
   el.innerHTML=GAME_ORDER.map(k=>`<button class="gchip" data-game="${k}" aria-selected="${k===S.lastGame}">${GAMES[k].name}</button>`).join('');
 }
 function renderTabbar(){
-  const tabs=[['home','spark','演算'],['slip','slip','投注单'],['orders','orders','记录'],['scores','scores','比分表'],['check','check','核对']];
+  const tabs=[['home','spark','演算'],['sf','bet','14场'],['slip','slip','投注单'],['orders','orders','记录'],['scores','scores','比分表'],['check','check','核对']];
   $('#tabbar').innerHTML=tabs.map(([r,ic,t])=>{
     const badge=(r==='slip'&&S.slip.length)?`<span class="badge num">${S.slip.length}</span>`:'';
     return `<button class="tab ${route===r?'on':''}" data-route="${r}">${ICONS[ic]}<span>${t}</span>${badge}</button>`;
@@ -712,6 +964,17 @@ function issueOptions(){
   return items.map(([v,l])=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(l)}</option>`).join('')
     + `<option value="__custom">＋ 自定义期号…</option>`;
 }
+function openIssueSheet(){
+  $('#sheet').innerHTML=`<div class="grip"></div><h3>自定义期号</h3><p class="sub">输入要用于本期智能推荐和投注单的期号。</p>
+    <input class="txt" id="customIssue" inputmode="numeric" placeholder="如 26130" value="${esc(S.drafts.jqc.issue||'')}">
+    <button class="btn-primary" id="confirmIssue">确认期号</button>`;
+  openSheet(); setTimeout(()=>{ const el=$('#customIssue'); if(el) el.focus(); },60);
+}
+function confirmIssue(){
+  const v=($('#customIssue')?$('#customIssue').value:'').trim();
+  if(!v){ toast('请填写期号'); return; }
+  S.drafts.jqc.issue=v; persist(); closeSheet(); render();
+}
 
 /* ---------- 智能演算（首页 · 核心） ---------- */
 function viewHome(){
@@ -728,12 +991,13 @@ function viewHome(){
     <div class="hero-tier">${tierMeta[k]||'自定义'}</div>
     <div class="hero-num"><span class="n num">${nf.format(k)}</span><span class="u"> 注 · ¥${nf.format(k*2)}</span></div>
     <div class="hero-kpis"><span>命中效率 <b class="num">${dens.toFixed(1)}×</b></span><span>覆盖真实概率 <b class="num">${(c*100).toFixed(2)}%</b></span></div>
-    <div class="hero-badge">✓ 340 期回测验证 · 纯频率最优</div>
+    <div class="hero-human">同样 ¥${nf.format(k*2)}，命中概率 ≈ 盲买的 ${dens.toFixed(1)} 倍</div>
+    <div class="hero-badge">✓ 370 期回测对决 · 三模型平均引擎<small>长期期望为负 · 请设预算理性投注</small></div>
     <button class="btn-primary" id="recAddSlip">加入投注单 →</button>
   </div>`;
   const pipe=`<div class="section-title" style="display:flex;justify-content:space-between;align-items:center">演算过程 <button class="mini go" id="recReplay">✦ 重新演算</button></div><div class="pipe">
     <div class="pstep"><div class="pn num">${R.N}</div><div class="pl">期开奖</div></div><div class="parrow">›</div>
-    <div class="pstep"><div class="pn">8×4</div><div class="pl">每位频率</div></div><div class="parrow">›</div>
+    <div class="pstep"><div class="pn">3 模型</div><div class="pl">频率·近期·联合</div></div><div class="parrow">›</div>
     <div class="pstep"><div class="pn num">65,536</div><div class="pl">全注打分</div></div><div class="parrow">›</div>
     <div class="pstep hot"><div class="pn num">${nf.format(k)}</div><div class="pl">取前 N</div></div></div><button class="algo-link" id="algoLink">ⓘ 这套演算怎么来的 · 算法说明</button>`;
   const tiers=[[1,'单式胆'],[16,'小复式'],[40,'中复式'],[80,'预算复式']];
@@ -752,8 +1016,8 @@ function viewHome(){
     +`<div class="section-title">预算档位（点击切换，上方实时更新）</div><div class="tol-chips">${tierCards}</div>`
     +`<div class="section-title">每位进球频率（高亮 = 入选前2）</div>${posRows}`
     +`<div class="section-title">本档推荐号 · 共 ${nf.format(k)} 注</div><div class="chips cbs">${combos}</div>`
-    +`<div class="section-title">补充最新开奖（让引擎用当期数据）</div><div class="card"><textarea id="recAdd" rows="2" style="width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-size:16px;resize:none" placeholder="每行 8 位 0-3，如 11021320">${addTxt}</textarea><button class="mini go" id="recRefresh" style="margin-top:6px">用最新数据刷新</button></div>`
-    +`<div class="hint-line" style="margin-top:12px">百分比 = 该位进球频率（真信号）。经 340 期 walk-forward 回测：纯频率 top-N 命中率约盲投 3.7×；遗漏/走势、和值硬过滤经回测反而更差，已移除。进球彩奖池负期望，理性购彩。</div>`;
+    +`<div class="section-title">补充最新开奖</div><div class="card"><textarea id="recAdd" rows="2" style="width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-size:16px;resize:none" placeholder="每行 8 位 0-3，如 11021320">${addTxt}</textarea><button class="mini go" id="recRefresh" style="margin-top:6px">用最新数据刷新</button></div><div class="hint-line">已接实时数据，一般无需手填；也可去走势表按期号录入。</div>`
+    +`<div class="hint-line" style="margin-top:12px">百分比 = 该位进球频率（真信号）。打分 = <b>三模型平均</b>：长期频率 × 近期加权(半衰160期) × 同场主客联合分布——经 370 期 walk-forward 模型对决，整体校准显著优于单一频率(配对 p≈0.03)，top-2000 命中效率 ≈ 盲投 3.3×；遗漏/走势、和值硬过滤经回测反而更差，不参与打分。进球彩奖池负期望，理性购彩。</div>`;
 }
 function addRecToSlip(){
   const R=recommend(), k=recTier;
@@ -785,6 +1049,53 @@ function picksText(g,p){ if(!p) return '';
   if(g.type==='halffull'){ const h=(p.half||[]).map(v=>WDL.find(x=>x.v===v).t).join('/'); const f=(p.full||[]).map(v=>WDL.find(x=>x.v===v).t).join('/'); return `<span class="pk d">半 ${h||'—'}</span><span class="pk w">全 ${f||'—'}</span>`; }
   if(g.type==='goals'){ const h=(p.home||[]).map(v=>v===3?'3+':v).join('/'); const a=(p.away||[]).map(v=>v===3?'3+':v).join('/'); return `<span class="pk w">主 ${h||'—'}</span><span class="pk l">客 ${a||'—'}</span>`; }
 }
+function wdlName(v){ const o=WDL.find(x=>x.v===v); return o?o.t:String(v); }
+function goalName(v){ return v===3?'3+':String(v); }
+function picksPlain(g,p){
+  if(!p) return '';
+  if(g.type==='wdl') return (p||[]).slice().sort((a,b)=>b-a).map(wdlName).join('/');
+  if(g.type==='halffull'){ const h=(p.half||[]).map(wdlName).join('/')||'—', f=(p.full||[]).map(wdlName).join('/')||'—'; return `半${h} 全${f}`; }
+  if(g.type==='goals'){ const h=(p.home||[]).map(goalName).join('/')||'—', a=(p.away||[]).map(goalName).join('/')||'—'; return `主${h} 客${a}`; }
+}
+function chunkLines(arr,n){ const out=[]; for(let i=0;i<arr.length;i+=n) out.push('   '+arr.slice(i,i+n).join(' ')); return out; }
+function fmtLegLines(it){
+  const g=GAMES[it.game], lines=[];
+  if(it.kind==='rec'){
+    const combos=(it.combos||[]).map(c=>c.map(goalName).join(''));
+    return chunkLines(combos,4);
+  }
+  const max=g.key==='r9'?(it.selected||[]):Array.from({length:g.matches},(_,i)=>i+1);
+  let row='', count=0;
+  max.forEach(no=>{
+    const m=(it.matches&&it.matches[no-1])||{}, label=(m.home||m.away)?`${no}${m.home||'主队'}vs${m.away||'客队'}`:`${no}`;
+    const part=`${label}:${picksPlain(g,it.picks&&it.picks[no])}`;
+    row+=(row?' ':'   ')+part; count++;
+    if(count%3===0){ lines.push(row); row=''; }
+  });
+  if(row) lines.push(row);
+  return lines;
+}
+function fmtLegText(it,i){
+  const g=GAMES[it.game], kind=it.kind==='rec'?'智能推荐':(it.bets>1?'复式':'单式');
+  const head=`${i}. ${g.full}${it.issue?(' 第'+it.issue+'期'):''} ${kind} ${nf.format(it.bets*it.mult)}注 ¥${nf.format(it.bets*UNIT*it.mult)}`;
+  return [head].concat(fmtLegLines(it)).join('\n');
+}
+function fmtSlipText(){
+  const bets=S.slip.reduce((s,i)=>s+i.bets*i.mult,0);
+  return ['【足彩投注单】'+fmtTime(Date.now())].concat(S.slip.map((it,i)=>fmtLegText(it,'①②③④⑤⑥⑦⑧⑨'[i]||String(i+1))))
+    .concat([`合计 ${nf.format(bets)} 注 ¥${nf.format(bets*UNIT)}（单注2元）`]).join('\n');
+}
+function fmtOrderText(o){
+  const legs=o.legs.map((it,i)=>fmtLegText(it,'①②③④⑤⑥⑦⑧⑨'[i]||String(i+1)));
+  return [`【足彩订单】${fmtTime(o.createdAt)} 单号 ${o.id.slice(-6)}`].concat(legs)
+    .concat([`合计 ${nf.format(o.totalBets)} 注 ¥${nf.format(o.totalAmount)}（单注2元）`]).join('\n');
+}
+async function copyText(text){
+  try{ if(navigator.clipboard&&window.isSecureContext){ await navigator.clipboard.writeText(text); toast('已复制，去微信粘贴给彩站'); return true; } }catch(e){}
+  const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.focus(); ta.select();
+  let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} ta.remove(); if(ok) toast('已复制，去微信粘贴给彩站'); else toast('复制失败，请手动复制'); return ok;
+}
+async function shareOrCopy(text,title){ if(navigator.share){ try{ await navigator.share({title,text}); return; }catch(e){} } await copyText(text); }
 
 /* ---------- 购买记录 ---------- */
 let orderFilter='all';
@@ -797,6 +1108,7 @@ const STATUS={reserved:['已预约','reserved'],issued:['已出票','issued'],dr
 function orderItem(o){
   const games=[...new Set(o.legs.map(l=>l.game))].map(k=>`<span class="tag" style="background:${GAMES[k].accent}1a;color:${GAMES[k].accent}">${GAMES[k].name}</span>`).join(' ');
   const [stxt,scls]=STATUS[o.status]; let win=''; if(o.status==='drawn'&&o.result) win=o.result.anyWon?`<span class="pill won">中奖</span>`:`<span class="pill lost">未中</span>`;
+  const quick=o.legs.some(l=>['jqc','zfc','r9'].includes(l.game)&&l.issue)&&(o.status==='reserved'||o.status==='issued');
   return `<div class="item ${o._open?'open':''}" data-ord="${o.id}">
       <div class="item-head" data-otoggle="${o.id}"><div class="ti"><div class="nm">单号 ${o.id.slice(-6)} ${win}</div><div class="meta">${fmtTime(o.createdAt)}</div><div style="margin-top:6px">${games}</div></div>
         <div class="amt"><span class="pill ${scls}">${stxt}</span><div class="a num" style="margin-top:6px">¥${nf.format(o.totalAmount)}</div><div class="b num">${nf.format(o.totalBets)} 注</div></div></div>
@@ -804,8 +1116,9 @@ function orderItem(o){
       <div class="row-actions">
         ${o.status==='reserved'?`<button class="mini go" data-adv="${o.id}|issued">标记已出票</button>`:''}
         ${o.status==='issued'?`<button class="mini go" data-adv="${o.id}|drawn">去核对开奖</button>`:''}
+        ${quick?`<button class="mini go" data-autocheck="${o.id}">一键核对</button>`:''}
         ${o.status!=='reserved'?`<button class="mini" data-adv="${o.id}|back">回退状态</button>`:''}
-        <button class="mini" data-clone="${o.id}">复制为新投注</button><button class="mini danger" data-delord="${o.id}">删除</button></div></div>`;
+        <button class="mini" data-copyord="${o.id}">复制文本</button><button class="mini" data-clone="${o.id}">复制为新投注</button><button class="mini danger" data-delord="${o.id}">删除</button></div></div>`;
 }
 function orderLeg(l,o){ const g=GAMES[l.game]; const r=o.result&&o.result.legs.find(x=>x.game===l.game&&x.issue===l.issue);
   const tail=r?`　<span class="pk ${r.won?'d':'l'}">${l.kind==='rec'?(r.won?'命中 ✓中':'未命中'):('命中 '+r.hit+'/'+r.need+(r.won?' ✓中':''))}</span>`:'';
@@ -844,13 +1157,17 @@ function viewCheck(){
   const g=GAMES[checkGame]; const res=S.results[`${checkGame}:${checkIssue}`];
   const sw=GAME_ORDER.map(k=>`<button class="gchip" data-cgame="${k}" aria-selected="${k===checkGame}">${GAMES[k].name}</button>`).join('');
   let entry=''; for(let i=1;i<=g.matches;i++) entry+=resultRow(g,i,res);
+  const autoable=['jqc','zfc','r9'].includes(checkGame);
+  const autoHint=autoable?'已接入官方开奖接口，可自动获取最近开奖并立即结算订单。':'该玩法暂无官方接口，需要手动录入彩果后核对。';
   let checkList='';
   if(res){ const related=S.orders.filter(o=>o.legs.some(l=>l.game===checkGame&&(!checkIssue||l.issue===checkIssue)));
     checkList=related.map(o=>{ const r=evalOrderLeg(o,checkGame,checkIssue,res); if(!r) return '';
       return `<div class="item"><div class="item-head"><div class="ti"><div class="nm">单号 ${o.id.slice(-6)}</div><div class="meta">${g.full} 第${esc(checkIssue||'')}期</div></div><div class="amt"><span class="pill ${r.won?'won':'lost'}">${r.won?'中奖':'未中'}</span><div class="b num" style="margin-top:6px">命中 ${r.hit}/${r.need}</div></div></div></div>`; }).join('')||`<div class="hint-line">没有匹配该期号的订单。</div>`; }
   return `<div class="gameswitch" style="position:static;padding-left:0;padding-right:0;border:none;margin-bottom:8px">${sw}</div>
     <div class="meta-row"><div class="field">期号 <input id="checkIssue" inputmode="numeric" placeholder="期号" value="${esc(checkIssue)}"></div></div>
-    <div class="hint-line">录入该期 ${g.full} 的开奖结果（彩果），保存后自动核对相关订单。结果为手动录入。</div>${entry}
+    <div class="hint-line">${autoHint}</div>
+    ${autoable?`<button class="btn-ghost" id="autoResult" style="width:100%;margin:0 0 12px">自动获取开奖</button>`:''}
+    ${entry}
     <button class="btn-ghost" id="saveResult" style="width:100%;margin:6px 0 18px">保存彩果并核对</button>
     ${res?`<div class="section-title">核对结果</div>${checkList}`:''}`;
 }
@@ -888,7 +1205,7 @@ function renderActionbar(){
     else ab.innerHTML=`<div class="ab-info invalid"><div class="big">${r.msg}</div><div class="sub">完成选择后可加入投注单</div></div><button class="btn-primary" disabled>加入投注单</button>`;
   } else if(route==='slip'&&S.slip.length){
     const bets=S.slip.reduce((s,i)=>s+i.bets*i.mult,0); ab.className='actionbar'; ab.style.display='flex';
-    ab.innerHTML=`<div class="ab-info"><div class="big">合计 <span class="n num">${nf.format(bets)}</span>注 · <span class="num">¥${nf.format(bets*UNIT)}</span></div><div class="sub">${S.slip.length} 个投注项</div></div><button class="btn-primary" id="reserveBtn">预约购买</button>`;
+    ab.innerHTML=`<div class="ab-info"><div class="big">合计 <span class="n num">${nf.format(bets)}</span>注 · <span class="num">¥${nf.format(bets*UNIT)}</span></div><div class="sub">${S.slip.length} 个投注项</div></div><button class="btn-ghost" id="copySlip">复制文本</button><button class="btn-primary" id="reserveBtn">预约购买</button>`;
   } else { ab.style.display='none'; ab.innerHTML=''; }
 }
 function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(!el) return;
@@ -898,7 +1215,7 @@ function animateNum(){ if(reduceMotion) return; const el=$('#actionbar .n'); if(
 /* =========================================================== 事件 =========================================================== */
 document.addEventListener('click',e=>{
   if(e.target.closest('#fx')){ const fx=$('#fx'); if(fx&&fx._finish) fx._finish(); return; }
-  const t=e.target.closest('#algoLink,[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-delord],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],#recApply,#recRefresh,#recAddSlip,#goManual,#recReplay,#addSlip,#reserveBtn,#clearBtn,#saveResult,#btnHelp,#scrim,#confirmReserve');
+  const t=e.target.closest('#algoLink,[data-route],[data-game],[data-jqcview],[data-csub],[data-cover],[data-tol],[data-pick],[data-incl],[data-toggle],[data-mult],[data-edit],[data-del],[data-ofilter],[data-otoggle],[data-adv],[data-clone],[data-copyord],[data-delord],[data-autocheck],[data-cell],[data-smode],[data-cgame],[data-res],[data-rectier],[data-sftier],[data-r9tier],[data-sftog],#sfAddSlip,#r9AddSmart,#sfRefresh,#sfAlgo,#recApply,#recRefresh,#recAddSlip,#goManual,#recReplay,#addSlip,#copySlip,#reserveBtn,#clearBtn,#saveResult,#autoResult,#backupExport,#backupImport,#btnHelp,#scrim,#confirmReserve,#confirmIssue');
   if(!t) return;
   if(t.dataset.route){ go(t.dataset.route); return; }
   if(t.dataset.game){ S.lastGame=t.dataset.game; persist(); render(); return; }
@@ -907,6 +1224,13 @@ document.addEventListener('click',e=>{
   if(t.dataset.cover){ S.calc.cover[+t.dataset.cover]=+t.dataset.n; persist(); render(); return; }
   if(t.dataset.tol){ S.calc.tol=+t.dataset.tol; persist(); render(); return; }
   if(t.dataset.rectier){ recTier=+t.dataset.rectier; render(); return; }
+  if(t.dataset.sftier!==undefined){ sfTier=+t.dataset.sftier; render(); return; }
+  if(t.dataset.r9tier!==undefined){ r9SmartTier=+t.dataset.r9tier; render(); return; }
+  if(t.dataset.sftog==='trend'){ sfShowTrend=!sfShowTrend; render(); return; }
+  if(t.id==='sfAddSlip'){ sfAddSlip(); return; }
+  if(t.id==='r9AddSmart'){ r9AddSmartSlip(); return; }
+  if(t.id==='sfRefresh'){ loadZfcLive(); toast('正在刷新实时赔率…'); return; }
+  if(t.id==='sfAlgo'){ openZfcAlgoSheet(); return; }
   if(t.id==='recApply'){ recApply(); return; }
   if(t.id==='recRefresh'){ const v=$('#recAdd'); if(v){ S.jqcAdd=(v.value||'').replace(/[^0-3]/g,''); persist(); } _recCache=null; render(); toast('已用最新数据刷新推荐'); return; }
   if(t.id==='recAddSlip'){ addRecToSlip(); return; }
@@ -916,6 +1240,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.pick){ togglePick(t.dataset.pick,+t.dataset.m,+t.dataset.v); return; }
   if(t.dataset.incl){ toggleInclude(+t.dataset.incl); return; }
   if(t.id==='addSlip'){ addToSlip(); return; }
+  if(t.id==='copySlip'){ shareOrCopy(fmtSlipText(),'足彩投注单'); return; }
   if(t.id==='clearBtn'){ clearDraft(); return; }
   if(t.dataset.toggle){ const it=S.slip.find(x=>x.id===t.dataset.toggle); if(it){ it._open=!it._open; render(); } return; }
   if(t.dataset.mult){ const it=S.slip.find(x=>x.id===t.dataset.li); if(it){ it.mult=Math.max(1,Math.min(99,it.mult+(t.dataset.mult==='+'?1:-1))); persist(); render(); } return; }
@@ -926,14 +1251,20 @@ document.addEventListener('click',e=>{
   if(t.dataset.otoggle){ const o=S.orders.find(x=>x.id===t.dataset.otoggle); if(o){ o._open=!o._open; render(); } return; }
   if(t.dataset.adv){ advanceOrder(t.dataset.adv); return; }
   if(t.dataset.clone){ cloneOrder(t.dataset.clone); return; }
+  if(t.dataset.copyord){ const o=S.orders.find(x=>x.id===t.dataset.copyord); if(o) shareOrCopy(fmtOrderText(o),'足彩订单'); return; }
   if(t.dataset.delord){ S.orders=S.orders.filter(x=>x.id!==t.dataset.delord); persist(); render(); toast('订单已删除'); return; }
+  if(t.dataset.autocheck){ autoCheckOrder(t.dataset.autocheck); return; }
   if(t.dataset.cell){ const [h,a]=t.dataset.cell.split('-').map(Number); selScore=[h,a]; render(); return; }
   if(t.dataset.smode){ S.scoresPrefs.jqcMode=t.dataset.smode==='jqc'; selScore=null; persist(); render(); return; }
   if(t.dataset.cgame){ checkGame=t.dataset.cgame; render(); return; }
   if(t.dataset.res){ setResult(t.dataset.res,+t.dataset.m,+t.dataset.v); return; }
   if(t.id==='saveResult'){ saveResult(); return; }
+  if(t.id==='autoResult'){ fetchOfficialResult(); return; }
+  if(t.id==='backupExport'){ exportBackup(); return; }
+  if(t.id==='backupImport'){ const f=$('#backupFile'); if(f){ f.value=''; f.click(); } return; }
   if(t.id==='btnHelp'){ openHelpSheet(); return; }
   if(t.id==='confirmReserve'){ confirmReserve(); return; }
+  if(t.id==='confirmIssue'){ confirmIssue(); return; }
   if(t.id==='scrim'){ closeSheet(); return; }
 });
 document.addEventListener('input',e=>{ const t=e.target;
@@ -942,7 +1273,8 @@ document.addEventListener('input',e=>{ const t=e.target;
   else if(t.id==='checkIssue'){ checkIssue=t.value.trim(); }
 });
 document.addEventListener('change',e=>{ const t=e.target;
-  if(t.id==='issueSel'){ let v=t.value; if(v==='__custom'){ v=(prompt('输入期号（如 26120）','')||'').trim(); if(!v){ render(); return; } } S.drafts.jqc.issue=v; persist(); render(); }
+  if(t.id==='issueSel'){ let v=t.value; if(v==='__custom'){ render(); setTimeout(openIssueSheet,0); return; } S.drafts.jqc.issue=v; persist(); render(); }
+  else if(t.id==='backupFile'&&t.files&&t.files[0]) importBackupFile(t.files[0]);
 });
 
 /* ---------- 选号逻辑 ---------- */
@@ -958,7 +1290,7 @@ function addToSlip(){ const g=GAMES[S.lastGame], d=S.drafts[g.key], r=calc(g.key
   persist(); toast(`已加入投注单 · ${nf.format(r.bets)}注`); render(); }
 function editSlip(id){ const it=S.slip.find(x=>x.id===id); if(!it) return; S.lastGame=it.game;
   S.drafts[it.game]={issue:it.issue, matches:JSON.parse(JSON.stringify(it.matches)), picks:JSON.parse(JSON.stringify(it.picks))};
-  if(it.game==='r9') S.drafts.r9.selected=(it.selected||[]).slice(); S.slip=S.slip.filter(x=>x.id!==id); persist(); go('bet'); toast('已载入，可修改后重新加入'); }
+  if(it.game==='r9') S.drafts.r9.selected=(it.selected||[]).slice(); S.slip=S.slip.filter(x=>x.id!==id); persist(); go('manual'); toast('已载入，可修改后重新加入'); }
 
 /* ---------- 预约购买 ---------- */
 function openReserveSheet(){ const bets=S.slip.reduce((s,i)=>s+i.bets*i.mult,0);
@@ -990,14 +1322,61 @@ function setResult(kind,m,v){ if(!checkIssue){ toast('请先填写期号'); retu
   let r=S.results[key]||{game:checkGame,issue:checkIssue,enteredAt:Date.now(),outcomes:{}};
   if(g.type==='wdl') r.outcomes[m]=v; else { r.outcomes[m]=r.outcomes[m]||{}; r.outcomes[m][kind]=v; }
   S.results[key]=r; persist(); render(); }
-function saveResult(){ if(!checkIssue){ toast('请先填写期号'); return; } const key=`${checkGame}:${checkIssue}`; if(!S.results[key]){ toast('请先录入彩果'); return; }
-  const res=S.results[key]; let n=0;
-  S.orders.forEach(o=>{ if(!o.legs.some(l=>l.game===checkGame&&l.issue===checkIssue)) return; const legResults=[]; let anyWon=false;
-    o.legs.forEach(l=>{ if(l.game===checkGame&&l.issue===checkIssue){ const ev=evalOrderLeg(o,checkGame,checkIssue,res); if(ev){ legResults.push({game:l.game,issue:l.issue,hit:ev.hit,need:ev.need,won:ev.won}); if(ev.won) anyWon=true; } } });
+function settleOrders(game,issue,res){ let n=0, won=0;
+  S.orders.forEach(o=>{ if(!o.legs.some(l=>l.game===game&&l.issue===issue)) return; const legResults=[]; let anyWon=false;
+    o.legs.forEach(l=>{ if(l.game===game&&l.issue===issue){ const ev=evalOrderLeg(o,game,issue,res); if(ev){ legResults.push({game:l.game,issue:l.issue,hit:ev.hit,need:ev.need,won:ev.won}); if(ev.won) anyWon=true; } } });
     o.result=o.result||{legs:[],anyWon:false};
-    o.result.legs=o.result.legs.filter(x=>!(x.game===checkGame&&x.issue===checkIssue)).concat(legResults); o.result.anyWon=o.result.anyWon||anyWon;
-    if(o.status!=='drawn'){ o.status='drawn'; o.statusHistory.push({status:'drawn',at:Date.now()}); } n++; });
-  persist(); render(); toast(n?`已核对 ${n} 笔订单`:'彩果已保存（暂无匹配订单）'); }
+    o.result.legs=o.result.legs.filter(x=>!(x.game===game&&x.issue===issue)).concat(legResults); o.result.anyWon=o.result.anyWon||anyWon;
+    if(o.status!=='drawn'){ o.status='drawn'; o.statusHistory.push({status:'drawn',at:Date.now()}); }
+    if(anyWon) won++;
+    n++;
+  });
+  return {count:n, won};
+}
+function saveResult(){ if(!checkIssue){ toast('请先填写期号'); return; } const key=`${checkGame}:${checkIssue}`; if(!S.results[key]){ toast('请先录入彩果'); return; }
+  const res=S.results[key], done=settleOrders(checkGame,checkIssue,res);
+  persist(); render(); toast(done.count?`已核对 ${done.count} 笔订单`:'彩果已保存（暂无匹配订单）'); }
+function wplToVal(x){ return x==='W'?3:x==='P'?1:x==='L'?0:null; }
+async function fetchOfficialResult(autoOrderId){
+  const game=checkGame;
+  if(!['jqc','zfc','r9'].includes(game)){ toast('该玩法暂无接口，请手动录入'); return; }
+  try{
+    const api=game==='jqc'?'api/jqc':'api/zfc';
+    const r=await fetch(api,{cache:'no-store'}); if(!r.ok) throw new Error('network');
+    const j=await r.json(); if(!j||!j.ok) throw new Error('bad payload');
+    let issue=checkIssue, res=null;
+    if(game==='jqc'){
+      const rows=Array.isArray(j.results)?j.results:[];
+      const row=issue?rows.find(x=>String(x.issue)===String(issue)):rows[0];
+      if(!row){ toast('该期未开奖或不在最近 30/60 期内'); return; }
+      issue=String(row.issue); const digits=(row.digits||[]).map(x=>Math.min(+x,3));
+      if(digits.length!==8){ toast('接口彩果格式异常'); return; }
+      const outcomes={}; for(let m=1;m<=4;m++) outcomes[m]={home:digits[(m-1)*2],away:digits[(m-1)*2+1]};
+      res={game,issue,enteredAt:Date.now(),source:'api/jqc',outcomes};
+    } else {
+      const rows=Array.isArray(j.recent)?j.recent:[];
+      const row=issue?rows.find(x=>String(x[0])===String(issue)):rows[rows.length-1];
+      if(!row){ toast('该期未开奖或不在最近 30/60 期内'); return; }
+      issue=String(row[0]); const arr=[...String(row[1]||'')].map(wplToVal);
+      if(arr.length!==14||arr.some(x=>x==null)){ toast('接口彩果格式异常'); return; }
+      const outcomes={}; arr.forEach((v,i)=>outcomes[i+1]=v);
+      res={game,issue,enteredAt:Date.now(),source:'api/zfc',outcomes};
+    }
+    checkIssue=issue; S.results[`${game}:${issue}`]=res;
+    const done=settleOrders(game,issue,res);
+    persist(); render();
+    if(autoOrderId){
+      const o=S.orders.find(x=>x.id===autoOrderId);
+      const won=o&&o.result&&o.result.anyWon;
+      toast(`已一键核对：${won?'中奖':'未中'}`);
+    } else toast(done.count?`已获取开奖并核对 ${done.count} 笔订单`:'已获取开奖（暂无匹配订单）');
+  }catch(e){ toast('获取开奖失败，请稍后重试或手动录入'); }
+}
+function autoCheckOrder(id){ const o=S.orders.find(x=>x.id===id); if(!o) return;
+  const leg=o.legs.find(l=>['jqc','zfc','r9'].includes(l.game)&&l.issue);
+  if(!leg){ toast('该订单暂无可自动核对的期号'); return; }
+  checkGame=leg.game; checkIssue=leg.issue; go('check'); setTimeout(()=>fetchOfficialResult(id),60);
+}
 
 /* ---------- 帮助 ---------- */
 function openHelpSheet(){ $('#sheet').innerHTML=`<div class="grip"></div><h3>玩法 &amp; 选号说明</h3><p class="sub">本程序由原 Excel「比分表 / 进球彩 / 分析方法」整理而来。</p>
@@ -1008,56 +1387,92 @@ function openHelpSheet(){ $('#sheet').innerHTML=`<div class="grip"></div><h3>玩
     <div class="help-block"><h4>原表分析方法（盘口代码）</h4><p>原 Excel 用多套方法预测 14 场，盘口数字含义：</p>
       <div class="kbd-row"><code>3 胜</code><code>1 平</code><code>0 负</code><code>30 胜或负</code><code>31 胜或平</code><code>10 平或负</code><code>310 全包</code></div>
       <p>方法含：上下盘、胜负盘、排除法、双排法、大L小S（大小球）、单O双P（单双），最后汇总为「买盘」。本程序保留选号与注数逻辑，分析判断仍由你决定。</p></div>
-    <div class="help-block"><h4>预约购买流程</h4><p>选号 → 加入投注单 → 预约购买（生成订单）→ 标记已出票 → 录入彩果核对 → 已开奖。数据全部存在本机浏览器，离线可用。理性购彩。</p></div>`; openSheet(); }
+    <div class="help-block"><h4>预约购买流程</h4><p>选号 → 加入投注单 → 预约购买（生成订单）→ 标记已出票 → 录入彩果核对 → 已开奖。数据全部存在本机浏览器，离线可用。理性购彩。</p></div>
+    <div class="help-block"><h4>数据备份</h4><p>导出会保存投注单、订单、已录开奖和走势表手动录入；导入会覆盖本机当前数据。</p>
+      <div class="kbd-row"><button class="mini go" id="backupExport">导出备份</button><button class="mini" id="backupImport">导入备份</button></div>
+      <input type="file" id="backupFile" accept="application/json,.json" style="display:none"></div>`; openSheet(); }
+function readJSONStore(key,fallback){ try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; }catch(e){ return fallback; } }
+function exportBackup(){
+  const p=n=>String(n).padStart(2,'0'), d=new Date(), ymd=`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}`;
+  const data={ver:1,exportedAt:new Date().toISOString(),[KEY]:readJSONStore(KEY,fresh()),'jqc-twin':readJSONStore('jqc-twin',[]),'zfc-twin':readJSONStore('zfc-twin',[])};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`zucai-backup-${ymd}.json`; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },0); toast('已导出备份');
+}
+function validTwinBackup(v){ return Array.isArray(v)&&v.every(x=>Array.isArray(x)&&x.length>=2&&String(x[0]||'').trim()); }
+function importBackupFile(file){
+  const fr=new FileReader();
+  fr.onload=()=>{ try{
+    const data=JSON.parse(String(fr.result||''));
+    if(!data||!data.ver||typeof data[KEY]!=='object'||!data[KEY]||!validTwinBackup(data['jqc-twin'])||!validTwinBackup(data['zfc-twin'])) throw new Error('invalid');
+    if(!confirm('导入备份会覆盖本机当前投注单、订单、已录开奖和走势表手动数据，确定继续？')) return;
+    localStorage.setItem(KEY,JSON.stringify(migrate(data[KEY])));
+    localStorage.setItem('jqc-twin',JSON.stringify(data['jqc-twin']));
+    localStorage.setItem('zfc-twin',JSON.stringify(data['zfc-twin']));
+    location.reload();
+  }catch(e){ toast('备份文件格式不正确'); } };
+  fr.readAsText(file);
+}
 function openAlgoSheet(){ const R=recommend(); $('#sheet').innerHTML=`<div class="grip"></div><h3>这套演算怎么算的</h3><p class="sub">把 4 场进球的 65,536 种组合，缩到概率最高的前 N 注。</p>
     <div class="help-block"><h4>四步演算</h4>
-      <p><b>① 读历史</b>　已内置 <b>${R.N}</b> 期开奖（可接入实时数据持续更新）。</p>
-      <p><b>② 统计每位频率</b>　8 个位置每位算 0/1/2/3+ 的出现频率——足球里进 <b>1</b> 最常见、<b>3+</b> 最少。</p>
-      <p><b>③ 全注打分</b>　给全部 <code>65,536</code> 注按"每位频率相乘"打分。</p>
-      <p><b>④ 取前 N</b>　按分数从高到低取前 N 注 = 推荐（N 由你选的预算档位决定）。</p></div>
-    <div class="help-block"><h4>为什么有效</h4><p>足球进球分布高度不均匀，按频率把注押在真正高概率区，<b>每元命中概率约是盲投的 4–6 倍</b>——这点经 <b>340 期 walk-forward 回测</b>验证过。</p></div>
-    <div class="help-block"><h4>为什么不用走势 / 遗漏 / 冷热</h4><p>每期是<b>不同的比赛、相互独立</b>，"某号该出了"是赌徒谬误。回测显示：把走势/遗漏或和值硬过滤加进打分，命中率<b>反而更差</b>，所以全部移除，只保留纯频率。</p></div>
-    <div class="help-block"><h4>红线（必须知道）</h4><p>进球彩是奖池抽水制（约抽 35–50%），<b>长期期望恒为负</b>。这套演算只提高"每元命中效率"，<b>改变不了长期亏损</b>。请设好预算，理性购彩。</p></div>`; openSheet(); }
+      <p><b>① 读历史</b>　已内置 <b>${R.N}</b> 期开奖（接入实时数据持续更新）。</p>
+      <p><b>② 建三个模型</b>　<b>长期频率</b>（8 位各算 0/1/2/3+ 出现率，进 1 最常见、3+ 最少）、<b>近期加权</b>（同样的频率，但越近的期权重越大，半衰 160 期）、<b>同场联合</b>（每场把主客进球当一对 4×4 统计——同一场里主客进球相关，如 1:0/1:1 远多于 3:3）。</p>
+      <p><b>③ 全注打分</b>　给全部 <code>65,536</code> 注算三个模型的概率，<b>等权平均</b>。</p>
+      <p><b>④ 取前 N</b>　按平均概率从高到低取前 N 注 = 推荐（N 由你选的预算档位决定）。</p></div>
+    <div class="help-block"><h4>为什么有效</h4><p>足球进球分布高度不均匀，按概率把注押在真正高概率区，top-2000 命中效率约<b>盲投的 3.3×</b>；三模型平均相对单一频率，整体校准<b>显著更好</b>（370 期 walk-forward 模型对决，配对检验 p≈0.03，前后半窗方向一致）。</p></div>
+    <div class="help-block"><h4>为什么不用走势 / 遗漏 / 冷热</h4><p>每期是<b>不同的比赛、相互独立</b>，"某号该出了"是赌徒谬误。模型对决里走势/遗漏、和值硬过滤命中率<b>反而更差</b>，所以都不参与打分。</p></div>
+    <div class="help-block"><h4>红线（必须知道）</h4><p>进球彩是奖池抽水制（约抽 35–50%），<b>长期期望恒为负</b>。这套演算只提高"每元命中效率"，<b>改变不了长期亏损</b>。请设好预算，理性购彩。</p></div>
+    <a class="algo-link" href="table.html" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">↗ 打开完整「进球彩遗漏走势分析表」· 369 期 + 遗漏矩阵</a>`; openSheet(); }
 function openSheet(){ $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); }
 function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
 
 /* ---------- 启动 ---------- */
-(function init(){ applyLive(JQC_SNAPSHOT,'snapshot'); const r=(location.hash||'').replace('#/',''); if(['home','manual','slip','orders','scores','check'].includes(r)) route=r; render(); loadLive(); })();
+(function init(){ applyLive(JQC_SNAPSHOT,'snapshot'); const r=(location.hash||'').replace('#/',''); if(['home','manual','sf','slip','orders','scores','check'].includes(r)) route=r; render(); loadLive(); loadZfcLive(); })();
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
+  addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
 </script>
 
-<!-- 演算 3D 场景：穿梭光环 + 雷达扇扫 + 汇聚粒子涡流 + 脉冲核心（vanilla three，移植自 ken-le-me ScanTunnel） -->
+<!-- 演算 3D 场景：Three.js idle 预取，未就绪时仅运行 SVG HUD -->
 <script type="module">
-try{
-  const THREE = await import('./three.module.min.js');
+let fxApi=null, fxLoading=null;
+window.__fxReady=true;
+window.fxStart=function(){ if(fxApi){ fxApi.start(); return; } loadFx3D(); };
+window.fxStop=function(){ if(fxApi) fxApi.stop(); };
+function loadFx3D(){
+  if(fxApi) return Promise.resolve(fxApi);
+  if(!fxLoading) fxLoading=import('./three.module.min.js').then(THREE=>{
+    fxApi=createFxApi(THREE); return fxApi;
+  }).catch(e=>{ console.warn('three fx unavailable',e); return null; });
+  return fxLoading;
+}
+function createFxApi(THREE){
   const canvas=document.getElementById('fxCanvas');
   let renderer,scene,cam,clock,raf,running=false,rings=[],radarMat,vortex,vstate,core,glow;
   const VIO=['#7c5cff','#a78bfa','#ffffff','#6741d9','#b9aaff','#7c5cff'];
-  function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
+  function resize(){ if(!renderer) return; const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
   function build(){
+    if(renderer||!canvas) return;
     renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));
     renderer.setClearColor(0x07050f,1);
     scene=new THREE.Scene();
     cam=new THREE.PerspectiveCamera(50, innerWidth/innerHeight, .1, 100); cam.position.z=6;
     clock=new THREE.Clock();
-    // 穿梭光环
     for(let i=0;i<6;i++){ const m=new THREE.Mesh(new THREE.TorusGeometry(2.7,0.014,8,96),
       new THREE.MeshBasicMaterial({color:new THREE.Color(VIO[i]),transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false}));
       m.position.z=-i*5; rings.push(m); scene.add(m); }
-    // 雷达扇扫
     radarMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
       uniforms:{uTime:{value:0},uColor:{value:new THREE.Color('#8b6dff')}},
       vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
       fragmentShader:'uniform float uTime; uniform vec3 uColor; varying vec2 vUv; void main(){ vec2 p=vUv-0.5; float r=length(p); if(r>0.5) discard; float ang=atan(p.y,p.x); float sweep=pow(fract(-ang/6.28318 - uTime*0.22),7.0); float rings=smoothstep(0.012,0.0,abs(fract(r*6.0)-0.5)*0.16); float edge=smoothstep(0.5,0.42,r); float a=(sweep*0.55+rings*0.10)*edge; gl_FragColor=vec4(uColor,a); }'});
     const radar=new THREE.Mesh(new THREE.PlaneGeometry(5.6,5.6),radarMat); radar.position.z=-1.5; scene.add(radar);
-    // 汇聚粒子涡流（65,536 候选 → 收束）
     const N=window.innerWidth<480?260:380;
     vstate={r:new Float32Array(N),th:new Float32Array(N),z:new Float32Array(N),n:N};
     for(let i=0;i<N;i++){ vstate.r[i]=1.2+Math.random()*5.5; vstate.th[i]=Math.random()*6.283; vstate.z[i]=-16+Math.random()*18; }
     const pos=new Float32Array(N*3); const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
     vortex=new THREE.Points(geo,new THREE.PointsMaterial({size:0.05,color:new THREE.Color('#d9ccff'),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}));
     vortex.frustumCulled=false; scene.add(vortex);
-    // 脉冲核心
     const c=document.createElement('canvas'); c.width=c.height=128; const cx=c.getContext('2d');
     const g=cx.createRadialGradient(64,64,0,64,64,64); g.addColorStop(0,'rgba(140,108,255,0.95)'); g.addColorStop(1,'rgba(124,92,255,0)');
     cx.fillStyle=g; cx.fillRect(0,0,128,128);
@@ -1071,7 +1486,7 @@ try{
     const dt=Math.min(0.05,clock.getDelta()), t=clock.elapsedTime;
     rings.forEach(m=>{ m.position.z+=dt*3.2; if(m.position.z>5) m.position.z-=30; m.material.opacity=(1-Math.min(1,Math.abs(m.position.z-1)/16))*0.55; });
     radarMat.uniforms.uTime.value=t;
-    const p=vortex.geometry.getAttribute('position'); const s=vstate;
+    const p=vortex.geometry.getAttribute('position'), s=vstate;
     for(let i=0;i<s.n;i++){ s.th[i]+=dt*(2.4/Math.max(0.4,s.r[i])); s.r[i]-=dt*0.5; s.z[i]+=dt*2.2;
       if(s.r[i]<0.25||s.z[i]>4){ s.r[i]=4.5+Math.random()*2.5; s.z[i]=-15; }
       p.setXYZ(i, Math.cos(s.th[i])*s.r[i], Math.sin(s.th[i])*s.r[i]*0.85, s.z[i]); }
@@ -1080,10 +1495,15 @@ try{
     glow.scale.setScalar(2.6+Math.sin(t*2.6)*0.5);
     renderer.render(scene,cam);
   }
-  window.fxStart=function(){ if(!renderer) build(); running=true; clock.start(); clock.getDelta(); cancelAnimationFrame(raf); frame(); };
-  window.fxStop=function(){ running=false; cancelAnimationFrame(raf); };
-  window.__fxReady=true;
-}catch(e){ window.__fxReady=false; console.warn('three fx unavailable',e); }
+  return {
+    start(){ build(); if(!renderer) return; running=true; clock.start(); clock.getDelta(); cancelAnimationFrame(raf); frame(); },
+    stop(){ running=false; cancelAnimationFrame(raf); }
+  };
+}
+requestAnimationFrame(()=>{
+  const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,3000));
+  idle(()=>loadFx3D(),{timeout:3000});
+});
 </script>
 </body>
 </html>
