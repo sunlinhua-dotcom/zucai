@@ -21,8 +21,8 @@
   <key>RunAtLoad</key>
   <false/>
   <key>StandardOutPath</key>
-  <string>/Volumes/ProjectsAPFS/ryo/.wrangler/auto-refresh.out.log</string>
+  <string>/Users/linhuasun/Library/Logs/zucai-autorefresh.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Volumes/ProjectsAPFS/ryo/.wrangler/auto-refresh.err.log</string>
+  <string>/Users/linhuasun/Library/Logs/zucai-autorefresh.err.log</string>
 </dict>
 </plist>
