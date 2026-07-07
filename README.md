@@ -24,3 +24,22 @@
 - 或连接本仓库到 Cloudflare Pages（原生 Git 集成），推送 `main` 自动部署。
 
 源码：`index.html`（部署副本 `public/index.html`）。
+
+## 实时数据 / 自动刷新
+
+生产环境的 Cloudflare 边缘节点**无法直连**中国体彩 `.cn` 接口（跨境受限），线上以内置快照兜底。要让快照自动跟上最新开奖，在**能直连体彩的本机**上装定时任务：
+
+```bash
+# 手动刷新一次（拉体彩→更新快照/走势表→同步 public）
+python3 scripts/refresh_data.py            # 加 --check 只预览不落盘
+
+# 装本机定时任务（每天 10:00 / 23:00 自动 刷新+提交+部署）
+cp scripts/com.zucai.autorefresh.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.zucai.autorefresh.plist
+launchctl start com.zucai.autorefresh      # 可选：立即跑一次
+# 卸载：launchctl unload ~/Library/LaunchAgents/com.zucai.autorefresh.plist
+
+# 日志：.wrangler/auto-refresh.log
+```
+
+只在本机开机联网时更新。`refresh_data.py` 只改数据（JQC/ZFC 快照、两张走势表 ROWS、Elo 随 latest 一起滚动），不碰算法。

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- 每天 10:00 与 23:00 自动刷新体彩开奖数据并部署。
+     安装：cp scripts/com.zucai.autorefresh.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.zucai.autorefresh.plist
+     卸载：launchctl unload ~/Library/LaunchAgents/com.zucai.autorefresh.plist && rm ~/Library/LaunchAgents/com.zucai.autorefresh.plist
+     立即跑一次：launchctl start com.zucai.autorefresh -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.zucai.autorefresh</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Volumes/ProjectsAPFS/ryo/scripts/auto-refresh.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+    <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>0</integer></dict>
+  </array>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/Volumes/ProjectsAPFS/ryo/.wrangler/auto-refresh.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Volumes/ProjectsAPFS/ryo/.wrangler/auto-refresh.err.log</string>
+</dict>
+</plist>
